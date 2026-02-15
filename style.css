@@ -1,0 +1,331 @@
+:root {
+    --primary: #01215b;
+    --accent: #d4af37;
+    --bg: #f0f2f5;
+    --white: #ffffff;
+    --dark: #343a40;
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: var(--bg);
+    margin: 0;
+}
+
+/* --- Encabezado --- */
+header {
+    background: var(--primary);
+    color: white;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.container {
+    max-width: 1200px; /* Un poco más ancho para el sidebar */
+    margin: 20px auto;
+    padding: 0 15px;
+}
+
+/* --- Layout de Dos Columnas --- */
+.layout-principal {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+/* --- Sidebar Izquierda (Registradas) --- */
+.sidebar {
+    flex: 0 0 220px; /* Ancho fijo */
+    background: var(--white);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+	
+	/* --- AQUÍ ESTÁ EL TRUCO PARA QUE SEA FLOTANTE --- */
+    position: sticky;
+    top: 20px; /* Se queda pegado a 20px del borde superior de la pantalla */
+    max-height: 80vh; /* Evita que si hay muchos nombres, se salgan de la pantalla */
+    overflow-y: auto; /* Si la lista es muy larga, permite hacer scroll dentro del cuadrito */
+    z-index: 100; /* Asegura que siempre esté por encima de otros elementos al deslizar */
+}
+
+.sidebar h3 {
+    font-size: 1rem;
+    color: var(--primary);
+    margin-top: 0;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 5px;
+}
+
+#links-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.btn-report {
+    background-color: #28a745; /* Verde tipo Excel */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-report:hover {
+    background-color: #218838;
+}
+
+/* Botón de Reporte Visual (Azul/Morado) */
+.btn-report-master {
+    background-color: #6f42c1;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Botón de Excel (Verde) */
+.btn-report-excel {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-report-master:hover, .btn-report-excel:hover {
+    opacity: 0.9;
+}
+
+.btn-link {
+    width: 100%;
+    padding: 10px;
+    text-align: left;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+
+
+/* Estilo para que el nombre y puntos estén en la misma línea */
+.btn-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+}
+
+/* La etiqueta del puntaje */
+.badge-puntos {
+    background: var(--accent); /* Dorado/Amarillo */
+    color: var(--primary);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    min-width: 40px;
+    text-align: center;
+}
+
+.btn-link:hover .badge-puntos {
+    background: white;
+    color: var(--primary);
+}
+
+
+
+
+
+.btn-link:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.btn-danger {
+    background-color: #dc3545; /* Rojo */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.btn-danger:hover {
+    background-color: #a71d2a;
+}
+
+/* --- Contenido Derecha (Tabla) --- */
+.content-fixture {
+    flex: 1;
+    background: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+/* --- Diseño de la Tabla (Escritorio) --- */
+.table-header {
+    display: grid;
+    grid-template-columns: 100px 120px 1fr 110px 1fr;
+    background: var(--dark);
+    color: white;
+    padding: 12px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+.card {
+	height: 55px;        /* <--- AQUÍ PON EL NÚMERO QUE ENCONTRASTE */
+    margin-bottom: 15px; /* <--- PON UN MARGEN FIJO */
+    box-sizing: border-box; /* Esto evita que el borde mueva todo */
+    display: grid;
+    grid-template-columns: 100px 120px 1fr 110px 1fr;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+}
+
+.card:hover {
+    background-color: #fcfcfc;
+}
+
+/* Alineaciones de Equipos */
+.txt-right { text-align: right; font-weight: bold; padding-right: 15px; }
+.txt-left { text-align: left; font-weight: bold; padding-left: 15px; }
+
+/* Marcador */
+.marcador {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    background: #f1f1f1;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.marcador input {
+    width: 40px;
+    height: 32px;
+    text-align: center;
+    font-weight: bold;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* El primer lugar brilla un poco más */
+.btn-link:first-child {
+    border-left: 5px solid #d4af37; /* Dorado */
+    background: #fffdf5;
+}
+
+.btn-link span:first-child {
+    font-weight: bold;
+}
+
+
+/* Esto es lo que evita que se mueva lo demás */
+.columna-reales-flotante {
+    position: absolute;
+    right: -90px; /* Se sale de la caja principal hacia la derecha */
+    top: 0;
+    width: 80px;
+    border-left: 2px solid black;
+    background: #f9f9f9;
+}
+
+.header-real-fix {
+    height: 45px; /* Ajusta a la altura exacta de tu table-header azul */
+    background: #333;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.fila-real {
+    height: 55px; /* Mide una de tus CARDS y pon esa medida EXACTA aquí */
+    margin-bottom: 15px; /* Mismo margen que tus CARDS */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+	box-sizing: border-box;
+    font-weight: bold;
+}
+
+
+
+
+/* ==========================================
+   DISEÑO PARA MÓVIL (Celulares)
+   ========================================== */
+@media (max-width: 850px) {
+    .layout-principal {
+        flex-direction: column; /* Sidebar arriba, tabla abajo */
+    }
+
+    .sidebar {
+        flex: 1 1 auto;
+        width: 100%; /* Sidebar ocupa todo el ancho */
+        box-sizing: border-box;
+    }
+
+    #links-container {
+        flex-direction: row; /* En móvil, los nombres se ven de lado para ahorrar espacio */
+        flex-wrap: wrap;
+    }
+
+    .btn-link {
+        width: auto; /* Botones pequeños en móvil */
+    }
+
+    .table-header {
+        display: none; /* Ocultar cabecera de tabla */
+    }
+
+    .card {
+        grid-template-columns: 1fr; /* Una sola columna vertical */
+        gap: 10px;
+        padding: 20px;
+        margin: 10px;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+    }
+
+    .txt-right, .txt-left {
+        text-align: center;
+        padding: 0;
+        font-size: 1.2rem;
+    }
+
+    .marcador {
+        padding: 15px;
+    }
+
+    .marcador input {
+        width: 60px;
+        height: 45px;
+        font-size: 1.3rem;
+    }
+}

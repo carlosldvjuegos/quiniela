@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Resultados Oficiales 2026</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>⚙️ PANEL DE CONTROL - RESULTADOS REALES</h1>
+    </header>
+
+    <div class="user-panel">
+    <div class="actions">
+        <button onclick="guardarResultadosOficiales()" class="btn-save">💾 Guardar en Base de Datos</button>
+        <a href="index.html" class="btn-link-volver">⬅️ Ir a Quiniela</a>
+    </div>
+    </div>
+
+
+    <main class="container">
+        <div class="layout-principal">
+            
+            <aside class="sidebar">
+                <section class="saved-section">
+                    <h3>📊 Estado</h3>
+                    <p style="font-size: 0.85rem; color: #666;">Ingresa los marcadores finales de los partidos jugados y haz clic en publicar.</p>
+                </section>
+            </aside>
+
+            <section class="content-fixture">
+                <div class="table-header">
+                    <span class="col-fase">Fase</span>
+                    <span class="col-fecha">Fecha</span>
+                    <span class="col-local">Local</span>
+                    <span class="col-marcador">Marcador Real</span>
+                    <span class="col-visita">Visita</span>
+                </div>
+                <div id="fixture-container"></div>
+            </section>
+
+        </div>
+    </main>
+
+    <script src="admin-script.js"></script>
+</body>
+</html>

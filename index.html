@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiniela Mundial 2026 | Pro</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+    <h1>🏆 QUINIELA MUNDIAL 2026</h1>
+</header>
+
+<div class="user-panel">
+    <div class="input-group">
+        <input type="text" id="nombre-usuario" placeholder="Tu nombre...">
+        <div class="actions">
+    <button onclick="guardarQuinielaCompleta()" class="btn-save">💾 Guardar</button>
+    <button onclick="generarReporteMaestro()" class="btn-report-master">📋 Reporte Maestro (PDF)</button>
+    <button onclick="resetearBaseDeDatos()" class="btn-danger">🗑️ Borrar Todo</button>
+</div>
+    </div>
+    </div>
+
+<main class="container">
+    <div class="layout-principal" style="position: relative;">
+        
+        <aside class="sidebar">
+            <section class="saved-section">
+                <h3>📋 Quinielas Registradas</h3>
+                <div id="links-container"></div>
+            </section>
+        </aside>
+
+        <section class="content-fixture">
+            <div class="table-header">
+                <span class="col-fase">Fase</span>
+                <span class="col-fecha">Fecha</span>
+                <span class="col-local">Local</span>
+                <span class="col-marcador">Marcador</span>
+                <span class="col-visita">Visita</span>
+            </div>
+            <div id="fixture-container"></div>
+        </section>
+		
+		<div class="columna-reales-flotante">
+        <div class="header-real-fix">REAL</div>
+        <div id="reales-container"></div>
+    </div>
+		
+    </div>
+	
+</main>
+
+    <script src="script.js"></script>
+</body>
+</html>
