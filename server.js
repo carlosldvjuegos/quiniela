@@ -16,7 +16,7 @@ const { Pool } = require('pg');
 
 // Usamos la URL que copiaste de Supabase
 const pool = new Pool({
-  connectionString: 'TU_URL_DE_CONEXIÓN_AQUÍ',
+  connectionString: 'postgresql://postgres:[YOUR-PASSWORD]@db.hewrkhydtveaygkmlzhb.supabase.co:5432/postgres',
 });
 
 // Ejemplo de cómo cambiar una ruta (el resto es muy similar):
@@ -91,4 +91,5 @@ app.listen(PORT, () => {
     console.log(`==========================================`);
 
 });
+
 
