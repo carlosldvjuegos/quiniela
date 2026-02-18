@@ -12,19 +12,22 @@ app.use(bodyParser.json());
 
 // 1. CONEXIÓN / CREACIÓN DE LA BASE DE DATOS
 // Se creará un archivo llamado 'quiniela.db' en tu carpeta
-const path = require('path');
-const dbPath = path.join('/opt/render/project/src/data', 'quiniela.db');
+const { Pool } = require('pg');
 
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        // Si falla la ruta de Render (local), usa la ruta local por defecto
-        const localDb = new sqlite3.Database('./quiniela.db');
-        console.log("Corriendo en modo local.");
-    } else {
-        console.log("Conectado a la base de datos persistente en Render.");
-    }
+// Usamos la URL que copiaste de Supabase
+const pool = new Pool({
+  connectionString: 'TU_URL_DE_CONEXIÓN_AQUÍ',
 });
 
+// Ejemplo de cómo cambiar una ruta (el resto es muy similar):
+app.get('/registros', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT DISTINCT nombre_usuario FROM predicciones');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 // 2. CREACIÓN DE LA TABLA
 // Guardamos el nombre del usuario, el ID del partido y los goles
 db.serialize(() => {
@@ -88,3 +91,4 @@ app.listen(PORT, () => {
     console.log(`==========================================`);
 
 });
+
