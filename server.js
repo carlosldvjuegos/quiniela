@@ -1,34 +1,4 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-const bodyParser = require('body-parser');
-const cors = require('cors');
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Configuración de middleware
-app.use(cors());
-app.use(bodyParser.json());
-
-// 1. CONEXIÓN / CREACIÓN DE LA BASE DE DATOS
-// Se creará un archivo llamado 'quiniela.db' en tu carpeta
-const { Pool } = require('pg');
-
-// Usamos la URL que copiaste de Supabase
-const pool = new Pool({
-  connectionString: 'postgresql://postgres:[YOUR-PASSWORD]@db.hewrkhydtveaygkmlzhb.supabase.co:5432/postgres',
-});
-
-// Ejemplo de cómo cambiar una ruta (el resto es muy similar):
-app.get('/registros', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT DISTINCT nombre_usuario FROM predicciones');
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-const express = require('express');
 const { Pool } = require('pg');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -40,56 +10,55 @@ const PORT = process.env.PORT || 3000;
 // --- CONFIGURACIÓN DE MIDDLEWARE ---
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static('public')); // Esto sirve tus archivos HTML/JS desde una carpeta llamada 'public'
+app.use(express.static(path.join(__dirname, 'public'))); // Servir archivos de la carpeta public
 
 // --- CONEXIÓN A SUPABASE (PostgreSQL) ---
 const pool = new Pool({
-    connectionString: 'TU_CONEXION_URI_AQUÍ', // <--- PEGA AQUÍ TU URI DE SUPABASE
-    ssl: { rejectUnauthorized: false } // Requerido para conexiones externas seguras
+    connectionString: 'postgresql://postgres:[YOUR-PASSWORD]@db.hewrkhydtveaygkmlzhb.supabase.co:5432/postgres', // <--- PEGA TU URI AQUÍ
+    ssl: { rejectUnauthorized: false } 
 });
 
-// --- RUTA PARA GUARDAR ---
+// --- RUTA INICIAL ---
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// --- GUARDAR PREDICCIONES DE USUARIO ---
 app.post('/guardar', async (req, res) => {
     const { nombre, predicciones } = req.body;
     if (!nombre || !predicciones) return res.status(400).json({ error: "Faltan datos" });
 
+    const client = await pool.connect();
     try {
-        const client = await pool.connect();
-        try {
-            await client.query('BEGIN');
-            // Borrar antiguas
-            await client.query('DELETE FROM predicciones WHERE nombre_usuario = $1', [nombre]);
-            // Insertar nuevas
-            for (let p of predicciones) {
-                await client.query(
-                    'INSERT INTO predicciones (nombre_usuario, partido_id, goles_local, goles_visita) VALUES ($1, $2, $3, $4)',
-                    [nombre, p.id, p.gl, p.gv]
-                );
-            }
-            await client.query('COMMIT');
-            res.json({ mensaje: "Quiniela guardada correctamente en Supabase" });
-        } catch (e) {
-            await client.query('ROLLBACK');
-            throw e;
-        } finally {
-            client.release();
+        await client.query('BEGIN');
+        await client.query('DELETE FROM predicciones WHERE nombre_usuario = $1', [nombre]);
+        for (let p of predicciones) {
+            await client.query(
+                'INSERT INTO predicciones (nombre_usuario, partido_id, goles_local, goles_visita) VALUES ($1, $2, $3, $4)',
+                [nombre, p.id, p.gl, p.gv]
+            );
         }
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        await client.query('COMMIT');
+        res.json({ mensaje: "Quiniela guardada correctamente" });
+    } catch (e) {
+        await client.query('ROLLBACK');
+        res.status(500).json({ error: e.message });
+    } finally {
+        client.release();
     }
 });
 
-// --- RUTA PARA CARGAR LOS NOMBRES REGISTRADOS ---
+// --- OBTENER NOMBRES REGISTRADOS ---
 app.get('/registros', async (req, res) => {
     try {
-        const result = await pool.query('SELECT DISTINCT nombre_usuario FROM predicciones');
+        const result = await pool.query('SELECT DISTINCT nombre_usuario FROM predicciones ORDER BY nombre_usuario');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// --- RUTA PARA CARGAR UNA QUINIELA ESPECÍFICA ---
+// --- CARGAR QUINIELA DE UN USUARIO ---
 app.get('/cargar/:nombre', async (req, res) => {
     try {
         const result = await pool.query(
@@ -102,21 +71,58 @@ app.get('/cargar/:nombre', async (req, res) => {
     }
 });
 
-// --- RUTA PARA BORRAR TODO (CUIDADO) ---
-app.delete('/reset-db', async (req, res) => {
+// --- GUARDAR RESULTADOS REALES (ADMIN) ---
+app.post('/guardar-resultados-db', async (req, res) => {
+    const resultados = req.body; // Array de resultados
+    const client = await pool.connect();
     try {
-        await pool.query('DELETE FROM predicciones');
-        await pool.query('DELETE FROM resultados_oficiales');
-        res.json({ mensaje: "Base de datos reseteada con éxito" });
+        await client.query('BEGIN');
+        for (let r of resultados) {
+            await client.query(
+                'INSERT INTO resultados_oficiales (partido_id, goles_local, goles_visita) VALUES ($1, $2, $3) ON CONFLICT (partido_id) DO UPDATE SET goles_local = $2, goles_visita = $3',
+                [r.id, r.realL, r.realV]
+            );
+        }
+        await client.query('COMMIT');
+        res.json({ mensaje: "Resultados oficiales actualizados" });
+    } catch (e) {
+        await client.query('ROLLBACK');
+        res.status(500).json({ error: e.message });
+    } finally {
+        client.release();
+    }
+});
+
+// --- OBTENER RESULTADOS REALES ---
+app.get('/obtener-resultados-db', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT partido_id as id, goles_local as gl, goles_visita as gv FROM resultados_oficiales');
+        res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Rutas de Admin y Reportes... (Siguen la misma lógica de pool.query)
-
-app.listen(PORT, () => {
-    console.log(`Servidor activo en puerto ${PORT}`);
+// --- OBTENER TODO PARA REPORTE MAESTRO ---
+app.get('/obtener-todas-predicciones', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM predicciones ORDER BY nombre_usuario, partido_id');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
+// --- RESETEAR BASE DE DATOS ---
+app.delete('/reset-db', async (req, res) => {
+    try {
+        await pool.query('TRUNCATE TABLE predicciones, resultados_oficiales');
+        res.json({ mensaje: "Base de datos limpiada por completo" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
+app.listen(PORT, () => {
+    console.log(`Servidor activo en: http://localhost:${PORT}`);
+});
