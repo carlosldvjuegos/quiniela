@@ -14,8 +14,8 @@ app.use(express.static(__dirname, 'admin.html'));
 
 // --- CONEXIÓN A SUPABASE (PostgreSQL) ---
 const pool = new Pool({
-    connectionString: 'postgresql://postgres:[YOUR-PASSWORD]@db.hewrkhydtveaygkmlzhb.supabase.co:5432/postgres', // <--- PEGA TU URI AQUÍ
-    ssl: { rejectUnauthorized: false } 
+    connectionString: process.env.DATABASE_URL, // <--- Esto le dice al código: "Busca la variable en Render"
+    ssl: { rejectUnauthorized: false }
 });
 
 // --- RUTA INICIAL ---
@@ -123,6 +123,7 @@ app.listen(PORT, () => {
     console.log(`Servidor activo en: http://localhost:${PORT}`);
 
 });
+
 
 
 
