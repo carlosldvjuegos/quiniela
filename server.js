@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 10000;
 // --- CONFIGURACIÓN DE MIDDLEWARE ---
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(__dirname));
+app.use(express.static(__dirname, 'admin.html'));
 
 // --- CONEXIÓN A SUPABASE (PostgreSQL) ---
 const pool = new Pool({
@@ -127,3 +127,4 @@ app.listen(PORT, () => {
     console.log(`Servidor activo en: http://localhost:${PORT}`);
 
 });
+
