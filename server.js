@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 // --- CONFIGURACIÓN DE MIDDLEWARE ---
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public'))); // Servir archivos de la carpeta public
+app.use(express.static(__dirname));
 
 // --- CONEXIÓN A SUPABASE (PostgreSQL) ---
 const pool = new Pool({
@@ -20,7 +20,7 @@ const pool = new Pool({
 
 // --- RUTA INICIAL ---
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // --- GUARDAR PREDICCIONES DE USUARIO ---
