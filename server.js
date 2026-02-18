@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Configuración de middleware
 app.use(cors());
@@ -12,9 +12,17 @@ app.use(bodyParser.json());
 
 // 1. CONEXIÓN / CREACIÓN DE LA BASE DE DATOS
 // Se creará un archivo llamado 'quiniela.db' en tu carpeta
-const db = new sqlite3.Database('./quiniela.db', (err) => {
-    if (err) console.error("Error al abrir base de datos:", err.message);
-    else console.log("Conectado a la base de datos SQLite.");
+const path = require('path');
+const dbPath = path.join('/opt/render/project/src/data', 'quiniela.db');
+
+const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+        // Si falla la ruta de Render (local), usa la ruta local por defecto
+        const localDb = new sqlite3.Database('./quiniela.db');
+        console.log("Corriendo en modo local.");
+    } else {
+        console.log("Conectado a la base de datos persistente en Render.");
+    }
 });
 
 // 2. CREACIÓN DE LA TABLA
@@ -78,4 +86,5 @@ app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
     console.log(`Presiona Ctrl + C para apagar el servidor`);
     console.log(`==========================================`);
+
 });
