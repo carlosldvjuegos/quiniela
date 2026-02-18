@@ -5,7 +5,7 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
 // --- CONFIGURACIÓN DE MIDDLEWARE ---
 app.use(cors());
@@ -125,4 +125,5 @@ app.delete('/reset-db', async (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Servidor activo en: http://localhost:${PORT}`);
+
 });
