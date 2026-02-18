@@ -20,7 +20,7 @@ const pool = new Pool({
 
 // --- RUTA INICIAL ---
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
 // --- GUARDAR PREDICCIONES DE USUARIO ---
@@ -127,4 +127,5 @@ app.listen(PORT, () => {
     console.log(`Servidor activo en: http://localhost:${PORT}`);
 
 });
+
 
