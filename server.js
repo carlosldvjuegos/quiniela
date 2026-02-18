@@ -72,24 +72,20 @@ app.get('/cargar/:nombre', async (req, res) => {
 });
 
 // --- GUARDAR RESULTADOS REALES (ADMIN) ---
+// Busca la ruta /guardar-resultados-db y déjala exactamente así:
 app.post('/guardar-resultados-db', async (req, res) => {
-    const resultados = req.body; // Array de resultados
-    const client = await pool.connect();
+    const resultados = req.body;
     try {
-        await client.query('BEGIN');
-        for (let r of resultados) {
-            await client.query(
+        for (const r of resultados) {
+            await pool.query(
                 'INSERT INTO resultados_oficiales (partido_id, goles_local, goles_visita) VALUES ($1, $2, $3) ON CONFLICT (partido_id) DO UPDATE SET goles_local = $2, goles_visita = $3',
                 [r.id, r.realL, r.realV]
             );
         }
-        await client.query('COMMIT');
-        res.json({ mensaje: "Resultados oficiales actualizados" });
-    } catch (e) {
-        await client.query('ROLLBACK');
-        res.status(500).json({ error: e.message });
-    } finally {
-        client.release();
+        res.json({ mensaje: "Resultados oficiales publicados correctamente" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
     }
 });
 
@@ -127,5 +123,6 @@ app.listen(PORT, () => {
     console.log(`Servidor activo en: http://localhost:${PORT}`);
 
 });
+
 
 
