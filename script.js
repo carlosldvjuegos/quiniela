@@ -1,7 +1,7 @@
 // Cambia tu variable API_URL por esta línea inteligente:
 const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
     ? "http://localhost:3000" 
-    : "https://tu-app-en-render.onrender.com"; // Aquí pones la URL que te dé Render
+    : "https://quiniela-pcas.onrender.com"; // Aquí pones la URL que te dé Render
 
 // 1. LISTA DE PARTIDOS (Asegúrate de que coincida con admin-script.js)
 const partidosData = [
@@ -634,3 +634,4 @@ window.onload = () => {
     actualizarListaLinks();
 
 };
+
