@@ -146,10 +146,13 @@ const partidosData = [
     { id: 104, fase: "Final", grupo: "Eliminatoria", fecha: "Domingo 19/07/2026", local: "W101", visita: "W102" }
 ];
 
+// DIBUJAR LOS PARTIDOS
 function renderizarPartidosAdmin() {
-    const container = document.getElementById('fixture-container');
+    // CAMBIO IMPORTANTE: Usamos el ID correcto del admin.html
+    const container = document.getElementById('admin-fixture-container'); 
+    
     if (!container) {
-        console.error("No se encontró el contenedor fixture-container");
+        console.error("❌ ERROR: No se encontró el contenedor 'admin-fixture-container' en el HTML.");
         return;
     }
     
@@ -170,13 +173,14 @@ function renderizarPartidosAdmin() {
         `;
         container.appendChild(card);
     });
-    console.log("Partidos dibujados en pantalla.");
+    console.log("✅ Partidos dibujados en pantalla.");
 }
 
-// Función para cargar datos desde la DB al abrir la página
+// CARGAR RESULTADOS DESDE LA BASE DE DATOS
 async function cargarResultadosExistentes() {
     try {
         const response = await fetch(`${API_URL}/obtener-resultados-db`);
+        if (!response.ok) return;
         const datos = await response.json();
 
         if (datos && datos.length > 0) {
@@ -186,32 +190,31 @@ async function cargarResultadosExistentes() {
                 if (inputL) inputL.value = d.gl;
                 if (inputV) inputV.value = d.gv;
             });
-            console.log("Resultados previos cargados en la tabla.");
+            console.log("📂 Resultados previos cargados.");
         }
     } catch (error) {
-        console.error("Error al recuperar resultados previos:", error);
+        console.error("Error al recuperar resultados:", error);
     }
 }
 
-// NUEVO INICIO: Renderiza y luego Carga
-document.addEventListener("DOMContentLoaded", async () => {
-    renderizarPartidosAdmin();    // Primero dibuja la tabla vacía
-    await cargarResultadosExistentes(); // Luego la rellena con lo guardado
-});
-
+// GUARDAR RESULTADOS EN LA BASE DE DATOS
 async function guardarResultadosOficiales() {
     const resultados = [];
     partidosData.forEach(p => {
-        const gl = document.getElementById(`R-L-${p.id}`).value;
-        const gv = document.getElementById(`R-V-${p.id}`).value;
+        const inputL = document.getElementById(`R-L-${p.id}`);
+        const inputV = document.getElementById(`R-V-${p.id}`);
         
-        // Solo guardamos si ambos campos tienen números
-        if (gl !== "" && gv !== "") {
-            resultados.push({ 
-                id: p.id, 
-                realL: parseInt(gl), 
-                realV: parseInt(gv) 
-            });
+        if (inputL && inputV) {
+            const gl = inputL.value;
+            const gv = inputV.value;
+            
+            if (gl !== "" && gv !== "") {
+                resultados.push({ 
+                    id: p.id, 
+                    realL: parseInt(gl), 
+                    realV: parseInt(gv) 
+                });
+            }
         }
     });
 
@@ -225,18 +228,14 @@ async function guardarResultadosOficiales() {
         });
 
         const resData = await response.json();
-        if (response.ok) {
-            alert("✅ " + resData.mensaje);
-        } else {
-            alert("❌ Error: " + resData.error);
-        }
+        alert("✅ " + resData.mensaje);
     } catch (error) {
-        console.error('Error:', error);
-        alert("No se pudo conectar con el servidor.");
+        alert("❌ Error al conectar con el servidor.");
     }
 }
 
-// ESTO ASEGURA QUE SE DIBUJE AL CARGAR
-
-document.addEventListener("DOMContentLoaded", renderizarPartidosAdmin);
-
+// ARRANQUE ÚNICO
+document.addEventListener("DOMContentLoaded", () => {
+    renderizarPartidosAdmin();
+    cargarResultadosExistentes();
+});
