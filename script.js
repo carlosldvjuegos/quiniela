@@ -1,6 +1,6 @@
 // Cambia tu variable API_URL por esta línea inteligente:
-const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-    ? const API_URL = window.location.origin;
+const API_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+    ? window.location.origin 
     : "https://quiniela-pcas.onrender.com"; // Aquí pones la URL que te dé Render
 
 // 1. LISTA DE PARTIDOS (Asegúrate de que coincida con admin-script.js)
@@ -629,10 +629,13 @@ async function generarReporteMaestro() {
 
 
 // INICIO AL CARGAR PÁGINA
-window.onload = () => {
-    renderizarFixture();
-    actualizarListaLinks();
+window.onload = async () => {
+    await renderizarFixture(); // Dibuja los partidos y resultados reales
+    actualizarListaLinks();    // Carga el ranking lateral
+    actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
+};
 
 };
+
 
 
