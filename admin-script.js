@@ -1,7 +1,9 @@
 // Prueba de conexión inmediata
 console.log("El script de Admin se ha cargado correctamente.");
 
-const API_URL = window.location.origin;
+const API_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+    ? window.location.origin 
+    : "https://quiniela-pcas.onrender.com";
 
 // LISTA DE PARTIDOS NECESARIA PARA DIBUJAR LA TABLA
 const partidosData = [
@@ -237,3 +239,4 @@ async function guardarResultadosOficiales() {
 // ESTO ASEGURA QUE SE DIBUJE AL CARGAR
 
 document.addEventListener("DOMContentLoaded", renderizarPartidosAdmin);
+
