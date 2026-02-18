@@ -624,7 +624,18 @@ async function generarReporteMaestro() {
     }
 }
 
+async function resetearBaseDeDatos() {
+    if (!confirm("⚠️ ¿Estás SEGURO? Esto borrará TODAS las quinielas y resultados de la base de datos.")) return;
 
+    try {
+        const res = await fetch(`${API_URL}/reset-db`, { method: 'DELETE' });
+        const data = await res.json();
+        alert(data.mensaje);
+        location.reload(); // Recarga la página para limpiar todo
+    } catch (e) {
+        alert("Error al intentar borrar la base de datos.");
+    }
+}
 
 
 
@@ -636,6 +647,7 @@ window.onload = async () => {
 };
 
 };
+
 
 
 
