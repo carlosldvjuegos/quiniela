@@ -234,20 +234,10 @@ async function guardarResultadosOficiales() {
     }
 }
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false
-    },
-    // Añadimos estas líneas para mejorar la estabilidad en Render
-    max: 10,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000, 
-});
-
 // ARRANQUE ÚNICO
 document.addEventListener("DOMContentLoaded", () => {
     renderizarPartidosAdmin();
     cargarResultadosExistentes();
 });
+
 
