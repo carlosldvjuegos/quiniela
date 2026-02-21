@@ -646,7 +646,6 @@ window.onload = async () => {
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
 
-};
 
 
 
