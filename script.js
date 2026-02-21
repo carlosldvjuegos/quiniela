@@ -172,9 +172,8 @@ async function renderizarFixture() {
     const realesCont = document.getElementById("reales-container");
     
     fixtureCont.innerHTML = "";
-    realesCont.innerHTML = "";
+    if (realesCont) realesCont.innerHTML = "";
 
-    // Traemos los datos de la DB del Admin
     let resultadosDB = [];
     try {
         const resp = await fetch(`${API_URL}/obtener-resultados-db`);
@@ -182,30 +181,34 @@ async function renderizarFixture() {
     } catch (e) { console.log("Error al cargar reales"); }
 
     partidosData.forEach(p => {
-        // 1. Dibuja tu card normal (sin cambios)
+        // Formato unificado para que el CSS funcione
         const card = document.createElement("div");
-        card.className = "card";
+        card.className = "partido"; // Usamos la clase corregida
         card.innerHTML = `
-            <span class="col-fase">${p.fase}${'_'}${p.id}</span>
-            <span class="col-fecha">${p.fecha}</span>
-            <span class="txt-right">${p.local}</span>
-            <div class="marcador">
-                <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
-                <span>-</span>
-                <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
+            <div class="info-partido">
+                <span>${p.fase} - ${p.grupo}</span>
+                <span>${p.fecha}</span>
             </div>
-            <span class="txt-left">${p.visita}</span>
+            <div class="fila-equipos">
+                <span class="equipo-nombre local">${p.local}</span>
+                <div class="marcador-inputs">
+                    <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
+                    <span class="vs-divider">-</span>
+                    <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
+                </div>
+                <span class="equipo-nombre visita">${p.visita}</span>
+            </div>
         `; 
         fixtureCont.appendChild(card);
 
-        // 2. Dibuja el marcador real en la columna de afuera
-        const r = resultadosDB.find(res => res.id === p.id);
-        const texto = r ? `${r.gl} - ${r.gv}` : "-";
-        
-        const divReal = document.createElement("div");
-        divReal.className = "fila-real";
-        divReal.innerHTML = `<span>${texto}</span>`;
-        realesCont.appendChild(divReal);
+        if (realesCont) {
+            const r = resultadosDB.find(res => res.id === p.id);
+            const texto = r ? `${r.gl} - ${r.gv}` : "-";
+            const divReal = document.createElement("div");
+            divReal.className = "fila-real";
+            divReal.innerHTML = `<span>${texto}</span>`;
+            realesCont.appendChild(divReal);
+        }
     });
 }
 
@@ -645,6 +648,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
