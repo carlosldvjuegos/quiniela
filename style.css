@@ -27,6 +27,88 @@ header {
     padding: 0 15px;
 }
 
+
+
+/* --- Arreglo para que el Fixture se vea bien en celulares --- */
+
+/* Contenedor que guarda todos los partidos */
+#fixture-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* Cada tarjeta de partido */
+.partido {
+    background: var(--white);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column; /* Apila todo en móvil */
+    align-items: center;
+    border-left: 5px solid var(--primary);
+}
+
+/* Los textos de Grupo y Fecha */
+.info-partido {
+    font-size: 12px;
+    color: var(--dark);
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-bottom: 10px;
+    opacity: 0.7;
+}
+
+/* La fila donde están los nombres y los cuadritos de goles */
+.fila-equipos {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
+
+.equipo-nombre {
+    flex: 1;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--primary);
+}
+
+.equipo-nombre.local { text-align: right; }
+.equipo-nombre.visita { text-align: left; }
+
+/* Los cuadros de goles */
+input[type="number"] {
+    width: 45px;
+    height: 35px;
+    text-align: center;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+input[type="number"]:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+/* --- AJUSTE PARA COMPUTADORA (Pantallas grandes) --- */
+@media (min-width: 768px) {
+    .partido {
+        flex-direction: row; /* En PC se vuelve a poner horizontal */
+        justify-content: space-between;
+    }
+    
+    .fila-equipos {
+        width: auto;
+        gap: 20px;
+    }
+}
+
 /* --- Layout de Dos Columnas --- */
 .layout-principal {
     display: flex;
@@ -328,4 +410,5 @@ header {
         height: 45px;
         font-size: 1.3rem;
     }
+
 }
