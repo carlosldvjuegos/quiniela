@@ -50,14 +50,13 @@ header {
 
 /* LA SIDEBAR: Ahora es una lista normal que se va al hacer scroll */
 .sidebar {
+    position: relative !important; /* Cambiado de sticky a relative */
     width: 280px;
-    background: var(--white);
+    background: #fff;
     padding: 15px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    /* Quitamos cualquier posición fija o sticky */
-    position: relative !important; 
-    top: auto !important;
+    top: auto !important; /* Reset de posición */
 }
 
 .content-fixture {
@@ -69,18 +68,14 @@ header {
    3. LA CABECERA FIJA (EL ÚNICO ELEMENTO STICKY)
    ========================================= */
 #cabecera-fija-usuario {
-    position: -webkit-sticky; /* Soporte para Safari */
     position: sticky;
     top: 0;
-    z-index: 1000;
-    background: var(--primary);
+    z-index: 9999; 
+    background: #01215b;
     color: white;
     padding: 12px 20px;
-    margin-bottom: 15px;
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    border-bottom: 3px solid var(--gold);
-    display: none; /* Se activa por JS */
+    border-bottom: 4px solid #d4af37;
+    display: none; /* Se activa con la función JS que te di antes */
 }
 
 .user-fijo-card {
@@ -107,18 +102,14 @@ header {
 }
 
 .btn-link {
-    width: 100%;
-    padding: 10px;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    position: static !important;
     display: flex;
     justify-content: space-between;
-    cursor: pointer;
-    text-decoration: none;
-    color: inherit;
-    /* Aseguramos que los botones NO se queden pegados */
-    position: static !important;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 5px;
+    background: #fff;
+    border: 1px solid #ddd;
 }
 
 .btn-link:hover {
@@ -181,3 +172,4 @@ header {
         width: 100%;
     }
 }
+
