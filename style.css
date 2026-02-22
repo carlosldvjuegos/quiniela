@@ -8,6 +8,8 @@ body {
     font-family: 'Roboto', sans-serif;
     background-color: var(--bg);
     margin: 0;
+    /* Permitir scroll horizontal natural en el cuerpo de la página */
+    overflow-x: auto; 
 }
 
 header {
@@ -29,29 +31,27 @@ header {
     display: flex;
     align-items: flex-start;
     gap: 20px;
-    /* Quitamos el overflow de aquí para que no bloquee el movimiento natural */
+    /* Importante: permite que el contenido se extienda a lo ancho */
+    width: max-content; 
 }
 
 /* SIDEBAR: FIJA SOLO AL BAJAR (VERTICAL) */
 .sidebar {
     width: 250px;
     min-width: 250px;
-    /* position: sticky con top hace que se quede fija al bajar, 
-       pero al no tener 'left: 0', se desplazará normalmente hacia la izquierda si mueves la pantalla */
+    /* El sticky aquí con 'top' hace que se quede fija al hacer scroll hacia abajo */
     position: -webkit-sticky;
     position: sticky;
     top: 10px; 
-    z-index: 100;
+    z-index: 1000;
     height: fit-content;
 }
 
 .content-fixture {
     flex: 1;
-    /* Esto permite que si la tabla es muy ancha, salga el scroll del navegador, 
-       empujando la sidebar hacia afuera */
 }
 
-/* --- BOTONES (Con separación de puntos) --- */
+/* --- BOTONES DE USUARIO (Con separación de puntos) --- */
 .btn-link {
     background: white;
     padding: 12px 15px;
@@ -63,6 +63,7 @@ header {
     margin-bottom: 8px;
     cursor: pointer;
     font-weight: bold;
+    color: #333;
 }
 
 .quiniela-activa {
@@ -79,7 +80,8 @@ header {
     border-radius: 8px;
     border-left: 5px solid var(--primary);
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    min-width: 600px; /* Asegura que los partidos no se aplasten y causen el scroll horizontal */
+    /* Forzamos un ancho mínimo para que la tabla no se aplaste en móviles */
+    min-width: 600px; 
 }
 
 .card-header {
@@ -123,21 +125,21 @@ header {
     color: #1a1a1a;
 }
 
-/* --- AJUSTE MÓVIL --- */
+/* --- AJUSTE ESPECÍFICO PARA TELÉFONOS --- */
 @media (max-width: 768px) {
-    /* Permitimos que el body sea el que scrollee horizontalmente */
-    body {
-        overflow-x: auto;
-    }
-
-    .layout-principal {
-        width: max-content; /* Obliga al contenedor a ser tan ancho como sus hijos */
-        display: flex;
+    .container {
+        padding: 10px;
     }
 
     .sidebar {
-        /* Al no tener 'left: 0', la sidebar se irá de la pantalla si deslizas a la derecha */
+        width: 180px;
+        min-width: 180px;
+        /* Al NO tener 'left: 0', el sticky solo funciona en el eje vertical (top) */
         position: sticky;
-        top: 0;
+        top: 0; 
+    }
+
+    .partido-card {
+        min-width: 550px; /* Ancho suficiente para ver todo deslizando */
     }
 }
