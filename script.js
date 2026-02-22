@@ -179,28 +179,28 @@ async function renderizarFixture() {
 
     partidosData.forEach(p => {
         const r = resultadosDB.find(res => res.id === p.id);
-        const textoReal = r ? `${r.gl}-${r.gv}` : "-";
+        const textoReal = r ? `${r.gl} - ${r.gv}` : "-";
 
         const card = document.createElement("div");
         card.className = "partido";
         card.innerHTML = `
             <div class="info-partido">
-                <span>${p.grupo ? 'Grupo ' + p.grupo : p.fase}</span>
-                <span>${p.fecha}</span>
+                <div class="fase-grupo">${p.fase} - ${p.grupo}</div>
+                <div class="fecha-real-container">
+                    <span class="fecha-texto">${p.fecha}</span>
+                    <div class="resultado-real-box">
+                        <small>RESULTADO REAL</small>
+                        <div class="valor-real">${textoReal}</div>
+                    </div>
+                </div>
             </div>
             <div class="fila-equipos">
                 <span class="equipo-nombre local">${p.local}</span>
-                
                 <div class="marcador-inputs">
                     <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
                     <span class="vs-divider">-</span>
                     <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
                 </div>
-
-                <div class="marcador-real-badge" title="Resultado Real">
-                    ${textoReal}
-                </div>
-
                 <span class="equipo-nombre visita">${p.visita}</span>
             </div>
         `; 
@@ -661,6 +661,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
