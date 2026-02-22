@@ -74,26 +74,80 @@ header {
     gap: 5px;
 }
 
+/* --- CABECERA DEL PARTIDO --- */
 .info-partido {
     display: flex;
     justify-content: space-between;
-    font-size: 0.7rem;
-    color: #888;
-    text-transform: uppercase;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+}
+
+.fase-grupo {
+    font-size: 0.8rem;
     font-weight: bold;
-    border-bottom: 1px solid #f0f0f0;
-    padding-bottom: 3px;
+    color: var(--primary);
 }
 
-/* 3. La clave: Fila única con Grid */
+.fecha-real-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.fecha-texto {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+/* --- EL CUADRITO DE RESULTADO REAL --- */
+.resultado-real-box {
+    background: #f1f3f5;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 2px 8px;
+    text-align: center;
+    min-width: 80px;
+}
+
+.resultado-real-box small {
+    display: block;
+    font-size: 0.6rem;
+    color: #495057;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+}
+
+.valor-real {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #212529;
+}
+
+/* --- FILA DE EQUIPOS (Limpia sin el cuadro gris en medio) --- */
 .fila-equipos {
-    display: grid;
-    /* Estructura: Local | Marcador | Real | Visita */
-    grid-template-columns: 1fr auto auto 1fr;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: 15px;
 }
 
+.equipo-nombre {
+    flex: 1;
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+
+.equipo-nombre.local { text-align: right; }
+.equipo-nombre.visita { text-align: left; }
+
+/* Ajuste móvil para que no se amontone */
+@media (max-width: 768px) {
+    .equipo-nombre { font-size: 0.85rem; }
+    .fila-equipos { gap: 8px; }
+}
 .equipo-nombre {
     font-weight: bold;
     font-size: 0.85rem; /* Letra un poco más pequeña */
@@ -170,3 +224,4 @@ input::-webkit-inner-spin-button {
         font-size: 0.75rem; /* Letra mínima para que no salte de línea */
     }
 }
+
