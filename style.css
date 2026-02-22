@@ -29,44 +29,45 @@ header {
     display: flex;
     align-items: flex-start;
     gap: 20px;
+    position: relative;
 }
 
-/* SIDEBAR FIJA (Funciona en PC y Móvil) */
+/* SIDEBAR FIJA (PC y Móvil) */
 .sidebar {
-    width: 250px;
+    width: 280px;
     position: -webkit-sticky; /* Soporte Safari */
     position: sticky;
     top: 10px; 
     z-index: 1000;
+    height: fit-content;
 }
 
 .content-fixture {
     flex: 1;
 }
 
-/* BOTONES DE QUINIELA */
+/* BOTONES DE QUINIELA REGISTRADA */
 .btn-link {
     background: white;
-    padding: 12px 15px; /* Más espacio interno */
+    padding: 12px 18px; /* Espaciado interno generoso */
     border: 1px solid #ddd;
     border-radius: 8px;
     display: flex;
     justify-content: space-between; /* ESTO SEPARA EL NOMBRE DE LOS PUNTOS */
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     cursor: pointer;
     text-decoration: none;
     color: #333;
     font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* ESPACIADO EXTRA PARA LOS PUNTOS */
-.badge-puntos {
-    margin-left: 20px; /* Separa los puntos del nombre */
-    background: #eee;
-    padding: 2px 8px;
-    border-radius: 5px;
-    font-size: 0.85rem;
+/* ESPACIADO PARA LOS PUNTOS DENTRO DEL BOTÓN */
+.btn-link span:last-child {
+    margin-left: 30px; /* Espacio extra entre nombre y puntaje */
+    color: var(--primary);
+    font-size: 0.9rem;
 }
 
 .quiniela-activa {
@@ -75,13 +76,13 @@ header {
     border: 2px solid var(--gold) !important;
 }
 
-/* TARJETAS DE PARTIDOS (Mantenemos tu diseño horizontal) */
+/* TARJETAS DE PARTIDOS (DISEÑO HORIZONTAL ORIGINAL) */
 .partido-card {
     background: white;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
     padding: 15px;
     border-radius: 8px;
-    border-left: 5px solid var(--primary);
+    border-left: 6px solid var(--primary);
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
@@ -91,33 +92,45 @@ header {
     align-items: center;
 }
 
+.marcador-col {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .marcador-col input {
-    width: 35px;
-    height: 35px;
+    width: 38px;
+    height: 38px;
     text-align: center;
     font-weight: bold;
     border: 1px solid #ccc;
     border-radius: 4px;
+    font-size: 1.1rem;
+}
+
+/* TAMAÑO DE LETRA "RESULTADOS REALES" */
+.real-col div:first-child, 
+.etiqueta-real,
+.col-resultados-reales-titulo {
+    font-size: 16px !important; /* Tamaño aumentado para legibilidad */
+    font-weight: 900 !important;
+    margin-bottom: 5px;
+    display: block;
+    color: #1a1a1a;
+    text-transform: uppercase;
 }
 
 /* AJUSTE PARA TELÉFONOS */
 @media (max-width: 768px) {
     .layout-principal {
-        flex-direction: column; /* En móvil la lista va arriba de los partidos */
+        flex-direction: column; 
     }
     .sidebar {
         width: 100%;
         position: sticky;
-        top: 0; /* Se queda pegada al techo del celular al bajar */
+        top: 0; 
         background: var(--bg);
-        padding-bottom: 10px;
+        padding: 10px 0;
+        z-index: 1001;
     }
-}
-/* Esto cambiará el tamaño del título "Resultados Reales" */
-.real-col div:first-child, 
-.etiqueta-real {
-    font-size: 11px !important; /* Prueba con 16px, 18px o 20px */
-    font-weight: bold !important;
-    margin-bottom: 5px;
-    display: block;
 }
