@@ -1,13 +1,12 @@
 /* =========================================
-   1. VARIABLES Y CONFIGURACIÓN BASE
+   1. CONFIGURACIÓN BASE (RESET)
    ========================================= */
 :root {
     --primary: #01215b;
     --dark: #1a1a1a;
-    --gray: #f8f9fa;
     --gold: #d4af37;
     --white: #ffffff;
-    --shadow: 0 4px 12px rgba(0,0,0,0.1);
+    --bg-body: #f0f2f5;
 }
 
 * {
@@ -18,154 +17,70 @@
 
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: #eceff1;
+    background-color: var(--bg-body);
     color: #333;
-    line-height: 1.6;
 }
 
 header {
     background: var(--primary);
     color: var(--white);
-    padding: 20px;
+    padding: 15px;
     text-align: center;
     border-bottom: 4px solid var(--gold);
 }
 
 .container {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 0 15px;
-}
-
-/* =========================================
-   2. PANEL DE USUARIO (ARRIBA)
-   ========================================= */
-.user-panel {
-    background: var(--white);
+    max-width: 1100px;
+    margin: 0 auto;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: var(--shadow);
-    margin-bottom: 20px;
 }
-
-.input-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    align-items: center;
-}
-
-#nombre-usuario {
-    flex: 1;
-    min-width: 200px;
-    padding: 12px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    font-size: 1rem;
-}
-
-.actions {
-    display: flex;
-    gap: 10px;
-}
-
-button {
-    cursor: pointer;
-    border: none;
-    border-radius: 6px;
-    padding: 10px 20px;
-    font-weight: bold;
-    transition: 0.3s;
-}
-
-.btn-save { background: #28a745; color: white; }
-.btn-save:hover { background: #218838; }
-
-.btn-report-master { background: var(--primary); color: white; }
-.btn-report-master:hover { background: #00163d; }
 
 /* =========================================
-   3. LAYOUT PRINCIPAL (SIDEBAR + FIXTURE)
+   2. LAYOUT: SIDEBAR Y CONTENIDO
    ========================================= */
+
+/* Forzamos a que el contenedor principal NO sea sticky */
 .layout-principal {
-    display: grid;
-    grid-template-columns: 300px 1fr;
+    display: flex;
+    flex-direction: row;
     gap: 20px;
-    align-items: start;
+    align-items: flex-start;
+    position: relative !important;
 }
 
-@media (max-width: 900px) {
-    .layout-principal {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* SIDEBAR (No fija para que no tape nada) */
+/* LA SIDEBAR: Ahora es una lista normal que se va al hacer scroll */
 .sidebar {
+    width: 280px;
     background: var(--white);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: var(--shadow);
-    position: relative; 
-}
-
-.saved-section h3 {
-    margin-bottom: 15px;
-    font-size: 1.1rem;
-    color: var(--primary);
-    border-bottom: 2px solid var(--gray);
-    padding-bottom: 5px;
-}
-
-#links-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.btn-link {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 12px;
-    background: var(--gray);
-    border: 1px solid #ddd;
+    padding: 15px;
     border-radius: 8px;
-    text-decoration: none;
-    color: var(--primary);
-    font-weight: bold;
-    position: static !important; /* IMPORTANTE: Evita que se queden pegados */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    /* Quitamos cualquier posición fija o sticky */
+    position: relative !important; 
+    top: auto !important;
 }
 
-.btn-link:hover {
-    background: #e2e6ea;
-}
-
-.badge-puntos {
-    background: var(--primary);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.85rem;
+.content-fixture {
+    flex: 1;
+    position: relative;
 }
 
 /* =========================================
-   4. CABECERA FIJA (EL CAMBIO CLAVE)
+   3. LA CABECERA FIJA (EL ÚNICO ELEMENTO STICKY)
    ========================================= */
 #cabecera-fija-usuario {
+    position: -webkit-sticky; /* Soporte para Safari */
     position: sticky;
     top: 0;
-    z-index: 9999; /* Por encima de todo al hacer scroll */
+    z-index: 1000;
     background: var(--primary);
     color: white;
-    padding: 15px 20px;
-    border-bottom: 4px solid var(--gold);
-    border-radius: 0 0 10px 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    display: none; /* Se activa por JS al elegir usuario */
+    padding: 12px 20px;
+    margin-bottom: 15px;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    border-bottom: 3px solid var(--gold);
+    display: none; /* Se activa por JS */
 }
 
 .user-fijo-card {
@@ -177,120 +92,92 @@ button {
 .pts-fijos {
     background: var(--gold);
     color: var(--primary);
-    padding: 4px 12px;
-    border-radius: 20px;
+    padding: 3px 12px;
+    border-radius: 15px;
     font-weight: 900;
 }
 
 /* =========================================
-   5. FIXTURE Y TARJETAS DE PARTIDO
+   4. LISTA DE USUARIOS (BOTONES)
    ========================================= */
-.table-header {
-    display: grid;
-    grid-template-columns: 80px 100px 1fr 100px 1fr;
-    background: var(--primary);
-    color: white;
+#links-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.btn-link {
+    width: 100%;
     padding: 10px;
-    border-radius: 8px 8px 0 0;
-    font-size: 0.8rem;
-    text-align: center;
-    font-weight: bold;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    /* Aseguramos que los botones NO se queden pegados */
+    position: static !important;
 }
 
-@media (max-width: 600px) {
-    .table-header { display: none; } /* En móvil estorba */
+.btn-link:hover {
+    background: #f8f9fa;
 }
 
+/* =========================================
+   5. TARJETAS DE PARTIDO
+   ========================================= */
 .partido-card {
-    background: var(--white);
+    background: #fff;
     border-radius: 8px;
-    margin-bottom: 12px;
-    padding: 15px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    border-left: 6px solid var(--primary);
+    margin-bottom: 10px;
+    padding: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-left: 5px solid var(--primary);
 }
 
 .card-header {
     display: flex;
     justify-content: space-between;
     font-size: 0.75rem;
-    color: #777;
-    margin-bottom: 10px;
+    color: #666;
+    margin-bottom: 8px;
     border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
 }
 
 .card-body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
 }
 
 .equipo-col {
     flex: 1;
     font-weight: bold;
     font-size: 0.9rem;
-    color: var(--primary);
 }
 
 .local { text-align: right; }
 .visita { text-align: left; }
 
-.marcador-col {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    background: #f1f1f1;
-    padding: 5px 10px;
-    border-radius: 6px;
-}
-
 .marcador-col input {
-    width: 35px;
-    height: 35px;
+    width: 30px;
+    height: 30px;
     text-align: center;
-    font-size: 1.1rem;
     font-weight: bold;
-    border: 2px solid #ccc;
+    border: 1px solid #ccc;
     border-radius: 4px;
-}
-
-/* RESULTADO REAL */
-.real-col {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 60px;
-    border-left: 1px solid #ddd;
-    padding-left: 10px;
-}
-
-.etiqueta-real { font-size: 0.6rem; font-weight: bold; color: #999; }
-.cuadro-real {
-    background: var(--dark);
-    color: var(--gold);
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: bold;
 }
 
 /* =========================================
-   6. RESPONSIVE MÓVIL EXTREMO
+   6. RESPONSIVE (MÓVIL)
    ========================================= */
-@media (max-width: 600px) {
-    .card-body {
-        gap: 5px;
+@media (max-width: 768px) {
+    .layout-principal {
+        flex-direction: column;
     }
-    .equipo-col {
-        font-size: 0.8rem;
-    }
-    .marcador-col input {
-        width: 30px;
-        height: 30px;
-        font-size: 1rem;
-    }
-    .pts-fijos {
-        font-size: 0.8rem;
+    .sidebar {
+        width: 100%;
     }
 }
