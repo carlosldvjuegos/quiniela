@@ -334,20 +334,35 @@ async function cargarDesdeDB(nombre) {
             if (inL) inL.value = d.gl;
             if (inV) inV.value = d.gv;
         });
-		
-		// ESTO ES LO NUEVO:
+
+        // Actualizar el torneo (fases eliminatorias)
         actualizarTorneo();
-		
+
+        // --- NUEVO: Actualizar cabecera fija ---
+        // Buscamos los puntos del usuario en el ranking para mostrarlos arriba
+        const resNombres = await fetch(`${API_URL}/registros`);
+        const usuarios = await resNombres.json();
+        const resOficiales = await fetch(`${API_URL}/obtener-resultados-db`);
+        const resultadosOficiales = await resOficiales.json();
+
+        let ptsTotales = 0;
+        datos.forEach(pred => {
+            const oficial = resultadosOficiales.find(r => r.id === pred.id);
+            if (oficial) {
+                ptsTotales += calcularLogicaPuntos(pred.gl, pred.gv, oficial.gl, oficial.gv);
+            }
+        });
+
+        // Mostramos el nombre y puntos en el "sidebar" que ahora será nuestra barra fija
+        const container = document.getElementById('links-container');
+        // Marcamos visualmente el botón seleccionado
+        document.querySelectorAll('.btn-link').forEach(btn => btn.classList.remove('activo'));
+        const activo = Array.from(document.querySelectorAll('.btn-link')).find(b => b.innerText.includes(nombre));
+        if(activo) activo.classList.add('activo');
+
     } catch (e) {
+        console.error(e);
         alert("Error al cargar la quiniela.");
-    }
-	
-	// Esto es un ejemplo: cambia el estilo del botón seleccionado
-    document.querySelectorAll('.btn-link').forEach(btn => btn.style.border = "1px solid #ddd");
-    const activo = Array.from(document.querySelectorAll('.btn-link')).find(b => b.innerText.includes(nombre));
-    if(activo) {
-        activo.style.border = "2px solid var(--primary)";
-        activo.style.background = "#eef2f7";
     }
 }
 
@@ -669,6 +684,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
