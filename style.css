@@ -19,51 +19,45 @@ header {
 }
 
 .container {
-    max-width: 100%;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 10px;
+    padding: 20px;
 }
 
-/* ESTRUCTURA PRINCIPAL */
+/* ESTRUCTURA ORIGINAL */
 .layout-principal {
     display: flex;
     align-items: flex-start;
-    gap: 15px;
-    /* Permite que el contenido de los partidos se extienda hacia la derecha 
-       sin empujar el bloque flotante fuera de la vista */
+    gap: 20px;
 }
 
-/* BLOQUE DE QUINIELAS REGISTRADAS (EL BLOQUE FLOTANTE) */
+/* ESTO ES LO QUE HACE QUE LUIS Y CARLOS SEAN FLOTANTES */
 .sidebar {
-    width: 220px;
-    min-width: 180px; /* Tamaño fijo para que no se reduzca */
+    width: 250px;
     position: -webkit-sticky;
     position: sticky;
-    top: 10px; /* Esto es lo que hace que sea FLOTANTE al scrollear */
+    top: 10px; /* Se queda pegado a 10px del borde superior al bajar */
     z-index: 1000;
     height: fit-content;
 }
 
-/* CONTENEDOR DE LA QUINIELA (FIXTURE) */
 .content-fixture {
     flex: 1;
-    /* No limitamos el ancho para que mantenga su tamaño original */
 }
 
-/* BOTONES DE LUIS Y CARLOS (Con la separación que pediste) */
+/* BOTONES DE QUINIELA (Con separación de puntos) */
 .btn-link {
     background: white;
-    padding: 12px;
+    padding: 12px 15px;
     border: 1px solid #ddd;
     border-radius: 8px;
     display: flex;
-    justify-content: space-between; /* Separa nombre de puntos */
+    justify-content: space-between; /* Luis a un lado, puntos al otro */
     align-items: center;
     margin-bottom: 8px;
     cursor: pointer;
     font-weight: bold;
     color: #333;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .quiniela-activa {
@@ -72,42 +66,69 @@ header {
     border: 2px solid var(--gold) !important;
 }
 
-/* TAMAÑO DE TEXTO RESULTADOS REALES */
-.real-col div:first-child, .etiqueta-real {
-    font-size: 15px !important;
-    font-weight: 900 !important;
-}
-
-/* TARJETAS DE PARTIDO (TU DISEÑO ORIGINAL) */
+/* TARJETAS DE PARTIDO (TU DISEÑO ORIGINAL VOLVIÓ) */
 .partido-card {
     background: white;
     margin-bottom: 12px;
     padding: 15px;
     border-radius: 8px;
     border-left: 5px solid var(--primary);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* AJUSTE PARA TELÉFONO */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.card-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.equipo-col {
+    flex: 1;
+    font-weight: bold;
+}
+
+.local { text-align: right; padding-right: 15px; }
+.visita { text-align: left; padding-left: 15px; }
+
+.marcador-col input {
+    width: 35px;
+    height: 35px;
+    text-align: center;
+    font-weight: bold;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* TAMAÑO DE LETRA RESULTADOS REALES */
+.real-col div:first-child, .etiqueta-real {
+    font-size: 16px !important;
+    font-weight: 900 !important;
+}
+
+/* AJUSTE MÓVIL (SOLO PARA QUE NO SE AMONTONE) */
 @media (max-width: 768px) {
-    /* Mantenemos el modo horizontal (flex-row) para que el bloque siga a la izquierda */
     .layout-principal {
+        /* Mantenemos el flex-row para que la sidebar siga al lado */
         display: flex;
-        flex-direction: row; 
-        overflow-x: auto; /* Permite deslizar a la derecha para ver toda la quiniela */
+        flex-direction: row;
+        overflow-x: visible; 
     }
-
+    
     .sidebar {
-        /* Se mantiene FLOTANTE a la izquierda mientras scrolleas arriba/abajo */
+        /* Sigue siendo flotante en el teléfono */
         position: sticky;
-        left: 0; 
         top: 5px;
-        width: 150px;
-        min-width: 140px;
-    }
-
-    .content-fixture {
-        /* Mantiene su tamaño original para que puedas deslizar y verlo todo */
-        min-width: 500px; 
+        min-width: 130px;
+        width: 130px;
     }
 }
