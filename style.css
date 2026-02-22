@@ -124,4 +124,25 @@
     }
 }
 
+/* --- BARRA DE USUARIO FIJA AL HACER SCROLL --- */
+.sidebar {
+    position: sticky; /* Hace que se quede pegado */
+    top: 0;           /* Se pega al borde superior */
+    z-index: 1000;    /* Se asegura de estar por encima de los partidos */
+    background: var(--bg); /* Mismo color de fondo para que no se vea transparente */
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary); /* Una línea para separar del fixture */
+}
+
+/* Si en tu móvil la lista de usuarios se pone arriba, esto la mantendrá fija ahí también */
+@media (max-width: 768px) {
+    .sidebar {
+        position: sticky;
+        top: 0;
+        width: 100%;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+}
 
