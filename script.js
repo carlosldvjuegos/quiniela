@@ -200,7 +200,7 @@ async function renderizarFixture() {
                 <div class="equipo-col visita">${p.visita}</div>
 
                 <div class="real-col">
-                    <div class="etiqueta-real">REAL</div>
+                    <div class="etiqueta-real">Resultados Reales</div>
                     <div class="cuadro-real">${textoReal}</div>
                 </div>
             </div>
@@ -679,6 +679,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
