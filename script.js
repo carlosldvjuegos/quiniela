@@ -317,63 +317,76 @@ async function guardarQuinielaCompleta() {
 
 
 
-// 7. CARGAR UNA QUINIELA AL HACER CLIC EN EL NOMBRE
 
+
+// 7. CARGAR UNA QUINIELA AL HACER CLIC EN EL NOMBRE
 async function cargarDesdeDB(nombre) {
     try {
-        // 1. LIMPIEZA DE GOLES
-        document.getElementById('nombre-usuario').value = nombre;
-        document.querySelectorAll('.marcador-col input').forEach(i => i.value = "");
+        // 1. LIMPIEZA TOTAL: Vaciar inputs para que no se mezclen datos
+        const inputNombrePrincipal = document.getElementById('nombre-usuario');
+        if (inputNombrePrincipal) inputNombrePrincipal.value = nombre;
 
-        // 2. CARGAR DATOS
-        const res = await fetch(`${API_URL}/cargar/${nombre}`);
-        const datos = await res.json();
+        const todosLosInputs = document.querySelectorAll('.marcador-col input');
+        todosLosInputs.forEach(input => {
+            input.value = ""; // Borramos lo que sea que estuviera escrito antes
+        });
 
-        datos.forEach(d => {
-            const inL = document.getElementById(`L-${d.id}`);
-            const inV = document.getElementById(`V-${d.id}`);
-            if (inL) inL.value = d.gl;
-            if (inV) inV.value = d.gv;
+        // 2. PETICIÓN AL SERVIDOR (Ajusta la URL si es necesario)
+        const respuesta = await fetch(`${API_URL}/cargar/${nombre}`);
+        if (!respuesta.ok) throw new Error("Error en servidor");
+        const datos = await respuesta.json();
+
+        // 3. CARGAR GOLES NUEVOS
+        datos.forEach(partido => {
+            const inL = document.getElementById(`L-${partido.id}`);
+            const inV = document.getElementById(`V-${partido.id}`);
+            if (inL) inL.value = partido.gl;
+            if (inV) inV.value = partido.gv;
         });
 
         if (typeof actualizarTorneo === 'function') actualizarTorneo();
 
-        // 3. OCULTAR A LOS DEMÁS (FORZADO)
-        // Buscamos todos los elementos que tengan la clase btn-link
+        // 4. FOCO TOTAL: Solo mostrar al seleccionado y ocultar al resto
         const botones = document.querySelectorAll('.btn-link');
         
         botones.forEach(btn => {
-            // Convertimos todo a minúsculas para que no falle por una mayúscula
-            const textoBoton = btn.innerText.toLowerCase();
-            const nombreBusqueda = nombre.toLowerCase();
+            // Buscamos si el nombre está dentro del texto del botón
+            const esElSeleccionado = btn.innerText.toLowerCase().includes(nombre.toLowerCase());
 
-            if (textoBoton.includes(nombreBusqueda)) {
-                // ESTE ES EL ELEGIDO: Lo mostramos y le ponemos el color azul
-                btn.style.display = "flex"; 
+            if (esElSeleccionado) {
+                btn.style.setProperty('display', 'flex', 'important'); // Se queda
                 btn.classList.add('quiniela-activa');
-                console.log("Mostrando a: " + nombre);
             } else {
-                // ESTOS SON LOS OTROS: Los borramos de la vista
-                btn.style.display = "none";
-                console.log("Ocultando a otro");
+                btn.style.setProperty('display', 'none', 'important'); // ¡DESAPARECE!
             }
         });
 
-        // 4. BOTÓN PARA VOLVER A VER TODO (Recarga la página)
-        if (!document.getElementById('btn-reset')) {
-            const contenedor = document.getElementById('links-container');
-            const btnReset = document.createElement('button');
-            btnReset.id = 'btn-reset';
-            btnReset.innerText = "✕ Cambiar de Usuario";
-            btnReset.style = "width:100%; margin-top:10px; cursor:pointer; padding:8px; background:#ff4444; color:white; border:none; border-radius:5px; font-weight:bold;";
-            btnReset.onclick = () => { location.reload(); };
-            contenedor.appendChild(btnReset);
+        // 5. BOTÓN PARA "CAMBIAR USUARIO" (Para que aparezcan todos otra vez)
+        let btnReset = document.getElementById('btn-volver-lista');
+        if (!btnReset) {
+            btnReset = document.createElement('button');
+            btnReset.id = 'btn-volver-lista';
+            btnReset.innerText = "✕ Cambiar Usuario";
+            btnReset.className = "btn-link"; // Para que herede el estilo
+            btnReset.style.backgroundColor = "#ff4444";
+            btnReset.style.color = "white";
+            btnReset.style.marginTop = "10px";
+            
+            btnReset.onclick = () => {
+                // Al hacer clic, recargamos para que aparezcan todos
+                location.reload();
+            };
+            document.getElementById('links-container').appendChild(btnReset);
         }
 
-    } catch (e) {
-        console.error("Error cargando:", e);
+    } catch (error) {
+        console.error("Error al cargar:", error);
     }
 }
+
+
+
+
 
 
 
@@ -685,6 +698,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
