@@ -15,136 +15,103 @@ body {
 header {
     background: var(--primary);
     color: white;
-    padding: 20px;
+    padding: 15px;
     text-align: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1100px;
     margin: 20px auto;
-    padding: 0 15px;
+    padding: 0 10px;
 }
 
-/* --- LAYOUT PRINCIPAL --- */
 .layout-principal {
     display: flex;
     gap: 20px;
 }
 
-/* --- SIDEBAR (Lista de Registros) --- */
+/* --- SIDEBAR: LISTA VERTICAL --- */
 .sidebar {
-    flex: 0 0 240px;
-    background: var(--white);
+    flex: 0 0 220px;
+    background: white;
     padding: 15px;
-    border-radius: 8px;
-    height: fit-content;
-    position: sticky;
-    top: 20px;
+    border-radius: 10px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    height: fit-content;
 }
 
-/* Asegura que los nombres de usuarios se vean uno debajo de otro */
+/* Esto fuerza la lista de Carlos, Luis, etc. hacia abajo */
 #links-container {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: column !important; 
+    gap: 10px;
+    margin-top: 10px;
 }
 
 .btn-link {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: block; /* Ocupa toda la línea */
     width: 100%;
-    padding: 10px;
-    background: #f8f9fa;
+    padding: 8px;
+    background: #f1f3f5;
     border: 1px solid #ddd;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9rem;
+    border-radius: 5px;
     text-align: left;
+    cursor: pointer;
 }
 
 /* --- TARJETA DE PARTIDO --- */
 .partido {
-    background: var(--white);
-    margin-bottom: 12px;
+    background: white;
+    margin-bottom: 15px;
     padding: 12px;
     border-radius: 10px;
     border-left: 6px solid var(--primary);
-    box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-/* Cabecera interna: Fase y Fecha/Real */
-.info-partido {
+/* Parte de arriba: Fase y Real */
+.info-superior {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 12px;
     border-bottom: 1px solid #eee;
-    padding-bottom: 6px;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
 }
 
-.fase-grupo {
-    font-size: 0.8rem;
-    font-weight: bold;
-    color: var(--primary);
-    text-transform: uppercase;
-}
+.fase-txt { font-size: 0.8rem; font-weight: bold; color: #777; }
 
-.fecha-real-container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-}
+.derecha-header { text-align: right; }
+.fecha-txt { font-size: 0.7rem; color: #999; display: block; }
 
-.fecha-texto {
-    font-size: 0.7rem;
-    color: #888;
-    margin-bottom: 4px;
-}
-
-/* El cuadro "RESULTADO REAL" arriba a la derecha */
-.resultado-real-box {
+/* Cuadro REAL arriba a la derecha */
+.real-container {
     background: var(--dark);
     color: white;
-    padding: 3px 8px;
+    padding: 2px 8px;
     border-radius: 4px;
+    margin-top: 4px;
     text-align: center;
-    min-width: 70px;
 }
+.real-container small { font-size: 0.55rem; color: var(--accent); display: block; }
+.real-valor { font-weight: bold; font-size: 0.85rem; }
 
-.resultado-real-box small {
-    display: block;
-    font-size: 0.55rem;
-    font-weight: 900;
-    color: var(--accent);
-    border-bottom: 1px solid #555;
-    margin-bottom: 2px;
-}
-
-.valor-real {
-    font-size: 0.85rem;
-    font-weight: bold;
-}
-
-/* Fila de juego (Local - Inputs - Visita) */
-.fila-equipos {
+/* Parte de abajo: Equipos en una sola fila */
+.fila-juego {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
 }
 
-.equipo-nombre {
+.equipo {
     flex: 1;
     font-weight: bold;
     font-size: 0.95rem;
     color: var(--primary);
 }
-
-.equipo-nombre.local { text-align: right; }
-.equipo-nombre.visita { text-align: left; }
+.equipo.local { text-align: right; }
+.equipo.visita { text-align: left; }
 
 .marcador-inputs {
     display: flex;
@@ -153,36 +120,19 @@ header {
 }
 
 input[type="number"] {
-    width: 38px;
-    height: 35px;
+    width: 35px;
+    height: 32px;
     text-align: center;
-    font-size: 1.1rem;
-    font-weight: 900;
+    font-size: 1rem;
+    font-weight: bold;
     border: 2px solid #ccc;
-    border-radius: 6px;
-    padding: 0;
+    border-radius: 5px;
 }
 
-/* --- RESPONSIVE PARA MÓVIL --- */
+/* --- RESPONSIVE --- */
 @media (max-width: 768px) {
-    .layout-principal {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        width: 100%;
-        position: relative;
-        top: 0;
-        box-sizing: border-box;
-    }
-
-    .equipo-nombre {
-        font-size: 0.8rem; /* Un poco más pequeño para que no se corte */
-    }
-
-    input[type="number"] {
-        width: 32px;
-        height: 32px;
-        font-size: 1rem;
-    }
+    .layout-principal { flex-direction: column; }
+    .sidebar { width: 100%; margin-bottom: 15px; }
+    .equipo { font-size: 0.8rem; }
+    input[type="number"] { width: 30px; height: 30px; }
 }
