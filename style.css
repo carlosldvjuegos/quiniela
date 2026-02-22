@@ -145,4 +145,34 @@
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
 }
+/* Contenedor que se queda fijo arriba */
+#cabecera-fija-usuario {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: #01215b; /* Azul oscuro */
+    color: white;
+    padding: 10px 15px;
+    border-bottom: 3px solid #d4af37; /* Línea dorada */
+    display: none; /* Se activa solo al hacer clic */
+}
+
+.user-fijo-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pts-fijos {
+    background: #d4af37;
+    color: #01215b;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+/* IMPORTANTE: Evita que los botones de la lista original se queden fijos */
+.btn-link {
+    position: static !important;
+}
 
