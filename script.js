@@ -6,8 +6,8 @@ const API_URL = (window.location.hostname === "localhost" || window.location.hos
 // 1. LISTA DE PARTIDOS (Asegúrate de que coincida con admin-script.js)
 const partidosData = [
     // GRUPO A
-    { id: 1, fase: "Grupos", grupo: "A", fecha: "11/06/2026", local: "México", visita: "Sudáfrica" },
-    { id: 2, fase: "Grupos", grupo: "A", fecha: "12/06/2026", local: "Rep. Corea", visita: "DEN/MKD/CZE/IRL" },
+    { id: 1, fase: "Grupos", grupo: "A", fecha: "22/02/2026", local: "México", visita: "Sudáfrica" },
+    { id: 2, fase: "Grupos", grupo: "A", fecha: "22/02/2026", local: "Rep. Corea", visita: "DEN/MKD/CZE/IRL" },
     { id: 3, fase: "Grupos", grupo: "A", fecha: "18/06/2026", local: "DEN/MKD/CZE/IRL", visita: "Sudáfrica" },
     { id: 4, fase: "Grupos", grupo: "A", fecha: "19/06/2026", local: "México", visita: "Rep. Corea" },
     { id: 5, fase: "Grupos", grupo: "A", fecha: "24/06/2026", local: "DEN/MKD/CZE/IRL", visita: "México" },
@@ -661,6 +661,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
