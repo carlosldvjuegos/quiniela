@@ -1,51 +1,48 @@
 :root {
     --primary: #01215b;
     --gold: #d4af37;
-    --bg-body: #f0f2f5;
+    --bg: #f0f2f5;
 }
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: var(--bg-body);
+    background-color: var(--bg);
+    margin: 0;
 }
 
 header {
     background: var(--primary);
     color: white;
-    padding: 15px;
+    padding: 1rem;
     text-align: center;
     border-bottom: 4px solid var(--gold);
 }
 
 .container {
     max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+    margin: 20px auto;
+    padding: 0 15px;
 }
 
-/* CONTENEDOR PRINCIPAL */
+/* ESTRUCTURA CLAVE */
 .layout-principal {
     display: flex;
-    align-items: flex-start; /* Necesario para que el sticky funcione */
+    align-items: flex-start; /* Esto es OBLIGATORIO para que el sticky funcione */
     gap: 20px;
 }
 
-/* SIDEBAR FIJA A LA IZQUIERDA */
 .sidebar {
     width: 250px;
-    position: sticky;
-    top: 20px; /* Se queda a 20px del techo al bajar */
-    z-index: 1000;
+    position: sticky; /* Se queda fijo */
+    top: 20px;       /* Distancia del borde superior */
+    z-index: 100;
 }
 
-/* CONTENEDOR DE PARTIDOS */
 .content-fixture {
-    flex: 1;
+    flex: 1; /* El fixture ocupa el resto del espacio */
 }
 
-/* BOTONES DE USUARIO */
+/* LISTA DE USUARIOS */
 #links-container {
     display: flex;
     flex-direction: column;
@@ -53,52 +50,39 @@ header {
 }
 
 .btn-link {
+    background: white;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
     display: flex;
     justify-content: space-between;
-    padding: 12px;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
     cursor: pointer;
-    text-decoration: none;
-    color: black;
 }
 
-/* ESTILO CUANDO CARGAS UNA QUINIELA */
-.quiniela-activa {
+/* Clase para cuando seleccionas a alguien */
+.activo-seleccionado {
     background: var(--primary) !important;
     color: white !important;
     border: 2px solid var(--gold) !important;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
-/* TARJETAS DE PARTIDO */
+/* PARTIDOS */
 .partido-card {
     background: white;
-    border-radius: 8px;
     margin-bottom: 10px;
     padding: 15px;
+    border-radius: 8px;
     border-left: 5px solid var(--primary);
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.card-body { display: flex; justify-content: space-between; align-items: center; }
-
 .marcador-col input {
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     text-align: center;
+    font-size: 1.2rem;
     font-weight: bold;
-    border: 1px solid #ccc;
-    border-radius: 4px;
 }
 
-/* OCULTAR ELEMENTOS QUE NO QUEREMOS */
-#cabecera-fija-usuario, #resumen-diario {
-    display: none !important;
-}
-
-@media (max-width: 768px) {
-    .layout-principal { flex-direction: column; }
-    .sidebar { width: 100%; position: relative; top: 0; }
-}
+/* Ocultar elementos basura */
+#cabecera-fija-usuario, #resumen-diario { display: none !important; }
