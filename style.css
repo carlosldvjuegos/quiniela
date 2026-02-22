@@ -1,12 +1,12 @@
 :root {
     --primary: #01215b;
     --gold: #d4af37;
-    --white: #ffffff;
+    --bg: #f0f2f5;
 }
 
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: #f0f2f5;
+    background-color: var(--bg);
     margin: 0;
 }
 
@@ -19,7 +19,7 @@ header {
 }
 
 .container {
-    max-width: 1300px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
 }
@@ -28,54 +28,68 @@ header {
 .layout-principal {
     display: flex;
     align-items: flex-start;
-    gap: 30px;
+    gap: 20px;
 }
 
-/* SIDEBAR FIJA A LA IZQUIERDA */
+/* SIDEBAR FIJA (Funciona en PC y Móvil) */
 .sidebar {
-    width: 280px;
+    width: 250px;
+    position: -webkit-sticky; /* Soporte Safari */
     position: sticky;
-    top: 20px;
-    z-index: 100;
+    top: 10px; 
+    z-index: 1000;
 }
 
-/* CONTENEDOR DE PARTIDOS (Ocupa el resto) */
 .content-fixture {
     flex: 1;
 }
 
-/* TARJETAS (Volvemos al diseño horizontal original) */
-.partido-card {
+/* BOTONES DE QUINIELA */
+.btn-link {
     background: white;
+    padding: 12px 15px; /* Más espacio interno */
+    border: 1px solid #ddd;
     border-radius: 8px;
-    margin-bottom: 15px;
-    padding: 15px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    border-left: 6px solid var(--primary);
+    display: flex;
+    justify-content: space-between; /* ESTO SEPARA EL NOMBRE DE LOS PUNTOS */
+    align-items: center;
+    margin-bottom: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
 }
 
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    color: #666;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
-    margin-bottom: 10px;
+/* ESPACIADO EXTRA PARA LOS PUNTOS */
+.badge-puntos {
+    margin-left: 20px; /* Separa los puntos del nombre */
+    background: #eee;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 0.85rem;
+}
+
+.quiniela-activa {
+    background: var(--primary) !important;
+    color: white !important;
+    border: 2px solid var(--gold) !important;
+}
+
+/* TARJETAS DE PARTIDOS (Mantenemos tu diseño horizontal) */
+.partido-card {
+    background: white;
+    margin-bottom: 12px;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 5px solid var(--primary);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .card-body {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: space-between; /* Esto mantiene local-marcador-visita en linea */
 }
-
-/* ALINEACIÓN DE EQUIPOS */
-.equipo-col { flex: 1; font-weight: bold; }
-.local { text-align: right; margin-right: 15px; }
-.visita { text-align: left; margin-left: 15px; }
-
-.marcador-col { display: flex; align-items: center; gap: 5px; }
 
 .marcador-col input {
     width: 35px;
@@ -86,23 +100,16 @@ header {
     border-radius: 4px;
 }
 
-/* LISTA DE USUARIOS */
-.btn-link {
-    background: white;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    cursor: pointer;
+/* AJUSTE PARA TELÉFONOS */
+@media (max-width: 768px) {
+    .layout-principal {
+        flex-direction: column; /* En móvil la lista va arriba de los partidos */
+    }
+    .sidebar {
+        width: 100%;
+        position: sticky;
+        top: 0; /* Se queda pegada al techo del celular al bajar */
+        background: var(--bg);
+        padding-bottom: 10px;
+    }
 }
-
-.quiniela-activa {
-    background: var(--primary) !important;
-    color: white !important;
-    border: 2px solid var(--gold) !important;
-}
-
-/* ELIMINAR ESTORBOS */
-#cabecera-fija-usuario, #resumen-diario, #puntos-dia { display: none !important; }
