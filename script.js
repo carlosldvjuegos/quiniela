@@ -318,16 +318,22 @@ async function guardarQuinielaCompleta() {
 // 7. CARGAR UNA QUINIELA AL HACER CLIC EN EL NOMBRE
 async function cargarDesdeDB(nombre) {
     try {
+        // 1. Petición para obtener las predicciones del usuario
         const res = await fetch(`${API_URL}/cargar/${nombre}`);
         const datos = await res.json();
+        
+        // 2. Sincronizar el campo de texto del nombre
         document.getElementById('nombre-usuario').value = nombre;
         
-        // Limpiar inputs antes de cargar
+        // 3. Limpiar todos los inputs antes de cargar los nuevos valores
         partidosData.forEach(p => {
-            document.getElementById(`L-${p.id}`).value = "";
-            document.getElementById(`V-${p.id}`).value = "";
+            const inL = document.getElementById(`L-${p.id}`);
+            const inV = document.getElementById(`V-${p.id}`);
+            if (inL) inL.value = "";
+            if (inV) inV.value = "";
         });
 
+        // 4. Llenar los inputs con los datos descargados
         datos.forEach(d => {
             const inL = document.getElementById(`L-${d.id}`);
             const inV = document.getElementById(`V-${d.id}`);
@@ -335,34 +341,41 @@ async function cargarDesdeDB(nombre) {
             if (inV) inV.value = d.gv;
         });
 
-        // Actualizar el torneo (fases eliminatorias)
+        // 5. Actualizar las llaves de eliminatorias (si el usuario ya completó grupos)
         actualizarTorneo();
 
-        // --- NUEVO: Actualizar cabecera fija ---
-        // Buscamos los puntos del usuario en el ranking para mostrarlos arriba
-        const resNombres = await fetch(`${API_URL}/registros`);
-        const usuarios = await resNombres.json();
-        const resOficiales = await fetch(`${API_URL}/obtener-resultados-db`);
-        const resultadosOficiales = await resOficiales.json();
-
-        let ptsTotales = 0;
-        datos.forEach(pred => {
-            const oficial = resultadosOficiales.find(r => r.id === pred.id);
-            if (oficial) {
-                ptsTotales += calcularLogicaPuntos(pred.gl, pred.gv, oficial.gl, oficial.gv);
+        // 6. LÓGICA DE CABECERA FIJA ÚNICA
+        // Buscamos el botón del usuario en la lista para sacar sus puntos actuales
+        const botones = document.querySelectorAll('.btn-link');
+        let puntosActuales = "0 pts";
+        
+        botones.forEach(btn => {
+            // Quitamos la clase 'activo' de todos para que no se queden pegados arriba
+            btn.classList.remove('activo');
+            
+            if (btn.innerText.includes(nombre)) {
+                btn.classList.add('activo');
+                // Extraemos el texto del puntaje del badge
+                const badge = btn.querySelector('.badge-puntos');
+                if (badge) puntosActuales = badge.innerText;
             }
         });
 
-        // Mostramos el nombre y puntos en el "sidebar" que ahora será nuestra barra fija
-        const container = document.getElementById('links-container');
-        // Marcamos visualmente el botón seleccionado
-        document.querySelectorAll('.btn-link').forEach(btn => btn.classList.remove('activo'));
-        const activo = Array.from(document.querySelectorAll('.btn-link')).find(b => b.innerText.includes(nombre));
-        if(activo) activo.classList.add('activo');
+        // Insertamos la información en el contenedor de cabecera fija
+        const cabeceraFija = document.getElementById('cabecera-fija-usuario');
+        if (cabeceraFija) {
+            cabeceraFija.innerHTML = `
+                <div class="user-fijo-card">
+                    <span>👤 Viendo Quiniela de: <strong>${nombre}</strong></span>
+                    <span class="pts-fijos">${puntosActuales}</span>
+                </div>
+            `;
+            cabeceraFija.style.display = "block"; // Aseguramos que sea visible
+        }
 
     } catch (e) {
-        console.error(e);
-        alert("Error al cargar la quiniela.");
+        console.error("Error al cargar desde DB:", e);
+        alert("No se pudo cargar la quiniela de " + nombre);
     }
 }
 
@@ -684,6 +697,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
