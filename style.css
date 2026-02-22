@@ -1,134 +1,58 @@
-:root {
-    --primary: #01215b;
-    --gold: #d4af37;
-    --bg: #f0f2f5;
-}
-
-body {
-    font-family: 'Roboto', sans-serif;
-    background-color: var(--bg);
-    margin: 0;
-}
-
-header {
-    background: var(--primary);
-    color: white;
-    padding: 15px;
-    text-align: center;
-    border-bottom: 4px solid var(--gold);
-}
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-/* ESTRUCTURA LADO A LADO */
-.layout-principal {
-    display: flex;
-    align-items: flex-start;
-    gap: 20px;
-}
-
-/* SIDEBAR FIJA (Funciona en PC y Móvil) */
+/* --- CONFIGURACIÓN DE LA SIDEBAR FIJA --- */
 .sidebar {
     width: 280px;
     position: -webkit-sticky;
     position: sticky;
     top: 10px; 
-    z-index: 1000;
     height: fit-content;
+    z-index: 1000;
 }
 
-.content-fixture {
-    flex: 1;
-}
-
-/* El botón cuando está solo y seleccionado */
+/* --- SEPARACIÓN DE NOMBRE Y PUNTOS --- */
 .btn-link {
-    display: flex !important; /* Forzamos el modo flex */
-    justify-content: space-between !important; /* NOMBRE a la izquierda, PUNTOS a la derecha */
+    display: flex !important;
+    justify-content: space-between !important; /* EMPUJA LOS PUNTOS AL EXTREMO */
     align-items: center;
-    padding: 15px;
+    padding: 12px 15px;
     background: white;
     border: 1px solid #ddd;
     border-radius: 8px;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     width: 100%;
-}
-
-/* Separación visual para los puntos */
-.btn-link span:last-child {
-    margin-left: 20px;
     font-weight: bold;
-    color: var(--primary);
+    color: #333;
+    text-decoration: none;
+    transition: 0.3s;
 }
 
-/* ESPACIADO EXTRA PARA LOS PUNTOS */
-.badge-puntos {
-    margin-left: 20px; /* Separa los puntos del nombre */
-    background: #eee;
-    padding: 2px 8px;
-    border-radius: 5px;
-    font-size: 0.85rem;
-}
+.btn-link:hover { background: #f8f9fa; }
 
+/* ESTILO CUANDO EL USUARIO ESTÁ SELECCIONADO */
 .quiniela-activa {
     background: #01215b !important;
     color: white !important;
     border: 2px solid #d4af37 !important;
 }
 
-/* TARJETAS DE PARTIDOS (Mantenemos tu diseño horizontal) */
-.partido-card {
-    background: white;
-    margin-bottom: 12px;
-    padding: 15px;
-    border-radius: 8px;
-    border-left: 5px solid var(--primary);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+/* --- TAMAÑO DE LETRA "RESULTADOS REALES" --- */
+/* Busca donde generas la columna de la derecha y aplica esto */
+.columna-reales-flotante h3, 
+.columna-reales-flotante .titulo-real {
+    font-size: 18px !important; /* LETRA MÁS GRANDE */
+    font-weight: 900 !important;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+    text-transform: uppercase;
 }
 
-.card-body {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.marcador-col input {
-    width: 35px;
-    height: 35px;
-    text-align: center;
-    font-weight: bold;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-/* AJUSTE PARA TELÉFONOS */
+/* --- RESPONSIVE PARA TELÉFONOS --- */
 @media (max-width: 768px) {
-    .layout-principal {
-        flex-direction: column; /* En móvil la lista va arriba de los partidos */
-    }
+    .layout-principal { flex-direction: column; }
     .sidebar {
         width: 100%;
         position: sticky;
-        top: 0; /* Se queda pegada al techo del celular al bajar */
-        background: var(--bg);
-        padding-bottom: 10px;
+        top: 0;
+        background: #f0f2f5;
+        padding: 10px 0;
     }
 }
-
-/* Esto cambiará el tamaño del título "Resultados Reales" */
-.real-col div:first-child, 
-.etiqueta-real {
-    font-size: 12px !important; /* Prueba con 16px, 18px o 20px */
-    font-weight: bold !important;
-    margin-bottom: 5px;
-    display: block;
-}
-
-
-
-
-
