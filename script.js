@@ -320,19 +320,12 @@ async function guardarQuinielaCompleta() {
 // 7. CARGAR UNA QUINIELA AL HACER CLIC EN EL NOMBRE
 async function cargarDesdeDB(nombre) {
     try {
-        // 1. Sincronizar el nombre en el input
-        const inputNombre = document.getElementById('nombre-usuario');
-        if (inputNombre) inputNombre.value = nombre;
-
-        // 2. Limpiar los goles anteriores
-        document.querySelectorAll('.marcador-col input').forEach(i => i.value = "");
-
-        // 3. Traer datos del servidor
+        // 1. Cargar los goles en el fixture (Tu lógica de siempre)
         const res = await fetch(`${API_URL}/cargar/${nombre}`);
-        if (!res.ok) throw new Error("Error de red");
         const datos = await res.json();
-
-        // 4. Llenar los goles del usuario seleccionado
+        
+        document.getElementById('nombre-usuario').value = nombre;
+        
         datos.forEach(d => {
             const inL = document.getElementById(`L-${d.id}`);
             const inV = document.getElementById(`V-${d.id}`);
@@ -342,34 +335,41 @@ async function cargarDesdeDB(nombre) {
 
         if (typeof actualizarTorneo === 'function') actualizarTorneo();
 
-        // ========================================================
-        // 5. CABECERA FIJA (AQUÍ ESTÁ LA LÍNEA QUE FALTABA)
-        // ========================================================
-        const cabecera = document.getElementById('cabecera-fija-usuario');
-        if (cabecera) {
-            // Buscamos los puntos en el botón de la lista
-            const botones = Array.from(document.querySelectorAll('.btn-link'));
-            const btn = botones.find(b => b.innerText.includes(nombre));
-            const puntos = btn ? (btn.querySelector('.badge-puntos')?.innerText || "0 pts") : "0 pts";
+        // 2. LOGICA DE LA LISTA: Esconder las otras 19 y dejar solo la seleccionada
+        const botones = document.querySelectorAll('.btn-link');
+        
+        botones.forEach(btn => {
+            if (btn.innerText.includes(nombre)) {
+                // Esta es la que queremos ver
+                btn.style.display = "flex"; 
+                btn.classList.add('quiniela-activa');
+            } else {
+                // Las otras 15 o 20 quinielas SE OCULTAN
+                btn.style.display = "none";
+            }
+        });
 
-            // Insertamos el contenido
-            cabecera.innerHTML = `
-                <div class="user-fijo-card">
-                    <span>🏆 Quiniela de: <strong>${nombre}</strong></span>
-                    <span class="pts-fijos">${puntos}</span>
-                </div>
-            `;
-
-            // ESTA ES LA LÍNEA CLAVE: Hace que el cuadro sea visible
-            cabecera.style.display = "block"; 
-
-            // Subimos la pantalla para que la cabecera se vea desde el inicio
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        // 3. Crear un botón pequeño para "Cerrar" y volver a ver la lista completa
+        let btnCerrar = document.getElementById('btn-volver-lista');
+        if (!btnCerrar) {
+            btnCerrar = document.createElement('button');
+            btnCerrar.id = 'btn-volver-lista';
+            btnCerrar.innerHTML = "✕ Cambiar de Usuario";
+            btnCerrar.style = "margin-top: 10px; width: 100%; font-size: 0.7rem; background: #ff4444; color: white; border: none; padding: 5px; cursor: pointer; border-radius: 4px;";
+            
+            btnCerrar.onclick = () => {
+                // Al hacer clic, volvemos a mostrar todas las quinielas
+                document.querySelectorAll('.btn-link').forEach(b => {
+                    b.style.display = "flex";
+                    b.classList.remove('quiniela-activa');
+                });
+                btnCerrar.remove(); // Quitamos el botón de cerrar
+            };
+            document.getElementById('links-container').appendChild(btnCerrar);
         }
 
     } catch (e) {
-        console.error(e);
-        alert("Error al cargar la quiniela de " + nombre);
+        console.error("Error al cargar:", e);
     }
 }
 
@@ -684,6 +684,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
