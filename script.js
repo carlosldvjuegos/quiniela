@@ -321,18 +321,14 @@ async function guardarQuinielaCompleta() {
 
 async function cargarDesdeDB(nombre) {
     try {
-        // 1. LIMPIAR TODO ANTES DE EMPEZAR
+        // 1. LIMPIEZA DE GOLES
         document.getElementById('nombre-usuario').value = nombre;
-        // Ponemos todos los marcadores en blanco
-        document.querySelectorAll('.marcador-col input').forEach(input => {
-            input.value = ""; 
-        });
+        document.querySelectorAll('.marcador-col input').forEach(i => i.value = "");
 
-        // 2. PEDIR DATOS
+        // 2. CARGAR DATOS
         const res = await fetch(`${API_URL}/cargar/${nombre}`);
         const datos = await res.json();
 
-        // 3. PONER LOS GOLES DEL USUARIO
         datos.forEach(d => {
             const inL = document.getElementById(`L-${d.id}`);
             const inV = document.getElementById(`V-${d.id}`);
@@ -342,32 +338,42 @@ async function cargarDesdeDB(nombre) {
 
         if (typeof actualizarTorneo === 'function') actualizarTorneo();
 
-        // 4. LOGICA DE LA SIDEBAR (Solo queda el que elegiste)
+        // 3. OCULTAR A LOS DEMÁS (FORZADO)
+        // Buscamos todos los elementos que tengan la clase btn-link
         const botones = document.querySelectorAll('.btn-link');
+        
         botones.forEach(btn => {
-            if (btn.innerText.toLowerCase().includes(nombre.toLowerCase())) {
-                btn.style.setProperty('display', 'flex', 'important');
+            // Convertimos todo a minúsculas para que no falle por una mayúscula
+            const textoBoton = btn.innerText.toLowerCase();
+            const nombreBusqueda = nombre.toLowerCase();
+
+            if (textoBoton.includes(nombreBusqueda)) {
+                // ESTE ES EL ELEGIDO: Lo mostramos y le ponemos el color azul
+                btn.style.display = "flex"; 
                 btn.classList.add('quiniela-activa');
+                console.log("Mostrando a: " + nombre);
             } else {
-                btn.style.setProperty('display', 'none', 'important');
+                // ESTOS SON LOS OTROS: Los borramos de la vista
+                btn.style.display = "none";
+                console.log("Ocultando a otro");
             }
         });
 
-        // 5. BOTÓN PARA VOLVER A CARGAR TODO
+        // 4. BOTÓN PARA VOLVER A VER TODO (Recarga la página)
         if (!document.getElementById('btn-reset')) {
-            const btnR = document.createElement('button');
-            btnR.id = 'btn-reset';
-            btnR.innerText = "✕ Ver todos";
-            btnR.style = "width:100%; margin-top:10px; cursor:pointer; padding:8px; background:#ddd; border:none; border-radius:5px; font-weight:bold;";
-            btnR.onclick = () => { location.reload(); };
-            document.getElementById('links-container').appendChild(btnR);
+            const contenedor = document.getElementById('links-container');
+            const btnReset = document.createElement('button');
+            btnReset.id = 'btn-reset';
+            btnReset.innerText = "✕ Cambiar de Usuario";
+            btnReset.style = "width:100%; margin-top:10px; cursor:pointer; padding:8px; background:#ff4444; color:white; border:none; border-radius:5px; font-weight:bold;";
+            btnReset.onclick = () => { location.reload(); };
+            contenedor.appendChild(btnReset);
         }
 
     } catch (e) {
-        console.error("Error:", e);
+        console.error("Error cargando:", e);
     }
 }
-
 
 
 
@@ -679,6 +685,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
