@@ -169,10 +169,7 @@ function calcularLogicaPuntos(pL, pV, rL, rV) {
 // 3. RENDERIZAR LA TABLA PARA EL USUARIO
 async function renderizarFixture() {
     const fixtureCont = document.getElementById("fixture-container");
-    const realesCont = document.getElementById("reales-container");
-    
     fixtureCont.innerHTML = "";
-    if (realesCont) realesCont.innerHTML = "";
 
     let resultadosDB = [];
     try {
@@ -181,37 +178,35 @@ async function renderizarFixture() {
     } catch (e) { console.log("Error al cargar reales"); }
 
     partidosData.forEach(p => {
-        // Formato unificado para que el CSS funcione
+        const r = resultadosDB.find(res => res.id === p.id);
+        const textoReal = r ? `${r.gl}-${r.gv}` : "-";
+
         const card = document.createElement("div");
-        card.className = "partido"; // Usamos la clase corregida
+        card.className = "partido";
         card.innerHTML = `
             <div class="info-partido">
-                <span>${p.fase} - ${p.grupo}</span>
+                <span>${p.grupo ? 'Grupo ' + p.grupo : p.fase}</span>
                 <span>${p.fecha}</span>
             </div>
             <div class="fila-equipos">
                 <span class="equipo-nombre local">${p.local}</span>
+                
                 <div class="marcador-inputs">
                     <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
                     <span class="vs-divider">-</span>
                     <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
                 </div>
+
+                <div class="marcador-real-badge" title="Resultado Real">
+                    ${textoReal}
+                </div>
+
                 <span class="equipo-nombre visita">${p.visita}</span>
             </div>
         `; 
         fixtureCont.appendChild(card);
-
-        if (realesCont) {
-            const r = resultadosDB.find(res => res.id === p.id);
-            const texto = r ? `${r.gl} - ${r.gv}` : "-";
-            const divReal = document.createElement("div");
-            divReal.className = "fila-real";
-            divReal.innerHTML = `<span>${texto}</span>`;
-            realesCont.appendChild(divReal);
-        }
     });
 }
-
 
 
 
@@ -666,6 +661,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
