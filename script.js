@@ -315,17 +315,14 @@ async function guardarQuinielaCompleta() {
     }
 }
 
+
+
+
 // 7. CARGAR UNA QUINIELA AL HACER CLIC EN EL NOMBRE
 async function cargarDesdeDB(nombre) {
     try {
-        // 1. Petición para obtener las predicciones del usuario
-        const res = await fetch(`${API_URL}/cargar/${nombre}`);
-        const datos = await res.json();
-        
-        // 2. Sincronizar el campo de texto del nombre
+        // 1. Limpiamos campos de texto e inputs de inmediato
         document.getElementById('nombre-usuario').value = nombre;
-        
-        // 3. Limpiar todos los inputs antes de cargar los nuevos valores
         partidosData.forEach(p => {
             const inL = document.getElementById(`L-${p.id}`);
             const inV = document.getElementById(`V-${p.id}`);
@@ -333,7 +330,12 @@ async function cargarDesdeDB(nombre) {
             if (inV) inV.value = "";
         });
 
-        // 4. Llenar los inputs con los datos descargados
+        // 2. Traemos las predicciones del servidor
+        const res = await fetch(`${API_URL}/cargar/${nombre}`);
+        if (!res.ok) throw new Error("Error en servidor");
+        const datos = await res.json();
+
+        // 3. Llenamos los goles
         datos.forEach(d => {
             const inL = document.getElementById(`L-${d.id}`);
             const inV = document.getElementById(`V-${d.id}`);
@@ -341,43 +343,42 @@ async function cargarDesdeDB(nombre) {
             if (inV) inV.value = d.gv;
         });
 
-        // 5. Actualizar las llaves de eliminatorias (si el usuario ya completó grupos)
+        // 4. Actualizamos eliminatorias
         actualizarTorneo();
 
-        // 6. LÓGICA DE CABECERA FIJA ÚNICA
-        // Buscamos el botón del usuario en la lista para sacar sus puntos actuales
-        const botones = document.querySelectorAll('.btn-link');
-        let puntosActuales = "0 pts";
-        
-        botones.forEach(btn => {
-            // Quitamos la clase 'activo' de todos para que no se queden pegados arriba
-            btn.classList.remove('activo');
-            
-            if (btn.innerText.includes(nombre)) {
-                btn.classList.add('activo');
-                // Extraemos el texto del puntaje del badge
-                const badge = btn.querySelector('.badge-puntos');
-                if (badge) puntosActuales = badge.innerText;
-            }
-        });
-
-        // Insertamos la información en el contenedor de cabecera fija
+        // 5. CABECERA FIJA (Aquí estaba el fallo, ahora es más seguro)
         const cabeceraFija = document.getElementById('cabecera-fija-usuario');
         if (cabeceraFija) {
+            // Buscamos el botón de este usuario en la lista lateral para sacar sus puntos
+            const botones = Array.from(document.querySelectorAll('.btn-link'));
+            const btnUser = botones.find(b => b.innerText.includes(nombre));
+            
+            // Si el botón tiene los puntos guardados, los extraemos; si no, ponemos 0
+            const puntosTxt = btnUser ? (btnUser.querySelector('.badge-puntos')?.innerText || "0 pts") : "0 pts";
+
             cabeceraFija.innerHTML = `
                 <div class="user-fijo-card">
-                    <span>👤 Viendo Quiniela de: <strong>${nombre}</strong></span>
-                    <span class="pts-fijos">${puntosActuales}</span>
+                    <span>👤 Quiniela: <strong>${nombre}</strong></span>
+                    <span class="pts-fijos">${puntosTxt}</span>
                 </div>
             `;
-            cabeceraFija.style.display = "block"; // Aseguramos que sea visible
+            cabeceraFija.style.display = "block";
         }
 
+        // Marcamos visualmente el botón en la lista
+        document.querySelectorAll('.btn-link').forEach(b => b.style.background = "#fff");
+        const activo = Array.from(document.querySelectorAll('.btn-link')).find(b => b.innerText.includes(nombre));
+        if (activo) activo.style.background = "#eef2f7";
+
     } catch (e) {
-        console.error("Error al cargar desde DB:", e);
-        alert("No se pudo cargar la quiniela de " + nombre);
+        console.error("Error detallado:", e);
+        alert("Error: No pudimos conectar con el servidor para traer los datos de " + nombre);
     }
 }
+
+
+
+
 
 async function calcularClasificados() {
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
@@ -697,6 +698,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
