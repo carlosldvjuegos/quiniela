@@ -74,8 +74,8 @@
 }
 
 .marcador-col input {
-    width: 35px;
-    height: 32px;
+    width: 25px;
+    height: 25px;
     text-align: center;
     font-weight: bold;
     border: 1px solid #ccc;
@@ -116,4 +116,11 @@
     .equipo-col { font-size: 0.75rem; flex: 1.5; }
     .card-body { gap: 5px; }
     .real-col { padding-left: 5px; }
+
+    .marcador-col input {
+        width: 25px;   /* <--- Súper pequeño para que quepa todo en una línea */
+        height: 25px;
+        font-size: 0.8rem;
+    }
 }
+
