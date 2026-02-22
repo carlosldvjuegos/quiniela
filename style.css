@@ -24,40 +24,38 @@ header {
     padding: 20px;
 }
 
-/* ESTRUCTURA PRINCIPAL (Lado a lado como tu imagen) */
+/* --- ESTRUCTURA PRINCIPAL --- */
 .layout-principal {
     display: flex;
     align-items: flex-start;
-    gap: 30px;
+    gap: 20px;
 }
 
-/* SIDEBAR QUE SE QUEDA FIJA */
+/* SIDEBAR FIJA (Luis y Carlos se quedan aquí al bajar) */
 .sidebar {
-    width: 280px;
+    width: 250px;
     position: sticky;
-    top: 20px;
+    top: 10px;
     z-index: 1000;
-    height: fit-content;
 }
 
 .content-fixture {
     flex: 1;
 }
 
-/* QUINIELAS REGISTRADAS (Ajuste de separación) */
+/* --- BOTONES DE USUARIO (Con separación de puntos) --- */
 .btn-link {
     background: white;
-    padding: 12px 20px;
+    padding: 12px 15px;
     border: 1px solid #ddd;
     border-radius: 8px;
     display: flex;
     justify-content: space-between; /* ESTO SEPARA EL NOMBRE DE LOS PUNTOS */
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     cursor: pointer;
     font-weight: bold;
     color: #333;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .quiniela-activa {
@@ -66,16 +64,28 @@ header {
     border: 2px solid var(--gold) !important;
 }
 
-/* TARJETAS DE PARTIDOS (Exactamente como tu imagen 1) */
+/* --- TARJETAS DE PARTIDO (RESTRICTO A TU DISEÑO ORIGINAL) --- */
 .partido-card {
     background: white;
     margin-bottom: 12px;
     padding: 15px;
     border-radius: 8px;
-    border-left: 6px solid var(--primary);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    border-left: 5px solid var(--primary);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
+/* Fase y Fecha arriba */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+/* Equipos y Marcadores en línea horizontal */
 .card-body {
     display: flex;
     justify-content: space-between;
@@ -85,12 +95,16 @@ header {
 .equipo-col {
     flex: 1;
     font-weight: bold;
+    font-size: 0.95rem;
 }
+
+.local { text-align: right; padding-right: 15px; }
+.visita { text-align: left; padding-left: 15px; }
 
 .marcador-col {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 5px;
 }
 
 .marcador-col input {
@@ -102,18 +116,16 @@ header {
     border-radius: 4px;
 }
 
-/* TAMAÑO DE LETRA "RESULTADOS REALES" */
+/* --- RESULTADOS REALES (Título más grande) --- */
 .real-col div:first-child, 
-.etiqueta-real,
-#reales-container b {
-    font-size: 16px !important; /* Ajustado para que se vea mejor */
+.etiqueta-real {
+    font-size: 16px !important; /* Ajustado de 11px a 16px */
     font-weight: 900 !important;
-    margin-bottom: 5px;
-    display: block;
     color: #1a1a1a;
+    display: block;
 }
 
-/* MÓVIL (Mantiene el sticky arriba) */
+/* RESPONSIVE MÓVIL (Mantiene la sidebar arriba fija) */
 @media (max-width: 768px) {
     .layout-principal { flex-direction: column; }
     .sidebar {
@@ -121,6 +133,7 @@ header {
         position: sticky;
         top: 0;
         background: var(--bg);
-        padding-bottom: 10px;
+        z-index: 1001;
+        padding-bottom: 5px;
     }
 }
