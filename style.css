@@ -117,11 +117,12 @@ header {
 /* Esto cambiará el tamaño del título "Resultados Reales" */
 .real-col div:first-child, 
 .etiqueta-real {
-    font-size: 10px !important; /* Prueba con 16px, 18px o 20px */
+    font-size: 12px !important; /* Prueba con 16px, 18px o 20px */
     font-weight: bold !important;
     margin-bottom: 5px;
     display: block;
 }
+
 
 
 
