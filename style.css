@@ -1,98 +1,51 @@
-/* =========================================
-   1. CONFIGURACIÓN BASE (RESET)
-   ========================================= */
 :root {
     --primary: #01215b;
-    --dark: #1a1a1a;
     --gold: #d4af37;
-    --white: #ffffff;
     --bg-body: #f0f2f5;
 }
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
     font-family: 'Roboto', sans-serif;
     background-color: var(--bg-body);
-    color: #333;
 }
 
 header {
     background: var(--primary);
-    color: var(--white);
+    color: white;
     padding: 15px;
     text-align: center;
     border-bottom: 4px solid var(--gold);
 }
 
 .container {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
 }
 
-/* =========================================
-   2. LAYOUT: SIDEBAR Y CONTENIDO
-   ========================================= */
-
-/* Forzamos a que el contenedor principal NO sea sticky */
+/* CONTENEDOR PRINCIPAL */
 .layout-principal {
     display: flex;
-    flex-direction: row;
+    align-items: flex-start; /* Necesario para que el sticky funcione */
     gap: 20px;
-    align-items: flex-start;
-    position: relative !important;
 }
 
-/* LA SIDEBAR: Ahora es una lista normal que se va al hacer scroll */
+/* SIDEBAR FIJA A LA IZQUIERDA */
 .sidebar {
-    position: sticky !important;
-    top: 20px !important;
-    height: fit-content !important;
+    width: 250px;
+    position: sticky;
+    top: 20px; /* Se queda a 20px del techo al bajar */
     z-index: 1000;
-    align-self: flex-start; /* Importante para que el sticky funcione en flexbox */
 }
 
+/* CONTENEDOR DE PARTIDOS */
 .content-fixture {
     flex: 1;
-    position: relative;
 }
 
-/* =========================================
-   3. LA CABECERA FIJA (EL ÚNICO ELEMENTO STICKY)
-   ========================================= */
-#cabecera-fija-usuario {
-    position: sticky;
-    top: 0;
-    z-index: 9999; 
-    background: #01215b;
-    color: white;
-    padding: 12px 20px;
-    border-bottom: 4px solid #d4af37;
-    display: none; /* Se activa con la función JS que te di antes */
-}
-
-.user-fijo-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.pts-fijos {
-    background: var(--gold);
-    color: var(--primary);
-    padding: 3px 12px;
-    border-radius: 15px;
-    font-weight: 900;
-}
-
-/* =========================================
-   4. LISTA DE USUARIOS (BOTONES)
-   ========================================= */
+/* BOTONES DE USUARIO */
 #links-container {
     display: flex;
     flex-direction: column;
@@ -100,85 +53,52 @@ header {
 }
 
 .btn-link {
-    position: static !important;
     display: flex;
     justify-content: space-between;
-    width: 100%;
     padding: 12px;
-    margin-bottom: 8px;
-    background: #fff;
+    background: white;
     border: 1px solid #ddd;
     border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    color: black;
 }
 
-.btn-link:hover {
-    background: #f8f9fa;
-}
-
+/* ESTILO CUANDO CARGAS UNA QUINIELA */
 .quiniela-activa {
-    background-color: #01215b !important;
+    background: var(--primary) !important;
     color: white !important;
-    border: 2px solid #d4af37 !important;
+    border: 2px solid var(--gold) !important;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
-/* =========================================
-   5. TARJETAS DE PARTIDO
-   ========================================= */
+/* TARJETAS DE PARTIDO */
 .partido-card {
-    background: #fff;
+    background: white;
     border-radius: 8px;
     margin-bottom: 10px;
-    padding: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 15px;
     border-left: 5px solid var(--primary);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.75rem;
-    color: #666;
-    margin-bottom: 8px;
-    border-bottom: 1px solid #eee;
-}
-
-.card-body {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.equipo-col {
-    flex: 1;
-    font-weight: bold;
-    font-size: 0.9rem;
-}
-
-.local { text-align: right; }
-.visita { text-align: left; }
+.card-body { display: flex; justify-content: space-between; align-items: center; }
 
 .marcador-col input {
-    width: 30px;
-    height: 30px;
+    width: 35px;
+    height: 35px;
     text-align: center;
     font-weight: bold;
     border: 1px solid #ccc;
     border-radius: 4px;
 }
 
-/* =========================================
-   6. RESPONSIVE (MÓVIL)
-   ========================================= */
-@media (max-width: 768px) {
-    .layout-principal {
-        flex-direction: column;
-    }
-    .sidebar {
-        width: 100%;
-    }
+/* OCULTAR ELEMENTOS QUE NO QUEREMOS */
+#cabecera-fija-usuario, #resumen-diario {
+    display: none !important;
 }
 
-
-
-
+@media (max-width: 768px) {
+    .layout-principal { flex-direction: column; }
+    .sidebar { width: 100%; position: relative; top: 0; }
+}
