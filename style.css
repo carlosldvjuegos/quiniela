@@ -1,138 +1,119 @@
+/* Estilos Base */
 :root {
     --primary: #01215b;
-    --accent: #d4af37;
-    --bg: #f0f2f5;
-    --white: #ffffff;
-    --dark: #343a40;
+    --dark: #1a1a1a;
+    --gray: #f8f9fa;
 }
 
-body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background-color: var(--bg);
-    margin: 0;
-}
-
-header {
-    background: var(--primary);
-    color: white;
-    padding: 15px;
-    text-align: center;
-}
-
-.container {
-    max-width: 1100px;
-    margin: 20px auto;
-    padding: 0 10px;
-}
-
-.layout-principal {
-    display: flex;
-    gap: 20px;
-}
-
-/* --- SIDEBAR: LISTA VERTICAL --- */
-.sidebar {
-    flex: 0 0 220px;
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    height: fit-content;
-}
-
-/* Esto fuerza la lista de Carlos, Luis, etc. hacia abajo */
+/* SIDEBAR: Lista de usuarios vertical */
 #links-container {
     display: flex;
-    flex-direction: column !important; 
-    gap: 10px;
-    margin-top: 10px;
+    flex-direction: column !important;
+    gap: 8px;
 }
 
 .btn-link {
-    display: block; /* Ocupa toda la línea */
-    width: 100%;
-    padding: 8px;
-    background: #f1f3f5;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    text-align: left;
-    cursor: pointer;
-}
-
-/* --- TARJETA DE PARTIDO --- */
-.partido {
-    background: white;
-    margin-bottom: 15px;
-    padding: 12px;
-    border-radius: 10px;
-    border-left: 6px solid var(--primary);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-/* Parte de arriba: Fase y Real */
-.info-superior {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    width: 100%;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+/* TARJETA DE PARTIDO (Horizontal) */
+.partido-card {
+    background: #fff;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    padding: 10px 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-left: 5px solid var(--primary);
+}
+
+/* Cabecera: Fase y Fecha */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.8rem;
+    color: #666;
     border-bottom: 1px solid #eee;
     padding-bottom: 5px;
-    margin-bottom: 10px;
 }
 
-.fase-txt { font-size: 0.8rem; font-weight: bold; color: #777; }
+.txt-fase { font-weight: bold; color: var(--primary); }
 
-.derecha-header { text-align: right; }
-.fecha-txt { font-size: 0.7rem; color: #999; display: block; }
-
-/* Cuadro REAL arriba a la derecha */
-.real-container {
-    background: var(--dark);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-top: 4px;
-    text-align: center;
-}
-.real-container small { font-size: 0.55rem; color: var(--accent); display: block; }
-.real-valor { font-weight: bold; font-size: 0.85rem; }
-
-/* Parte de abajo: Equipos en una sola fila */
-.fila-juego {
+/* Cuerpo: Fila única */
+.card-body {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
 }
 
-.equipo {
-    flex: 1;
+.equipo-col {
+    flex: 2; /* Da más espacio a los nombres */
     font-weight: bold;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: var(--primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-.equipo.local { text-align: right; }
-.equipo.visita { text-align: left; }
 
-.marcador-inputs {
+.local { text-align: right; }
+.visita { text-align: left; }
+
+/* Marcador del usuario */
+.marcador-col {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
 }
 
-input[type="number"] {
+.marcador-col input {
     width: 35px;
     height: 32px;
     text-align: center;
-    font-size: 1rem;
     font-weight: bold;
-    border: 2px solid #ccc;
-    border-radius: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
-/* --- RESPONSIVE --- */
-@media (max-width: 768px) {
-    .layout-principal { flex-direction: column; }
-    .sidebar { width: 100%; margin-bottom: 15px; }
-    .equipo { font-size: 0.8rem; }
-    input[type="number"] { width: 30px; height: 30px; }
+.separador { font-weight: bold; color: #999; }
+
+/* Columna Resultado Real */
+.real-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-left: 1px solid #eee;
+    padding-left: 10px;
+}
+
+.etiqueta-real {
+    font-size: 0.55rem;
+    font-weight: 900;
+    color: #444;
+}
+
+.cuadro-real {
+    background: var(--dark);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 4px;
+    min-width: 40px;
+    text-align: center;
+}
+
+/* RESPONSIVE MÓVIL */
+@media (max-width: 600px) {
+    .equipo-col { font-size: 0.75rem; flex: 1.5; }
+    .card-body { gap: 5px; }
+    .real-col { padding-left: 5px; }
 }
