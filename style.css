@@ -74,8 +74,8 @@
 }
 
 .marcador-col input {
-    width: 25px;
-    height: 25px;
+    width: 20px;
+    height: 20px;
     text-align: center;
     font-weight: bold;
     border: 1px solid #ccc;
@@ -118,9 +118,10 @@
     .real-col { padding-left: 5px; }
 
     .marcador-col input {
-        width: 25px;   /* <--- Súper pequeño para que quepa todo en una línea */
-        height: 25px;
+        width: 20px;   /* <--- Súper pequeño para que quepa todo en una línea */
+        height: 20px;
         font-size: 0.8rem;
     }
 }
+
 
