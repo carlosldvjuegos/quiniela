@@ -175,33 +175,34 @@ async function renderizarFixture() {
     try {
         const resp = await fetch(`${API_URL}/obtener-resultados-db`);
         resultadosDB = await resp.json();
-    } catch (e) { console.log("Error al cargar resultados reales"); }
+    } catch (e) { console.log("Error al cargar reales"); }
 
     partidosData.forEach(p => {
         const r = resultadosDB.find(res => res.id === p.id);
         const textoReal = r ? `${r.gl} - ${r.gv}` : "-";
 
         const card = document.createElement("div");
-        card.className = "partido";
+        card.className = "partido-card";
         card.innerHTML = `
-            <div class="info-superior">
-                <span class="fase-txt">${p.fase} - ${p.grupo || ''}</span>
-                <div class="derecha-header">
-                    <span class="fecha-txt">${p.fecha}</span>
-                    <div class="real-container">
-                        <small>REAL</small>
-                        <div class="real-valor">${textoReal}</div>
-                    </div>
-                </div>
+            <div class="card-header">
+                <span class="txt-fase">${p.fase} ${p.grupo ? '- Grupo ' + p.grupo : ''}</span>
+                <span class="txt-fecha">${p.fecha}</span>
             </div>
-            <div class="fila-juego">
-                <div class="equipo local">${p.local}</div>
-                <div class="marcador-inputs">
+            <div class="card-body">
+                <div class="equipo-col local">${p.local}</div>
+                
+                <div class="marcador-col">
                     <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
-                    <span class="vs">-</span>
+                    <span class="separador">-</span>
                     <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
                 </div>
-                <div class="equipo visita">${p.visita}</div>
+
+                <div class="equipo-col visita">${p.visita}</div>
+
+                <div class="real-col">
+                    <div class="etiqueta-real">REAL</div>
+                    <div class="cuadro-real">${textoReal}</div>
+                </div>
             </div>
         `; 
         fixtureCont.appendChild(card);
@@ -660,6 +661,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
