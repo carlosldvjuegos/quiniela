@@ -131,35 +131,38 @@ header {
     display: block;
 }
 
-/* --- AJUSTE PARA TELÉFONOS (SOLO FIJO HACIA ARRIBA/ABAJO) --- */
+/* --- AJUSTE PARA TELÉFONOS (FLOTANTE SOLO VERTICAL) --- */
 @media (max-width: 768px) {
     .container {
         padding: 10px;
-        /* Permitimos que el scroll horizontal ocurra en toda la página */
-        overflow-x: auto; 
+        /* Permitimos que el scroll horizontal sea de la página entera */
+        overflow-x: visible; 
     }
     
     .layout-principal {
         display: flex; 
         flex-direction: row;
-        /* Importante: que el contenedor no limite el ancho para que la sidebar pueda "irse" de la vista */
-        width: max-content; 
+        /* IMPORTANTE: No bloqueamos el ancho para que el sticky funcione */
+        align-items: flex-start;
     }
 
     .sidebar {
-        /* Mantenemos el sticky pero ELIMINAMOS 'left: 0' */
+        /* ESTO ES LO QUE BUSCAS: */
         position: -webkit-sticky;
         position: sticky;
-        top: 0; /* Se queda arriba al bajar */
+        top: 10px; /* Se queda pegado arriba cuando subes/bajas */
         
-        /* Al quitar 'left', el cuadro se moverá con el dedo hacia la izquierda */
-        width: 150px; 
-        min-width: 150px;
-        z-index: 100;
+        /* NO ponemos "left: 0" para que se desplace al mover a los lados */
+        
+        width: 160px; 
+        min-width: 160px;
+        z-index: 1000;
+        background-color: var(--bg); /* Para que no se transparente al bajar */
     }
 
     .content-fixture {
-        /* Tu fixture se queda grande y cómodo */
+        /* Mantenemos el tamaño original de tu quiniela */
+        flex: 1;
         min-width: 600px; 
     }
 }
