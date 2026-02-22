@@ -26,16 +26,15 @@ header {
     padding: 0 15px;
 }
 
-/* Layout Principal */
+/* --- LAYOUT PRINCIPAL --- */
 .layout-principal {
     display: flex;
     gap: 20px;
 }
 
-/* Sidebar */
+/* --- SIDEBAR (Lista de Registros) --- */
 .sidebar {
-    flex: 0 0 200px;
-    font-size: 0.9rem;
+    flex: 0 0 240px;
     background: var(--white);
     padding: 15px;
     border-radius: 8px;
@@ -45,163 +44,126 @@ header {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* --- TARJETA DE PARTIDO (FIXTURE) --- */
-/* --- ESTILOS ACTUALIZADOS PARA MÓVIL Y DINAMISMO --- */
-
-/* 1. Sidebar más compacto */
-.sidebar {
-    flex: 0 0 220px; /* Reducido para dar más espacio al centro */
-    background: var(--white);
-    padding: 12px;
-    border-radius: 8px;
-    height: fit-content;
-    position: sticky;
-    top: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    font-size: 0.85rem;
-}
-
-/* 2. Tarjeta de partido optimizada */
-.partido {
-    background: var(--white);
-    margin-bottom: 8px;
-    padding: 10px;
-    border-radius: 8px;
-    border-left: 5px solid var(--primary);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+/* Asegura que los nombres de usuarios se vean uno debajo de otro */
+#links-container {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
 }
 
-/* --- CABECERA DEL PARTIDO --- */
+.btn-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 10px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+/* --- TARJETA DE PARTIDO --- */
+.partido {
+    background: var(--white);
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    border-left: 6px solid var(--primary);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+}
+
+/* Cabecera interna: Fase y Fecha/Real */
 .info-partido {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
+    margin-bottom: 12px;
     border-bottom: 1px solid #eee;
+    padding-bottom: 6px;
 }
 
 .fase-grupo {
     font-size: 0.8rem;
     font-weight: bold;
     color: var(--primary);
+    text-transform: uppercase;
 }
 
 .fecha-real-container {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 4px;
 }
 
 .fecha-texto {
-    font-size: 0.75rem;
-    color: #666;
+    font-size: 0.7rem;
+    color: #888;
+    margin-bottom: 4px;
 }
 
-/* --- EL CUADRITO DE RESULTADO REAL --- */
+/* El cuadro "RESULTADO REAL" arriba a la derecha */
 .resultado-real-box {
-    background: #f1f3f5;
-    border: 1px solid #dee2e6;
+    background: var(--dark);
+    color: white;
+    padding: 3px 8px;
     border-radius: 4px;
-    padding: 2px 8px;
     text-align: center;
-    min-width: 80px;
+    min-width: 70px;
 }
 
 .resultado-real-box small {
     display: block;
-    font-size: 0.6rem;
-    color: #495057;
+    font-size: 0.55rem;
     font-weight: 900;
-    letter-spacing: 0.5px;
+    color: var(--accent);
+    border-bottom: 1px solid #555;
+    margin-bottom: 2px;
 }
 
 .valor-real {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: bold;
-    color: #212529;
 }
 
-/* --- FILA DE EQUIPOS (Limpia sin el cuadro gris en medio) --- */
+/* Fila de juego (Local - Inputs - Visita) */
 .fila-equipos {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 15px;
+    justify-content: space-between;
+    gap: 10px;
 }
 
 .equipo-nombre {
     flex: 1;
     font-weight: bold;
     font-size: 0.95rem;
-}
-
-.equipo-nombre.local { text-align: right; }
-.equipo-nombre.visita { text-align: left; }
-
-/* Ajuste móvil para que no se amontone */
-@media (max-width: 768px) {
-    .equipo-nombre { font-size: 0.85rem; }
-    .fila-equipos { gap: 8px; }
-}
-.equipo-nombre {
-    font-weight: bold;
-    font-size: 0.85rem; /* Letra un poco más pequeña */
     color: var(--primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* Si el nombre es muy largo, pone puntos suspensivos */
 }
 
 .equipo-nombre.local { text-align: right; }
 .equipo-nombre.visita { text-align: left; }
 
-/* 4. Marcadores más pequeños */
 .marcador-inputs {
     display: flex;
     align-items: center;
-    gap: 3px;
-    background: #f8f9fa;
-    padding: 3px 6px;
-    border-radius: 6px;
+    gap: 5px;
 }
 
 input[type="number"] {
-    width: 35px; /* De 45px a 35px */
-    height: 32px; /* De 40px a 32px */
+    width: 38px;
+    height: 35px;
     text-align: center;
-    font-size: 1rem;
-    font-weight: 800;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    -moz-appearance: textfield; /* Quita flechitas en Firefox */
-}
-
-/* Quita flechitas en Chrome/Safari */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-/* 5. El cuadro de "REAL" al lado */
-.marcador-real-badge {
-    background: #343a40;
-    color: #fff;
-    padding: 4px 6px;
-    border-radius: 4px;
+    font-size: 1.1rem;
     font-weight: 900;
-    font-size: 0.8rem;
-    min-width: 32px;
-    text-align: center;
-    border: 1px solid #000;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    padding: 0;
 }
 
-/* --- RESPONSIVE PARA TELÉFONOS --- */
+/* --- RESPONSIVE PARA MÓVIL --- */
 @media (max-width: 768px) {
     .layout-principal {
         flex-direction: column;
@@ -211,17 +173,16 @@ input::-webkit-inner-spin-button {
         width: 100%;
         position: relative;
         top: 0;
-        margin-bottom: 15px;
-    }
-
-    .fila-equipos {
-        /* Ajuste fino para pantallas muy pequeñas */
-        grid-template-columns: 1fr 80px 40px 1fr; 
-        gap: 4px;
+        box-sizing: border-box;
     }
 
     .equipo-nombre {
-        font-size: 0.75rem; /* Letra mínima para que no salte de línea */
+        font-size: 0.8rem; /* Un poco más pequeño para que no se corte */
+    }
+
+    input[type="number"] {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
     }
 }
-
