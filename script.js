@@ -184,24 +184,24 @@ async function renderizarFixture() {
         const card = document.createElement("div");
         card.className = "partido";
         card.innerHTML = `
-            <div class="info-partido">
-                <div class="fase-grupo">${p.fase} - ${p.grupo}</div>
-                <div class="fecha-real-container">
-                    <span class="fecha-texto">${p.fecha}</span>
-                    <div class="resultado-real-box">
-                        <small>RESULTADO REAL</small>
-                        <div class="valor-real">${textoReal}</div>
+            <div class="header-card">
+                <span class="fase-txt">${p.fase} - ${p.grupo || ''}</span>
+                <div class="info-derecha">
+                    <span class="fecha-txt">${p.fecha}</span>
+                    <div class="real-badge-container">
+                        <small>REAL</small>
+                        <div class="real-marcador">${textoReal}</div>
                     </div>
                 </div>
             </div>
-            <div class="fila-equipos">
-                <span class="equipo-nombre local">${p.local}</span>
-                <div class="marcador-inputs">
+            <div class="cuerpo-card">
+                <div class="equipo local">${p.local}</div>
+                <div class="inputs-juego">
                     <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
-                    <span class="vs-divider">-</span>
+                    <span>-</span>
                     <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
                 </div>
-                <span class="equipo-nombre visita">${p.visita}</span>
+                <div class="equipo visita">${p.visita}</div>
             </div>
         `; 
         fixtureCont.appendChild(card);
@@ -661,6 +661,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
