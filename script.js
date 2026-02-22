@@ -676,17 +676,7 @@ function obtenerPuntosPorFecha(fechaDeseada) {
         .reduce((sum, q) => sum + (q.acertado ? q.valorPunto : 0), 0);
 }
 
-// 2. Función para actualizar la vista de "Puntos de Hoy"
-function mostrarPuntuacionDiaria() {
-    const hoy = new Date().toLocaleDateString('en-CA'); // Formato YYYY-MM-DD
-    const puntosHoy = obtenerPuntosPorFecha(hoy);
-    
-    // Esto busca un elemento con ID 'puntos-dia' en tu HTML y le pone el valor
-    const element = document.getElementById('puntos-dia');
-    if(element) {
-        element.innerHTML = `Puntos obtenidos hoy: <strong>${puntosHoy}</strong>`;
-    }
-}
+
 
 // INICIO AL CARGAR PÁGINA
 window.onload = async () => {
@@ -694,6 +684,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
