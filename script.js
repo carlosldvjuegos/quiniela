@@ -320,7 +320,7 @@ async function guardarQuinielaCompleta() {
 // 7. CARGAR UNA QUINIELA AL HACER CLIC EN EL NOMBRE
 async function cargarDesdeDB(nombre) {
     try {
-        // 1. Cargar los goles en el fixture (Tu lógica de siempre)
+        // 1. Cargamos los datos en los cuadritos (goles)
         const res = await fetch(`${API_URL}/cargar/${nombre}`);
         const datos = await res.json();
         
@@ -335,41 +335,28 @@ async function cargarDesdeDB(nombre) {
 
         if (typeof actualizarTorneo === 'function') actualizarTorneo();
 
-        // 2. LOGICA DE LA LISTA: Esconder las otras 19 y dejar solo la seleccionada
-        const botones = document.querySelectorAll('.btn-link');
+        // 2. MAGIA: Solo dejamos visible al usuario seleccionado
+        const contenedorNombres = document.getElementById('links-container');
+        const botones = contenedorNombres.querySelectorAll('.btn-link');
         
         botones.forEach(btn => {
-            if (btn.innerText.includes(nombre)) {
-                // Esta es la que queremos ver
-                btn.style.display = "flex"; 
+            // Buscamos el texto exacto dentro del botón
+            if (btn.innerText.toLowerCase().includes(nombre.toLowerCase())) {
+                btn.style.setProperty('display', 'flex', 'important');
                 btn.classList.add('quiniela-activa');
             } else {
-                // Las otras 15 o 20 quinielas SE OCULTAN
-                btn.style.display = "none";
+                // ESTO BORRA A LOS DEMÁS DE LA VISTA
+                btn.style.setProperty('display', 'none', 'important');
             }
         });
 
-        // 3. Crear un botón pequeño para "Cerrar" y volver a ver la lista completa
-        let btnCerrar = document.getElementById('btn-volver-lista');
-        if (!btnCerrar) {
-            btnCerrar = document.createElement('button');
-            btnCerrar.id = 'btn-volver-lista';
-            btnCerrar.innerHTML = "✕ Cambiar de Usuario";
-            btnCerrar.style = "margin-top: 10px; width: 100%; font-size: 0.7rem; background: #ff4444; color: white; border: none; padding: 5px; cursor: pointer; border-radius: 4px;";
-            
-            btnCerrar.onclick = () => {
-                // Al hacer clic, volvemos a mostrar todas las quinielas
-                document.querySelectorAll('.btn-link').forEach(b => {
-                    b.style.display = "flex";
-                    b.classList.remove('quiniela-activa');
-                });
-                btnCerrar.remove(); // Quitamos el botón de cerrar
-            };
-            document.getElementById('links-container').appendChild(btnCerrar);
-        }
+        // 3. QUITAMOS EL TEXTO DE "CARGANDO PUNTOS..."
+        const resumen = document.getElementById('resumen-diario');
+        if (resumen) resumen.style.display = 'none';
 
     } catch (e) {
-        console.error("Error al cargar:", e);
+        console.error("Error cargando quiniela:", e);
+        alert("No se pudo cargar la quiniela de " + nombre);
     }
 }
 
@@ -684,6 +671,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
