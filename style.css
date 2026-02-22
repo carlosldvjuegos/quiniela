@@ -131,28 +131,36 @@ header {
     display: block;
 }
 
-/* --- AJUSTE PARA TELÉFONOS (SCROLL LATERAL) --- */
+/* --- AJUSTE PARA TELÉFONOS (SOLO FIJO HACIA ARRIBA/ABAJO) --- */
 @media (max-width: 768px) {
     .container {
         padding: 10px;
+        /* Permitimos que el scroll horizontal ocurra en toda la página */
+        overflow-x: auto; 
     }
     
     .layout-principal {
-        /* No usamos column, mantenemos el flex para que Luis esté a la izquierda */
         display: flex; 
-        flex-direction: row; 
+        flex-direction: row;
+        /* Importante: que el contenedor no limite el ancho para que la sidebar pueda "irse" de la vista */
+        width: max-content; 
     }
 
     .sidebar {
-        /* Se queda pegado a la izquierda del celular */
+        /* Mantenemos el sticky pero ELIMINAMOS 'left: 0' */
+        position: -webkit-sticky;
         position: sticky;
-        left: 0;
-        width: 180px; /* Un poco más angosto en móvil */
-        min-width: 180px;
+        top: 0; /* Se queda arriba al bajar */
+        
+        /* Al quitar 'left', el cuadro se moverá con el dedo hacia la izquierda */
+        width: 150px; 
+        min-width: 150px;
+        z-index: 100;
     }
 
     .content-fixture {
-        /* El fixture mantiene su ancho para que puedas arrastrarlo */
+        /* Tu fixture se queda grande y cómodo */
         min-width: 600px; 
     }
 }
+
