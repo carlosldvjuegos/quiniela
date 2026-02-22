@@ -8,8 +8,6 @@ body {
     font-family: 'Roboto', sans-serif;
     background-color: var(--bg);
     margin: 0;
-    /* Permitir scroll horizontal natural en el cuerpo de la página */
-    overflow-x: auto; 
 }
 
 header {
@@ -21,49 +19,51 @@ header {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 100%;
     margin: 0 auto;
-    padding: 20px;
+    padding: 10px;
 }
 
-/* --- ESTRUCTURA PRINCIPAL --- */
+/* ESTRUCTURA PRINCIPAL */
 .layout-principal {
     display: flex;
     align-items: flex-start;
-    gap: 20px;
-    /* Importante: permite que el contenido se extienda a lo ancho */
-    width: max-content; 
+    gap: 15px;
+    /* Permite que el contenido de los partidos se extienda hacia la derecha 
+       sin empujar el bloque flotante fuera de la vista */
 }
 
-/* SIDEBAR: FIJA SOLO AL BAJAR (VERTICAL) */
+/* BLOQUE DE QUINIELAS REGISTRADAS (EL BLOQUE FLOTANTE) */
 .sidebar {
-    width: 250px;
-    min-width: 250px;
-    /* El sticky aquí con 'top' hace que se quede fija al hacer scroll hacia abajo */
+    width: 220px;
+    min-width: 180px; /* Tamaño fijo para que no se reduzca */
     position: -webkit-sticky;
     position: sticky;
-    top: 10px; 
+    top: 10px; /* Esto es lo que hace que sea FLOTANTE al scrollear */
     z-index: 1000;
     height: fit-content;
 }
 
+/* CONTENEDOR DE LA QUINIELA (FIXTURE) */
 .content-fixture {
     flex: 1;
+    /* No limitamos el ancho para que mantenga su tamaño original */
 }
 
-/* --- BOTONES DE USUARIO (Con separación de puntos) --- */
+/* BOTONES DE LUIS Y CARLOS (Con la separación que pediste) */
 .btn-link {
     background: white;
-    padding: 12px 15px;
+    padding: 12px;
     border: 1px solid #ddd;
     border-radius: 8px;
     display: flex;
-    justify-content: space-between; /* SEPARA NOMBRE DE PUNTOS */
+    justify-content: space-between; /* Separa nombre de puntos */
     align-items: center;
     margin-bottom: 8px;
     cursor: pointer;
     font-weight: bold;
     color: #333;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .quiniela-activa {
@@ -72,74 +72,42 @@ header {
     border: 2px solid var(--gold) !important;
 }
 
-/* --- TARJETAS (TU FORMATO ORIGINAL) --- */
+/* TAMAÑO DE TEXTO RESULTADOS REALES */
+.real-col div:first-child, .etiqueta-real {
+    font-size: 15px !important;
+    font-weight: 900 !important;
+}
+
+/* TARJETAS DE PARTIDO (TU DISEÑO ORIGINAL) */
 .partido-card {
     background: white;
     margin-bottom: 12px;
     padding: 15px;
     border-radius: 8px;
     border-left: 5px solid var(--primary);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    /* Forzamos un ancho mínimo para que la tabla no se aplaste en móviles */
-    min-width: 600px; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.85rem;
-    color: #666;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
-}
-
-.card-body {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.equipo-col {
-    flex: 1;
-    font-weight: bold;
-}
-
-.local { text-align: right; padding-right: 15px; }
-.visita { text-align: left; padding-left: 15px; }
-
-.marcador-col input {
-    width: 35px;
-    height: 35px;
-    text-align: center;
-    font-weight: bold;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-/* --- RESULTADOS REALES (Título grande) --- */
-.real-col div:first-child, 
-.etiqueta-real {
-    font-size: 16px !important;
-    font-weight: 900 !important;
-    color: #1a1a1a;
-}
-
-/* --- AJUSTE ESPECÍFICO PARA TELÉFONOS --- */
+/* AJUSTE PARA TELÉFONO */
 @media (max-width: 768px) {
-    .container {
-        padding: 10px;
+    /* Mantenemos el modo horizontal (flex-row) para que el bloque siga a la izquierda */
+    .layout-principal {
+        display: flex;
+        flex-direction: row; 
+        overflow-x: auto; /* Permite deslizar a la derecha para ver toda la quiniela */
     }
 
     .sidebar {
-        width: 180px;
-        min-width: 180px;
-        /* Al NO tener 'left: 0', el sticky solo funciona en el eje vertical (top) */
+        /* Se mantiene FLOTANTE a la izquierda mientras scrolleas arriba/abajo */
         position: sticky;
-        top: 0; 
+        left: 0; 
+        top: 5px;
+        width: 150px;
+        min-width: 140px;
     }
 
-    .partido-card {
-        min-width: 550px; /* Ancho suficiente para ver todo deslizando */
+    .content-fixture {
+        /* Mantiene su tamaño original para que puedas deslizar y verlo todo */
+        min-width: 500px; 
     }
 }
