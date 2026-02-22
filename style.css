@@ -33,31 +33,36 @@ header {
 
 /* SIDEBAR FIJA (Funciona en PC y Móvil) */
 .sidebar {
-    width: 250px;
-    position: -webkit-sticky; /* Soporte Safari */
+    width: 280px;
+    position: -webkit-sticky;
     position: sticky;
     top: 10px; 
     z-index: 1000;
+    height: fit-content;
 }
 
 .content-fixture {
     flex: 1;
 }
 
-/* BOTONES DE QUINIELA */
+/* El botón cuando está solo y seleccionado */
 .btn-link {
+    display: flex !important; /* Forzamos el modo flex */
+    justify-content: space-between !important; /* NOMBRE a la izquierda, PUNTOS a la derecha */
+    align-items: center;
+    padding: 15px;
     background: white;
-    padding: 12px 15px; /* Más espacio interno */
     border: 1px solid #ddd;
     border-radius: 8px;
-    display: flex;
-    justify-content: space-between; /* ESTO SEPARA EL NOMBRE DE LOS PUNTOS */
-    align-items: center;
-    margin-bottom: 8px;
-    cursor: pointer;
-    text-decoration: none;
-    color: #333;
+    margin-bottom: 5px;
+    width: 100%;
+}
+
+/* Separación visual para los puntos */
+.btn-link span:last-child {
+    margin-left: 20px;
     font-weight: bold;
+    color: var(--primary);
 }
 
 /* ESPACIADO EXTRA PARA LOS PUNTOS */
@@ -70,9 +75,9 @@ header {
 }
 
 .quiniela-activa {
-    background: var(--primary) !important;
+    background: #01215b !important;
     color: white !important;
-    border: 2px solid var(--gold) !important;
+    border: 2px solid #d4af37 !important;
 }
 
 /* TARJETAS DE PARTIDOS (Mantenemos tu diseño horizontal) */
@@ -122,6 +127,7 @@ header {
     margin-bottom: 5px;
     display: block;
 }
+
 
 
 
