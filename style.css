@@ -50,13 +50,11 @@ header {
 
 /* LA SIDEBAR: Ahora es una lista normal que se va al hacer scroll */
 .sidebar {
-    position: relative !important; /* Cambiado de sticky a relative */
     width: 280px;
-    background: #fff;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    top: auto !important; /* Reset de posición */
+    position: sticky; 
+    top: 10px;       
+    height: fit-content;
+    z-index: 100;
 }
 
 .content-fixture {
@@ -106,14 +104,22 @@ header {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    padding: 10px;
-    margin-bottom: 5px;
+    padding: 12px;
+    margin-bottom: 8px;
     background: #fff;
     border: 1px solid #ddd;
+    border-radius: 8px;
 }
 
 .btn-link:hover {
     background: #f8f9fa;
+}
+
+.quiniela-activa {
+    background: #01215b !important;
+    color: white !important;
+    border-color: #d4af37 !important;
+    font-weight: bold;
 }
 
 /* =========================================
@@ -172,4 +178,5 @@ header {
         width: 100%;
     }
 }
+
 
