@@ -318,19 +318,21 @@ async function guardarQuinielaCompleta() {
 
 
 // 7. CARGAR UNA QUINIELA AL HACER CLIC EN EL NOMBRE
+
 async function cargarDesdeDB(nombre) {
     try {
-        // 1. LIMPIEZA ABSOLUTA DE INPUTS (Para que no se mezclen Luis y Carlos)
+        // 1. LIMPIAR TODO ANTES DE EMPEZAR
         document.getElementById('nombre-usuario').value = nombre;
-        const inputs = document.querySelectorAll('.marcador-col input');
-        inputs.forEach(i => i.value = ""); // Ponemos todos los cuadritos vacíos
+        // Ponemos todos los marcadores en blanco
+        document.querySelectorAll('.marcador-col input').forEach(input => {
+            input.value = ""; 
+        });
 
-        // 2. PETICIÓN AL SERVIDOR
+        // 2. PEDIR DATOS
         const res = await fetch(`${API_URL}/cargar/${nombre}`);
-        if (!res.ok) throw new Error("Error de red");
         const datos = await res.json();
 
-        // 3. CARGAMOS LOS DATOS NUEVOS
+        // 3. PONER LOS GOLES DEL USUARIO
         datos.forEach(d => {
             const inL = document.getElementById(`L-${d.id}`);
             const inV = document.getElementById(`V-${d.id}`);
@@ -340,30 +342,29 @@ async function cargarDesdeDB(nombre) {
 
         if (typeof actualizarTorneo === 'function') actualizarTorneo();
 
-        // 4. MANIPULACIÓN DE LA LISTA (Ocultar a los demás)
+        // 4. LOGICA DE LA SIDEBAR (Solo queda el que elegiste)
         const botones = document.querySelectorAll('.btn-link');
         botones.forEach(btn => {
             if (btn.innerText.toLowerCase().includes(nombre.toLowerCase())) {
-                btn.style.display = "flex"; // Solo queda el seleccionado
-                btn.classList.add('activo-seleccionado');
+                btn.style.setProperty('display', 'flex', 'important');
+                btn.classList.add('quiniela-activa');
             } else {
-                btn.style.display = "none"; // Los otros 19 desaparecen
+                btn.style.setProperty('display', 'none', 'important');
             }
         });
 
-        // 5. Botón pequeño para volver a ver la lista (Opcional pero recomendado)
+        // 5. BOTÓN PARA VOLVER A CARGAR TODO
         if (!document.getElementById('btn-reset')) {
-            const btnReset = document.createElement('button');
-            btnReset.id = 'btn-reset';
-            btnReset.innerText = "✕ Ver todos";
-            btnReset.style = "width:100%; margin-top:10px; cursor:pointer; padding:5px; background:#ddd; border:none; border-radius:4px;";
-            btnReset.onclick = () => location.reload(); // Recarga para ver a todos otra vez
-            document.getElementById('links-container').appendChild(btnReset);
+            const btnR = document.createElement('button');
+            btnR.id = 'btn-reset';
+            btnR.innerText = "✕ Ver todos";
+            btnR.style = "width:100%; margin-top:10px; cursor:pointer; padding:8px; background:#ddd; border:none; border-radius:5px; font-weight:bold;";
+            btnR.onclick = () => { location.reload(); };
+            document.getElementById('links-container').appendChild(btnR);
         }
 
     } catch (e) {
-        console.error(e);
-        alert("Error cargando a " + nombre);
+        console.error("Error:", e);
     }
 }
 
@@ -678,6 +679,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
