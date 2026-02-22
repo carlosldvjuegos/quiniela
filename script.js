@@ -320,16 +320,17 @@ async function guardarQuinielaCompleta() {
 // 7. CARGAR UNA QUINIELA AL HACER CLIC EN EL NOMBRE
 async function cargarDesdeDB(nombre) {
     try {
-        // 1. LIMPIEZA TOTAL: Antes de cargar nada, vaciamos todos los inputs
+        // 1. LIMPIEZA ABSOLUTA DE INPUTS (Para que no se mezclen Luis y Carlos)
         document.getElementById('nombre-usuario').value = nombre;
-        const todosLosInputs = document.querySelectorAll('.marcador-col input');
-        todosLosInputs.forEach(input => input.value = ""); 
+        const inputs = document.querySelectorAll('.marcador-col input');
+        inputs.forEach(i => i.value = ""); // Ponemos todos los cuadritos vacíos
 
-        // 2. CARGA DE DATOS: Traemos la quiniela seleccionada
+        // 2. PETICIÓN AL SERVIDOR
         const res = await fetch(`${API_URL}/cargar/${nombre}`);
-        if (!res.ok) throw new Error("Error al cargar");
+        if (!res.ok) throw new Error("Error de red");
         const datos = await res.json();
 
+        // 3. CARGAMOS LOS DATOS NUEVOS
         datos.forEach(d => {
             const inL = document.getElementById(`L-${d.id}`);
             const inV = document.getElementById(`V-${d.id}`);
@@ -339,31 +340,30 @@ async function cargarDesdeDB(nombre) {
 
         if (typeof actualizarTorneo === 'function') actualizarTorneo();
 
-        // 3. VISIBILIDAD: Solo dejamos a Luis (o el seleccionado) en la lista
+        // 4. MANIPULACIÓN DE LA LISTA (Ocultar a los demás)
         const botones = document.querySelectorAll('.btn-link');
         botones.forEach(btn => {
             if (btn.innerText.toLowerCase().includes(nombre.toLowerCase())) {
-                btn.style.display = "flex"; // Mostramos el elegido
-                btn.classList.add('quiniela-activa');
+                btn.style.display = "flex"; // Solo queda el seleccionado
+                btn.classList.add('activo-seleccionado');
             } else {
-                btn.style.display = "none"; // ESCONDEMOS EL RESTO
+                btn.style.display = "none"; // Los otros 19 desaparecen
             }
         });
 
-        // Agregamos un botón para poder volver a ver la lista completa
-        let btnVolver = document.getElementById('btn-reset-lista');
-        if (!btnVolver) {
-            btnVolver = document.createElement('button');
-            btnVolver.id = 'btn-reset-lista';
-            btnVolver.innerText = "🔄 Cambiar Usuario";
-            btnVolver.style = "width: 100%; margin-top: 10px; padding: 8px; cursor: pointer; background: #ddd; border: none; border-radius: 5px;";
-            btnVolver.onclick = () => location.reload(); // Recarga la página para mostrar todos de nuevo
-            document.getElementById('links-container').appendChild(btnVolver);
+        // 5. Botón pequeño para volver a ver la lista (Opcional pero recomendado)
+        if (!document.getElementById('btn-reset')) {
+            const btnReset = document.createElement('button');
+            btnReset.id = 'btn-reset';
+            btnReset.innerText = "✕ Ver todos";
+            btnReset.style = "width:100%; margin-top:10px; cursor:pointer; padding:5px; background:#ddd; border:none; border-radius:4px;";
+            btnReset.onclick = () => location.reload(); // Recarga para ver a todos otra vez
+            document.getElementById('links-container').appendChild(btnReset);
         }
 
     } catch (e) {
         console.error(e);
-        alert("Error al cargar quiniela");
+        alert("Error cargando a " + nombre);
     }
 }
 
@@ -678,6 +678,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
