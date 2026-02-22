@@ -19,45 +19,52 @@ header {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1300px; /* Un poco más ancho para el scroll lateral */
     margin: 0 auto;
     padding: 20px;
 }
 
-/* ESTRUCTURA ORIGINAL */
+/* --- ESTRUCTURA PRINCIPAL --- */
 .layout-principal {
     display: flex;
     align-items: flex-start;
     gap: 20px;
+    /* Esto permite que si el contenido es más ancho que la pantalla, se pueda arrastrar */
+    overflow-x: auto; 
+    padding-bottom: 20px;
 }
 
-/* ESTO ES LO QUE HACE QUE LUIS Y CARLOS SEAN FLOTANTES */
+/* SIDEBAR: Se queda fija a la izquierda */
 .sidebar {
     width: 250px;
-    position: -webkit-sticky;
+    min-width: 250px; /* Evita que se encoja al arrastrar */
     position: sticky;
-    top: 10px; /* Se queda pegado a 10px del borde superior al bajar */
+    left: 0; /* Se pega a la izquierda al arrastrar el contenido */
+    top: 10px;
     z-index: 1000;
     height: fit-content;
 }
 
+/* CONTENEDOR DE PARTIDOS */
 .content-fixture {
     flex: 1;
+    min-width: 800px; /* Forzamos un ancho mínimo para que no se amontone y se pueda arrastrar */
 }
 
-/* BOTONES DE QUINIELA (Con separación de puntos) */
+/* --- BOTONES DE USUARIO (Con separación de puntos) --- */
 .btn-link {
     background: white;
     padding: 12px 15px;
     border: 1px solid #ddd;
     border-radius: 8px;
     display: flex;
-    justify-content: space-between; /* Luis a un lado, puntos al otro */
+    justify-content: space-between; /* SEPARA NOMBRE DE PUNTOS */
     align-items: center;
     margin-bottom: 8px;
     cursor: pointer;
     font-weight: bold;
     color: #333;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .quiniela-activa {
@@ -66,7 +73,7 @@ header {
     border: 2px solid var(--gold) !important;
 }
 
-/* TARJETAS DE PARTIDO (TU DISEÑO ORIGINAL VOLVIÓ) */
+/* --- TARJETAS DE PARTIDO (TU FORMATO ORIGINAL) --- */
 .partido-card {
     background: white;
     margin-bottom: 12px;
@@ -100,6 +107,12 @@ header {
 .local { text-align: right; padding-right: 15px; }
 .visita { text-align: left; padding-left: 15px; }
 
+.marcador-col {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
 .marcador-col input {
     width: 35px;
     height: 35px;
@@ -109,26 +122,37 @@ header {
     border-radius: 4px;
 }
 
-/* TAMAÑO DE LETRA RESULTADOS REALES */
-.real-col div:first-child, .etiqueta-real {
+/* --- RESULTADOS REALES (Título grande) --- */
+.real-col div:first-child, 
+.etiqueta-real {
     font-size: 16px !important;
     font-weight: 900 !important;
+    color: #1a1a1a;
+    display: block;
 }
 
-/* AJUSTE MÓVIL (SOLO PARA QUE NO SE AMONTONE) */
+/* --- AJUSTE PARA TELÉFONOS (SCROLL LATERAL) --- */
 @media (max-width: 768px) {
-    .layout-principal {
-        /* Mantenemos el flex-row para que la sidebar siga al lado */
-        display: flex;
-        flex-direction: row;
-        overflow-x: visible; 
+    .container {
+        padding: 10px;
     }
     
+    .layout-principal {
+        /* No usamos column, mantenemos el flex para que Luis esté a la izquierda */
+        display: flex; 
+        flex-direction: row; 
+    }
+
     .sidebar {
-        /* Sigue siendo flotante en el teléfono */
+        /* Se queda pegado a la izquierda del celular */
         position: sticky;
-        top: 5px;
-        min-width: 130px;
-        width: 130px;
+        left: 0;
+        width: 180px; /* Un poco más angosto en móvil */
+        min-width: 180px;
+    }
+
+    .content-fixture {
+        /* El fixture mantiene su ancho para que puedas arrastrarlo */
+        min-width: 600px; 
     }
 }
