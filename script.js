@@ -341,6 +341,14 @@ async function cargarDesdeDB(nombre) {
     } catch (e) {
         alert("Error al cargar la quiniela.");
     }
+	
+	// Esto es un ejemplo: cambia el estilo del botón seleccionado
+    document.querySelectorAll('.btn-link').forEach(btn => btn.style.border = "1px solid #ddd");
+    const activo = Array.from(document.querySelectorAll('.btn-link')).find(b => b.innerText.includes(nombre));
+    if(activo) {
+        activo.style.border = "2px solid var(--primary)";
+        activo.style.background = "#eef2f7";
+    }
 }
 
 async function calcularClasificados() {
@@ -661,6 +669,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
