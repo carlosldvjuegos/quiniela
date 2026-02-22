@@ -131,39 +131,28 @@ header {
     display: block;
 }
 
-/* --- AJUSTE PARA TELÉFONOS (FLOTANTE SOLO VERTICAL) --- */
+/* --- AJUSTE PARA TELÉFONOS (SCROLL LATERAL) --- */
 @media (max-width: 768px) {
     .container {
         padding: 10px;
-        /* Permitimos que el scroll horizontal sea de la página entera */
-        overflow-x: visible; 
     }
     
     .layout-principal {
+        /* No usamos column, mantenemos el flex para que Luis esté a la izquierda */
         display: flex; 
-        flex-direction: row;
-        /* IMPORTANTE: No bloqueamos el ancho para que el sticky funcione */
-        align-items: flex-start;
+        flex-direction: row; 
     }
 
     .sidebar {
-        /* ESTO ES LO QUE BUSCAS: */
-        position: -webkit-sticky;
+        /* Se queda pegado a la izquierda del celular */
         position: sticky;
-        top: 10px; /* Se queda pegado arriba cuando subes/bajas */
-        
-        /* NO ponemos "left: 0" para que se desplace al mover a los lados */
-        
-        width: 160px; 
-        min-width: 160px;
-        z-index: 1000;
-        background-color: var(--bg); /* Para que no se transparente al bajar */
+        left: 0;
+        width: 180px; /* Un poco más angosto en móvil */
+        min-width: 180px;
     }
 
     .content-fixture {
-        /* Mantenemos el tamaño original de tu quiniela */
-        flex: 1;
+        /* El fixture mantiene su ancho para que puedas arrastrarlo */
         min-width: 600px; 
     }
 }
-
