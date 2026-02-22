@@ -175,7 +175,7 @@ async function renderizarFixture() {
     try {
         const resp = await fetch(`${API_URL}/obtener-resultados-db`);
         resultadosDB = await resp.json();
-    } catch (e) { console.log("Error al cargar reales"); }
+    } catch (e) { console.log("Error al cargar resultados reales"); }
 
     partidosData.forEach(p => {
         const r = resultadosDB.find(res => res.id === p.id);
@@ -184,21 +184,21 @@ async function renderizarFixture() {
         const card = document.createElement("div");
         card.className = "partido";
         card.innerHTML = `
-            <div class="header-card">
+            <div class="info-superior">
                 <span class="fase-txt">${p.fase} - ${p.grupo || ''}</span>
-                <div class="info-derecha">
+                <div class="derecha-header">
                     <span class="fecha-txt">${p.fecha}</span>
-                    <div class="real-badge-container">
+                    <div class="real-container">
                         <small>REAL</small>
-                        <div class="real-marcador">${textoReal}</div>
+                        <div class="real-valor">${textoReal}</div>
                     </div>
                 </div>
             </div>
-            <div class="cuerpo-card">
+            <div class="fila-juego">
                 <div class="equipo local">${p.local}</div>
-                <div class="inputs-juego">
+                <div class="marcador-inputs">
                     <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
-                    <span>-</span>
+                    <span class="vs">-</span>
                     <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
                 </div>
                 <div class="equipo visita">${p.visita}</div>
@@ -207,7 +207,6 @@ async function renderizarFixture() {
         fixtureCont.appendChild(card);
     });
 }
-
 
 
 // 4. ACTUALIZAR LISTA DE REGISTRADAS CON RANKING (DE MAYOR A MENOR)
@@ -661,6 +660,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
