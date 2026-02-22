@@ -320,12 +320,16 @@ async function guardarQuinielaCompleta() {
 // 7. CARGAR UNA QUINIELA AL HACER CLIC EN EL NOMBRE
 async function cargarDesdeDB(nombre) {
     try {
-        // 1. Cargamos los datos en los cuadritos (goles)
-        const res = await fetch(`${API_URL}/cargar/${nombre}`);
-        const datos = await res.json();
-        
+        // 1. LIMPIEZA TOTAL: Antes de cargar nada, vaciamos todos los inputs
         document.getElementById('nombre-usuario').value = nombre;
-        
+        const todosLosInputs = document.querySelectorAll('.marcador-col input');
+        todosLosInputs.forEach(input => input.value = ""); 
+
+        // 2. CARGA DE DATOS: Traemos la quiniela seleccionada
+        const res = await fetch(`${API_URL}/cargar/${nombre}`);
+        if (!res.ok) throw new Error("Error al cargar");
+        const datos = await res.json();
+
         datos.forEach(d => {
             const inL = document.getElementById(`L-${d.id}`);
             const inV = document.getElementById(`V-${d.id}`);
@@ -335,28 +339,31 @@ async function cargarDesdeDB(nombre) {
 
         if (typeof actualizarTorneo === 'function') actualizarTorneo();
 
-        // 2. MAGIA: Solo dejamos visible al usuario seleccionado
-        const contenedorNombres = document.getElementById('links-container');
-        const botones = contenedorNombres.querySelectorAll('.btn-link');
-        
+        // 3. VISIBILIDAD: Solo dejamos a Luis (o el seleccionado) en la lista
+        const botones = document.querySelectorAll('.btn-link');
         botones.forEach(btn => {
-            // Buscamos el texto exacto dentro del botón
             if (btn.innerText.toLowerCase().includes(nombre.toLowerCase())) {
-                btn.style.setProperty('display', 'flex', 'important');
+                btn.style.display = "flex"; // Mostramos el elegido
                 btn.classList.add('quiniela-activa');
             } else {
-                // ESTO BORRA A LOS DEMÁS DE LA VISTA
-                btn.style.setProperty('display', 'none', 'important');
+                btn.style.display = "none"; // ESCONDEMOS EL RESTO
             }
         });
 
-        // 3. QUITAMOS EL TEXTO DE "CARGANDO PUNTOS..."
-        const resumen = document.getElementById('resumen-diario');
-        if (resumen) resumen.style.display = 'none';
+        // Agregamos un botón para poder volver a ver la lista completa
+        let btnVolver = document.getElementById('btn-reset-lista');
+        if (!btnVolver) {
+            btnVolver = document.createElement('button');
+            btnVolver.id = 'btn-reset-lista';
+            btnVolver.innerText = "🔄 Cambiar Usuario";
+            btnVolver.style = "width: 100%; margin-top: 10px; padding: 8px; cursor: pointer; background: #ddd; border: none; border-radius: 5px;";
+            btnVolver.onclick = () => location.reload(); // Recarga la página para mostrar todos de nuevo
+            document.getElementById('links-container').appendChild(btnVolver);
+        }
 
     } catch (e) {
-        console.error("Error cargando quiniela:", e);
-        alert("No se pudo cargar la quiniela de " + nombre);
+        console.error(e);
+        alert("Error al cargar quiniela");
     }
 }
 
@@ -671,6 +678,7 @@ window.onload = async () => {
     actualizarListaLinks();    // Carga el ranking lateral
     actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
 };
+
 
 
 
