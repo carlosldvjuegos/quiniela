@@ -71,13 +71,13 @@ header {
 
 /* Para asegurar que el texto dentro del span también sea negro */
 .btn-link span {
-    color: #000000 !important;
+    color: white !important;
 }
 
 /* El color de los puntos (el número a la derecha) */
 .badge-puntos {
     background-color: #01215b; /* Fondo azul oscuro para el puntaje */
-    color: #ffffff !important; /* Número en blanco para que resalte sobre el azul */
+    color: white !important; /* Número en blanco para que resalte sobre el azul */
     padding: 4px 8px;
     border-radius: 5px;
     font-weight: bold;
@@ -192,6 +192,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
