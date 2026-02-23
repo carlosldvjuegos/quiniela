@@ -53,18 +53,33 @@ header {
 
 /* BOTONES DE USUARIO */
 .btn-link {
-    color-font: white !important; /* Color negro para el texto */
-    width: 100%;
-    background: #f8f9fa;
-    padding: 12px;
+    background-color: #ffffff; /* Fondo blanco o gris muy claro */
+    color: #000000 !important; /* FUERZA EL COLOR NEGRO EN EL TEXTO */
     border: 1px solid #ddd;
+    padding: 10px 15px;
+    margin-bottom: 8px;
     border-radius: 8px;
     display: flex;
     justify-content: space-between;
-    margin-bottom: 8px;
-    cursor: pointer;
+    align-items: center;
+    width: 100%;
+    font-weight: 700; /* Hace la letra más gruesa */
+    text-transform: uppercase; /* Opcional: pone el nombre en mayúsculas para que se vea mejor */
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1); /* Le da un poco de sombra */
+}
+
+/* Para asegurar que el texto dentro del span también sea negro */
+.btn-link span {
+    color: #000000 !important;
+}
+
+/* El color de los puntos (el número a la derecha) */
+.badge-puntos {
+    background-color: #01215b; /* Fondo azul oscuro para el puntaje */
+    color: #ffffff !important; /* Número en blanco para que resalte sobre el azul */
+    padding: 4px 8px;
+    border-radius: 5px;
     font-weight: bold;
-    transition: 0.3s;
 }
 
 .btn-link:hover { background: #e9ecef; }
@@ -176,6 +191,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
