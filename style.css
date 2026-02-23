@@ -2,157 +2,176 @@
     --primary: #01215b;
     --gold: #d4af37;
     --bg: #f0f2f5;
+    --white: #ffffff;
 }
 
 body {
     font-family: 'Roboto', sans-serif;
     background-color: var(--bg);
     margin: 0;
+    color: #333;
 }
 
 header {
     background: var(--primary);
     color: white;
-    padding: 15px;
+    padding: 20px;
     text-align: center;
-    border-bottom: 4px solid var(--gold);
+    border-bottom: 5px solid var(--gold);
 }
 
 .container {
-    max-width: 1300px; /* Un poco más ancho para el scroll lateral */
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
 }
 
-/* --- ESTRUCTURA PRINCIPAL --- */
 .layout-principal {
     display: flex;
-    align-items: flex-start;
     gap: 20px;
-    /* Esto permite que si el contenido es más ancho que la pantalla, se pueda arrastrar */
-    overflow-x: auto; 
-    padding-bottom: 20px;
+    align-items: flex-start;
 }
 
-/* SIDEBAR: Se queda fija a la izquierda */
+/* SIDEBAR */
 .sidebar {
-    width: 250px;
-    min-width: 250px; /* Evita que se encoja al arrastrar */
+    width: 280px;
+    min-width: 280px;
     position: sticky;
-    left: 0; /* Se pega a la izquierda al arrastrar el contenido */
-    top: 10px;
-    z-index: 1000;
-    height: fit-content;
-}
-
-/* CONTENEDOR DE PARTIDOS */
-.content-fixture {
-    flex: 1;
-    min-width: 800px; /* Forzamos un ancho mínimo para que no se amontone y se pueda arrastrar */
-}
-
-/* --- BOTONES DE USUARIO (Con separación de puntos) --- */
-.btn-link {
+    top: 20px;
     background: white;
-    padding: 12px 15px;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.sidebar h3 {
+    margin-top: 0;
+    color: var(--primary);
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 5px;
+}
+
+/* BOTONES DE USUARIO */
+.btn-link {
+    width: 100%;
+    background: #f8f9fa;
+    padding: 12px;
     border: 1px solid #ddd;
     border-radius: 8px;
     display: flex;
-    justify-content: space-between; /* SEPARA NOMBRE DE PUNTOS */
-    align-items: center;
+    justify-content: space-between;
     margin-bottom: 8px;
     cursor: pointer;
     font-weight: bold;
-    color: #333;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: 0.3s;
 }
+
+.btn-link:hover { background: #e9ecef; }
 
 .quiniela-activa {
     background: var(--primary) !important;
     color: white !important;
-    border: 2px solid var(--gold) !important;
+    border-color: var(--gold) !important;
 }
 
-/* --- TARJETAS DE PARTIDO (TU FORMATO ORIGINAL) --- */
+/* FIXTURE */
+.content-fixture { flex: 1; }
+
 .partido-card {
     background: white;
-    margin-bottom: 12px;
-    padding: 15px;
-    border-radius: 8px;
-    border-left: 5px solid var(--primary);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border-left: 6px solid var(--primary);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    overflow: hidden;
 }
 
 .card-header {
+    background: #fcfcfc;
+    padding: 8px 15px;
     display: flex;
     justify-content: space-between;
-    font-size: 0.85rem;
-    color: #666;
-    margin-bottom: 10px;
+    font-size: 0.8rem;
+    color: #777;
     border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
 }
 
 .card-body {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    padding: 15px;
+    gap: 10px;
 }
 
 .equipo-col {
-    flex: 1;
+    flex: 2;
     font-weight: bold;
+    font-size: 1rem;
 }
 
-.local { text-align: right; padding-right: 15px; }
-.visita { text-align: left; padding-left: 15px; }
+.local { text-align: right; }
+.visita { text-align: left; }
 
 .marcador-col {
+    flex: 1;
     display: flex;
+    justify-content: center;
     align-items: center;
     gap: 5px;
 }
 
 .marcador-col input {
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     text-align: center;
+    font-size: 1.2rem;
+    font-weight: 900;
+    border: 2px solid #eee;
+    border-radius: 5px;
+}
+
+/* RESULTADOS REALES */
+.real-col {
+    flex: 1;
+    text-align: center;
+    background: #fffdf0;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px dashed var(--gold);
+    margin-left: 10px;
+}
+
+.etiqueta-real { font-size: 0.6rem; text-transform: uppercase; display: block; }
+.cuadro-real { font-weight: 900; color: #27ae60; font-size: 1.1rem; }
+
+/* PANEL DE CONTROL */
+.user-panel {
+    background: white;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.user-panel input { padding: 10px; border: 1px solid #ddd; border-radius: 5px; flex: 1; }
+
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
     font-weight: bold;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    color: white;
 }
 
-/* --- RESULTADOS REALES (Título grande) --- */
-.real-col div:first-child, 
-.etiqueta-real {
-    font-size: 16px !important;
-    font-weight: 900 !important;
-    color: #1a1a1a;
-    display: block;
-}
+.btn-save { background: #27ae60; }
+.btn-report-master { background: #2980b9; }
 
-/* --- AJUSTE PARA TELÉFONOS (SCROLL LATERAL) --- */
 @media (max-width: 768px) {
-    .container {
-        padding: 10px;
-    }
-    
-    .layout-principal {
-        /* No usamos column, mantenemos el flex para que Luis esté a la izquierda */
-        display: flex; 
-        flex-direction: row; 
-    }
-
-    .sidebar {
-        /* Se queda pegado a la izquierda del celular */
-        position: sticky;
-        left: 0;
-        width: 180px; /* Un poco más angosto en móvil */
-        min-width: 180px;
-    }
-
-    .content-fixture {
-        /* El fixture mantiene su ancho para que puedas arrastrarlo */
-        min-width: 600px; 
-    }
+    .layout-principal { flex-direction: column; }
+    .sidebar { width: 100%; position: relative; top: 0; }
+    .equipo-col { font-size: 0.85rem; }
 }
