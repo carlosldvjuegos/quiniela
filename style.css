@@ -53,7 +53,7 @@ header {
 
 /* BOTONES DE USUARIO */
 .btn-link {
-    color-font: black !important; /* Color negro para el texto */
+    color-font: white !important; /* Color negro para el texto */
     width: 100%;
     background: #f8f9fa;
     padding: 12px;
@@ -176,6 +176,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
