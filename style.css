@@ -71,7 +71,7 @@ header {
 
 .quiniela-activa {
     background: var(--primary) !important;
-    color: Black !important;
+    color: white !important;
     border-color: var(--gold) !important;
 }
 
@@ -176,6 +176,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
