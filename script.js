@@ -1,9 +1,9 @@
-// Cambia tu variable API_URL por esta línea inteligente:
+// 0. CONFIGURACIÓN DE URL
 const API_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
     ? window.location.origin 
-    : "https://quiniela-pcas.onrender.com"; // Aquí pones la URL que te dé Render
+    : "https://quiniela-pcas.onrender.com"; 
 
-// 1. LISTA DE PARTIDOS (Asegúrate de que coincida con admin-script.js)
+// 1. LISTA DE PARTIDOS
 const partidosData = [
     // GRUPO A
     { id: 1, fase: "Grupos", grupo: "A", fecha: "11/06/2026", local: "México", visita: "Sudáfrica" },
@@ -104,20 +104,20 @@ const partidosData = [
     // --- DIECISEISAVOS (IDs 73-88) ---
     { id: 73, fase: "16vos", grupo: "Eliminatoria", fecha: "Domingo 28/06/2026", local: "2A", visita: "2B" },
     { id: 74, fase: "16vos", grupo: "Eliminatoria", fecha: "Lunes 29/06/2026", local: "1C", visita: "2F" },
-    { id: 75, fase: "16vos", grupo: "Eliminatoria", fecha: "Lunes 29/06/2026", local: "1E", visita: "3ABCDF" },
+    { id: 75, fase: "16vos", grupo: "Eliminatoria", fecha: "Lunes 29/06/2026", local: "1E", visita: "3T1" },
     { id: 76, fase: "16vos", grupo: "Eliminatoria", fecha: "Martes 30/06/2026", local: "1F", visita: "2C" },
     { id: 77, fase: "16vos", grupo: "Eliminatoria", fecha: "Martes 30/06/2026", local: "2E", visita: "2I" },
-    { id: 78, fase: "16vos", grupo: "Eliminatoria", fecha: "Martes 30/06/2026", local: "1I", visita: "3CDFGH" },
-    { id: 79, fase: "16vos", grupo: "Eliminatoria", fecha: "Miércoles 01/07/2026", local: "1A", visita: "3CEFHI" },
-    { id: 80, fase: "16vos", grupo: "Eliminatoria", fecha: "Miércoles 01/07/2026", local: "1L", visita: "3EHIJK" },
-    { id: 81, fase: "16vos", grupo: "Eliminatoria", fecha: "Miércoles 01/07/2026", local: "1G", visita: "3AEHIJ" },
-    { id: 82, fase: "16vos", grupo: "Eliminatoria", fecha: "Jueves 02/07/2026", local: "1D", visita: "3BEFIJ" },
+    { id: 78, fase: "16vos", grupo: "Eliminatoria", fecha: "Martes 30/06/2026", local: "1I", visita: "3T2" },
+    { id: 79, fase: "16vos", grupo: "Eliminatoria", fecha: "Miércoles 01/07/2026", local: "1A", visita: "3T3" },
+    { id: 80, fase: "16vos", grupo: "Eliminatoria", fecha: "Miércoles 01/07/2026", local: "1L", visita: "3T4" },
+    { id: 81, fase: "16vos", grupo: "Eliminatoria", fecha: "Miércoles 01/07/2026", local: "1G", visita: "3T5" },
+    { id: 82, fase: "16vos", grupo: "Eliminatoria", fecha: "Jueves 02/07/2026", local: "1D", visita: "3T6" },
     { id: 83, fase: "16vos", grupo: "Eliminatoria", fecha: "Jueves 02/07/2026", local: "1H", visita: "2J" },
     { id: 84, fase: "16vos", grupo: "Eliminatoria", fecha: "Viernes 03/07/2026", local: "2K", visita: "2L" },
-    { id: 85, fase: "16vos", grupo: "Eliminatoria", fecha: "Viernes 03/07/2026", local: "1B", visita: "3EFGIJ" },
+    { id: 85, fase: "16vos", grupo: "Eliminatoria", fecha: "Viernes 03/07/2026", local: "1B", visita: "3T7" },
     { id: 86, fase: "16vos", grupo: "Eliminatoria", fecha: "Viernes 03/07/2026", local: "2D", visita: "2G" },
     { id: 87, fase: "16vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "1J", visita: "2H" },
-    { id: 88, fase: "16vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "1K", visita: "3DEIJL" },
+    { id: 88, fase: "16vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "1K", visita: "3T8" },
 
     // --- OCTAVOS (IDs 89-96) ---
     { id: 89, fase: "8vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "W73", visita: "W75" },
@@ -144,31 +144,22 @@ const partidosData = [
     { id: 104, fase: "Final", grupo: "Eliminatoria", fecha: "Domingo 19/07/2026", local: "W101", visita: "W102" }
 ];
 
-// 2. LÓGICA DE PUNTOS SEGÚN TU IMAGEN
+// 2. LÓGICA DE PUNTOS
 function calcularLogicaPuntos(pL, pV, rL, rV) {
-    // REGLA: Acierto del ganador y resultado exacto (5 puntos)
     if (pL === rL && pV === rV) return 5;
-
     let puntos = 0;
-    const tendenciaPredicha = Math.sign(pL - pV); // 1 gana local, -1 visita, 0 empate
+    const tendenciaPredicha = Math.sign(pL - pV);
     const tendenciaReal = Math.sign(rL - rV);
-
-    // REGLA: Acierto del equipo ganador o empate (2 puntos)
-    if (tendenciaPredicha === tendenciaReal) {
-        puntos = 2;
-    }
-
-    // REGLA: Acierto de un marcador individual (1 punto adicional por cada uno)
-    // Ejemplo de tu imagen: Predicho 2-1, Real 2-0 -> 2 (tendencia) + 1 (goles local) = 3 pts.
+    if (tendenciaPredicha === tendenciaReal) puntos = 2;
     if (pL === rL) puntos += 1;
     if (pV === rV) puntos += 1;
-
     return puntos;
 }
 
-// 3. RENDERIZAR LA TABLA PARA EL USUARIO
+// 3. RENDERIZAR LA TABLA
 async function renderizarFixture() {
     const fixtureCont = document.getElementById("fixture-container");
+    if (!fixtureCont) return;
     fixtureCont.innerHTML = "";
 
     let resultadosDB = [];
@@ -190,15 +181,12 @@ async function renderizarFixture() {
             </div>
             <div class="card-body">
                 <div class="equipo-col local">${p.local}</div>
-                
                 <div class="marcador-col">
                     <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
                     <span class="separador">-</span>
                     <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
                 </div>
-
                 <div class="equipo-col visita">${p.visita}</div>
-
                 <div class="real-col">
                     <div class="etiqueta-real">Resultados Reales</div>
                     <div class="cuadro-real">${textoReal}</div>
@@ -209,8 +197,7 @@ async function renderizarFixture() {
     });
 }
 
-
-// 4. ACTUALIZAR LISTA DE REGISTRADAS CON RANKING (DE MAYOR A MENOR)
+// 4. RANKING
 async function actualizarListaLinks() {
     const container = document.getElementById('links-container');
     if (!container) return;
@@ -223,84 +210,61 @@ async function actualizarListaLinks() {
 
         const usuarios = await resNombres.json();
         const resultadosOficiales = await resOficiales.json();
-
-        // Calculamos puntos para cada usuario
         let listaRanking = [];
 
         for (const user of usuarios) {
             const resPred = await fetch(`${API_URL}/cargar/${user.nombre_usuario}`);
             const predicciones = await resPred.json();
-
             let ptsTotales = 0;
             predicciones.forEach(pred => {
                 const oficial = resultadosOficiales.find(r => r.id === pred.id);
-                if (oficial) {
-                    ptsTotales += calcularLogicaPuntos(pred.gl, pred.gv, oficial.gl, oficial.gv);
-                }
+                if (oficial) ptsTotales += calcularLogicaPuntos(pred.gl, pred.gv, oficial.gl, oficial.gv);
             });
             listaRanking.push({ nombre: user.nombre_usuario, puntos: ptsTotales });
         }
 
-        // ORDENAR: Mayor puntaje primero
         listaRanking.sort((a, b) => b.puntos - a.puntos);
-
-        // Dibujar en el sidebar
         container.innerHTML = "";
         listaRanking.forEach((u, index) => {
             const icono = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : "•"));
             const btn = document.createElement('button');
             btn.className = "btn-link";
-            btn.innerHTML = `
-                <span>${icono} ${u.nombre}</span>
-                <span class="badge-puntos">${u.puntos} pts</span>
-            `;
+            btn.innerHTML = `<span>${icono} ${u.nombre}</span><span class="badge-puntos">${u.puntos} pts</span>`;
             btn.onclick = () => cargarDesdeDB(u.nombre);
             container.appendChild(btn);
         });
-
-    } catch (err) {
-        console.error("Error al cargar ranking:", err);
-    }
+    } catch (err) { console.error("Error ranking:", err); }
 }
 
-// 5. BOTÓN CALCULAR (Puntos actuales en pantalla)
+// 5. CALCULAR PUNTOS MANUAL
 async function calcularPuntos() {
     try {
         const response = await fetch(`${API_URL}/obtener-resultados-db`);
         const oficiales = await response.json();
-
         let sumaPuntos = 0;
         partidosData.forEach(p => {
             const gl = document.getElementById(`L-${p.id}`).value;
             const gv = document.getElementById(`V-${p.id}`).value;
             const oficial = oficiales.find(r => r.id === p.id);
-
             if (gl !== "" && gv !== "" && oficial) {
                 sumaPuntos += calcularLogicaPuntos(parseInt(gl), parseInt(gv), oficial.gl, oficial.gv);
             }
         });
-
         alert(`Tu puntaje actual es de: ${sumaPuntos} puntos.`);
-        actualizarListaLinks(); // Refrescar el ranking lateral
-    } catch (e) {
-        alert("Error al obtener resultados oficiales.");
-    }
+        actualizarListaLinks();
+    } catch (e) { alert("Error al obtener resultados oficiales."); }
 }
 
-// 6. GUARDAR QUINIELA
+// 6. GUARDAR
 async function guardarQuinielaCompleta() {
     const nombre = document.getElementById('nombre-usuario').value;
     if (!nombre) return alert("Escribe tu nombre.");
-
     const predicciones = [];
     partidosData.forEach(p => {
         const gl = document.getElementById(`L-${p.id}`).value;
         const gv = document.getElementById(`V-${p.id}`).value;
-        if (gl !== "" && gv !== "") {
-            predicciones.push({ id: p.id, gl: parseInt(gl), gv: parseInt(gv) });
-        }
+        if (gl !== "" && gv !== "") predicciones.push({ id: p.id, gl: parseInt(gl), gv: parseInt(gv) });
     });
-
     try {
         const res = await fetch(`${API_URL}/guardar`, {
             method: 'POST',
@@ -310,33 +274,18 @@ async function guardarQuinielaCompleta() {
         const data = await res.json();
         alert(data.mensaje);
         actualizarListaLinks();
-    } catch (e) {
-        alert("Error al guardar.");
-    }
+    } catch (e) { alert("Error al guardar."); }
 }
 
-
-
-
-
-// 7. CARGAR UNA QUINIELA AL HACER CLIC EN EL NOMBRE
+// 7. CARGAR DESDE DB
 async function cargarDesdeDB(nombre) {
     try {
-        // 1. LIMPIEZA TOTAL: Vaciar inputs para que no se mezclen datos
         const inputNombrePrincipal = document.getElementById('nombre-usuario');
         if (inputNombrePrincipal) inputNombrePrincipal.value = nombre;
+        document.querySelectorAll('.marcador-col input').forEach(input => input.value = "");
 
-        const todosLosInputs = document.querySelectorAll('.marcador-col input');
-        todosLosInputs.forEach(input => {
-            input.value = ""; // Borramos lo que sea que estuviera escrito antes
-        });
-
-        // 2. PETICIÓN AL SERVIDOR (Ajusta la URL si es necesario)
         const respuesta = await fetch(`${API_URL}/cargar/${nombre}`);
-        if (!respuesta.ok) throw new Error("Error en servidor");
         const datos = await respuesta.json();
-
-        // 3. CARGAR GOLES NUEVOS
         datos.forEach(partido => {
             const inL = document.getElementById(`L-${partido.id}`);
             const inV = document.getElementById(`V-${partido.id}`);
@@ -344,152 +293,75 @@ async function cargarDesdeDB(nombre) {
             if (inV) inV.value = partido.gv;
         });
 
-        if (typeof actualizarTorneo === 'function') actualizarTorneo();
-
-        // 4. FOCO TOTAL: Solo mostrar al seleccionado y ocultar al resto
-        const botones = document.querySelectorAll('.btn-link');
+        actualizarTorneo();
         
+        const botones = document.querySelectorAll('.btn-link');
         botones.forEach(btn => {
-            // Buscamos si el nombre está dentro del texto del botón
-            const esElSeleccionado = btn.innerText.toLowerCase().includes(nombre.toLowerCase());
-
-            if (esElSeleccionado) {
-                btn.style.setProperty('display', 'flex', 'important'); // Se queda
+            if (btn.innerText.toLowerCase().includes(nombre.toLowerCase())) {
+                btn.style.setProperty('display', 'flex', 'important');
                 btn.classList.add('quiniela-activa');
             } else {
-                btn.style.setProperty('display', 'none', 'important'); // ¡DESAPARECE!
+                btn.style.setProperty('display', 'none', 'important');
             }
         });
 
-        // 5. BOTÓN PARA "CAMBIAR USUARIO" (Para que aparezcan todos otra vez)
-        let btnReset = document.getElementById('btn-volver-lista');
-        if (!btnReset) {
-            btnReset = document.createElement('button');
+        if (!document.getElementById('btn-volver-lista')) {
+            const btnReset = document.createElement('button');
             btnReset.id = 'btn-volver-lista';
             btnReset.innerText = "✕ Cambiar Usuario";
-            btnReset.className = "btn-link"; // Para que herede el estilo
+            btnReset.className = "btn-link";
             btnReset.style.backgroundColor = "#ff4444";
             btnReset.style.color = "white";
-            btnReset.style.marginTop = "10px";
-            
-            btnReset.onclick = () => {
-                // Al hacer clic, recargamos para que aparezcan todos
-                location.reload();
-            };
+            btnReset.onclick = () => location.reload();
             document.getElementById('links-container').appendChild(btnReset);
         }
-
-    } catch (error) {
-        console.error("Error al cargar:", error);
-    }
+    } catch (error) { console.error("Error al cargar:", error); }
 }
 
-
-
-
-
-
-
-async function calcularClasificados() {
-    const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
-    const clasificados = {}; // Guardará { "1A": "México", "2A": "Sudáfrica"... }
-
-    grupos.forEach(letra => {
-        let tabla = {};
-        // Filtrar partidos de este grupo
-        const partidosGrupo = partidosData.filter(p => p.grupo === letra);
-        
-        partidosGrupo.forEach(p => {
-            const gL = parseInt(document.getElementById(`L-${p.id}`).value) || 0;
-            const gV = parseInt(document.getElementById(`V-${p.id}`).value) || 0;
-            const hayGoles = document.getElementById(`L-${p.id}`).value !== "";
-
-            if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, gf: 0, gc: 0 };
-            if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, gf: 0, gc: 0 };
-
-            if (hayGoles) {
-                tabla[p.local].gf += gL;
-                tabla[p.local].gc += gV;
-                tabla[p.visita].gf += gV;
-                tabla[p.visita].gc += gL;
-                if (gL > gV) tabla[p.local].pts += 3;
-                else if (gV > gL) tabla[p.visita].pts += 3;
-                else { tabla[p.local].pts += 1; tabla[p.visita].pts += 1; }
-            }
-        });
-
-        // Ordenar por puntos y diferencia de goles (Criterio FIFA básico)
-        let ranking = Object.values(tabla).sort((a, b) => b.pts - a.pts || (b.gf - b.gc) - (a.gf - a.gc));
-        
-        if (ranking.length > 0) {
-            clasificados[`1${letra}`] = ranking[0].nombre;
-            clasificados[`2${letra}`] = ranking[1] ? ranking[1].nombre : `2${letra}`;
-        }
-    });
-
-    actualizarNombresEliminatorias(clasificados);
-}
-
-
+// 8. LÓGICA DE TORNEO Y AVANCES
 function actualizarTorneo() {
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let clasificados = {}; 
     let datosGrupos = {};
 
-    // 1. PROCESAR GRUPOS
     grupos.forEach(letra => {
         let tabla = {};
         const partidosGrupo = partidosData.filter(p => p.grupo === letra);
-        
         partidosGrupo.forEach(p => {
             const inputL = document.getElementById(`L-${p.id}`);
             const inputV = document.getElementById(`V-${p.id}`);
-
             if (inputL && inputV) {
                 const gL = parseInt(inputL.value);
                 const gV = parseInt(inputV.value);
-
                 if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0 };
                 if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0 };
-
                 if (!isNaN(gL) && !isNaN(gV)) {
-                    tabla[p.local].gf += gL;
-                    tabla[p.visita].gf += gV;
-                    tabla[p.local].dg += (gL - gV);
-                    tabla[p.visita].dg += (gV - gL);
+                    tabla[p.local].gf += gL; tabla[p.visita].gf += gV;
+                    tabla[p.local].dg += (gL - gV); tabla[p.visita].dg += (gV - gL);
                     if (gL > gV) tabla[p.local].pts += 3;
                     else if (gV > gL) tabla[p.visita].pts += 3;
                     else { tabla[p.local].pts += 1; tabla[p.visita].pts += 1; }
                 }
             }
         });
-
-        // Orden FIFA: Puntos > DG > GF
         let ranking = Object.values(tabla).sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
         datosGrupos[letra] = { ranking };
-        
         if (ranking.length >= 1) clasificados[`1${letra}`] = ranking[0].nombre;
         if (ranking.length >= 2) clasificados[`2${letra}`] = ranking[1].nombre;
         if (ranking.length >= 3) clasificados[`3${letra}`] = ranking[2].nombre;
     });
 
-    // 2. CALCULAR 8 MEJORES TERCEROS
     const mejoresTerceros = [];
     Object.keys(datosGrupos).forEach(l => {
         if (datosGrupos[l].ranking[2]) mejoresTerceros.push(datosGrupos[l].ranking[2]);
     });
     mejoresTerceros.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
-    
-    mejoresTerceros.slice(0, 8).forEach((t, i) => {
-        clasificados[`3T${i+1}`] = t.nombre;
-    });
+    mejoresTerceros.slice(0, 8).forEach((t, i) => clasificados[`3T${i+1}`] = t.nombre);
 
-    // 3. EJECUTAR EL AVANCE DE FASES
     actualizarFasesEliminatorias(clasificados);
 }
 
 function actualizarFasesEliminatorias(clasificados) {
-    // MAPEO DE 16vos (Basado en esquema FIFA 48 equipos)
     const mapeo16vos = [
         { id: 73, L: "2A", V: "2B" }, { id: 74, L: "1C", V: "2F" },
         { id: 75, L: "1E", V: "3T1" }, { id: 76, L: "1F", V: "2C" },
@@ -506,9 +378,7 @@ function actualizarFasesEliminatorias(clasificados) {
         ponerNombreEnCard(m.id, 'V', clasificados[m.V] || m.V);
     });
 
-    // LISTA UNIFICADA DE AVANCE (Desde 16vos hasta la Final y 3er Puesto)
     const avance = [
-        // De 16vos a Octavos
         { de: 73, a: 89, pos: 'L', tipo: 'ganador' }, { de: 74, a: 89, pos: 'V', tipo: 'ganador' },
         { de: 75, a: 90, pos: 'L', tipo: 'ganador' }, { de: 76, a: 90, pos: 'V', tipo: 'ganador' },
         { de: 77, a: 91, pos: 'L', tipo: 'ganador' }, { de: 78, a: 91, pos: 'V', tipo: 'ganador' },
@@ -517,56 +387,36 @@ function actualizarFasesEliminatorias(clasificados) {
         { de: 83, a: 94, pos: 'L', tipo: 'ganador' }, { de: 84, a: 94, pos: 'V', tipo: 'ganador' },
         { de: 85, a: 95, pos: 'L', tipo: 'ganador' }, { de: 86, a: 95, pos: 'V', tipo: 'ganador' },
         { de: 87, a: 96, pos: 'L', tipo: 'ganador' }, { de: 88, a: 96, pos: 'V', tipo: 'ganador' },
-
-        // De Octavos a Cuartos
         { de: 89, a: 97, pos: 'L', tipo: 'ganador' }, { de: 90, a: 97, pos: 'V', tipo: 'ganador' },
         { de: 91, a: 98, pos: 'L', tipo: 'ganador' }, { de: 92, a: 98, pos: 'V', tipo: 'ganador' },
         { de: 93, a: 99, pos: 'L', tipo: 'ganador' }, { de: 94, a: 99, pos: 'V', tipo: 'ganador' },
         { de: 95, a: 100, pos: 'L', tipo: 'ganador' }, { de: 96, a: 100, pos: 'V', tipo: 'ganador' },
-
-        // De Cuartos a Semis
         { de: 97, a: 101, pos: 'L', tipo: 'ganador' }, { de: 98, a: 101, pos: 'V', tipo: 'ganador' },
         { de: 99, a: 102, pos: 'L', tipo: 'ganador' }, { de: 100, a: 102, pos: 'V', tipo: 'ganador' },
-
-        // DE SEMIS A LA GRAN FINAL (Ganadores)
         { de: 101, a: 104, pos: 'L', tipo: 'ganador' }, { de: 102, a: 104, pos: 'V', tipo: 'ganador' },
-
-        // DE SEMIS AL TERCER PUESTO (Perdedores)
         { de: 101, a: 103, pos: 'L', tipo: 'perdedor' }, { de: 102, a: 103, pos: 'V', tipo: 'perdedor' }
     ];
-
-    // Llamamos a la nueva función que procesa ambos casos
-    procesarAvanceFútbol(avance);
+    procesarAvanceFutbol(avance);
 }
 
-function procesarAvanceFútbol(llaves) {
+function procesarAvanceFutbol(llaves) {
     llaves.forEach(llave => {
         const inputL = document.getElementById(`L-${llave.de}`);
         const inputV = document.getElementById(`V-${llave.de}`);
-        
         if (!inputL || !inputV) return;
-
         const gL = parseInt(inputL.value);
         const gV = parseInt(inputV.value);
-
         if (!isNaN(gL) && !isNaN(gV)) {
-            const card = inputL.closest('.card');
-            const nombreL = card.querySelector('.txt-right').innerText;
-            const nombreV = card.querySelector('.txt-left').innerText;
-            
-            let equipoSeleccionado = "---";
-
+            const card = inputL.closest('.partido-card');
+            const nombreL = card.querySelector('.local').innerText;
+            const nombreV = card.querySelector('.visita').innerText;
+            let equipo = "---";
             if (llave.tipo === 'ganador') {
-                if (gL > gV) equipoSeleccionado = nombreL;
-                else if (gV > gL) equipoSeleccionado = nombreV;
-                else equipoSeleccionado = "Empate (Penales)";
-            } else if (llave.tipo === 'perdedor') {
-                if (gL < gV) equipoSeleccionado = nombreL;
-                else if (gV < gL) equipoSeleccionado = nombreV;
-                else equipoSeleccionado = "Empate (Penales)";
+                if (gL > gV) equipo = nombreL; else if (gV > gL) equipo = nombreV; else equipo = "Empate";
+            } else {
+                if (gL < gV) equipo = nombreL; else if (gV < gL) equipo = nombreV; else equipo = "Empate";
             }
-
-            ponerNombreEnCard(llave.a, llave.pos, equipoSeleccionado);
+            ponerNombreEnCard(llave.a, llave.pos, equipo);
         }
     });
 }
@@ -574,128 +424,64 @@ function procesarAvanceFútbol(llaves) {
 function ponerNombreEnCard(id, lado, nombre) {
     const el = document.getElementById(`${lado}-${id}`);
     if (el) {
-        const span = lado === 'L' ? el.closest('.card').querySelector('.txt-right') : el.closest('.card').querySelector('.txt-left');
+        const card = el.closest('.partido-card');
+        const span = lado === 'L' ? card.querySelector('.local') : card.querySelector('.visita');
         if (span) span.innerText = nombre;
     }
 }
 
+// 9. REPORTES Y ADMIN
 async function generarReporteMaestro() {
     try {
         const response = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await response.json();
+        if (!datos || datos.length === 0) return alert("No hay datos.");
 
-        if (!datos || datos.length === 0) {
-            alert("No hay quinielas guardadas.");
-            return;
-        }
-
-        // Agrupar datos por nombre de usuario
         const agrupado = datos.reduce((acc, row) => {
             if (!acc[row.nombre_usuario]) acc[row.nombre_usuario] = [];
             acc[row.nombre_usuario].push(row);
             return acc;
         }, {});
 
-        // Crear el contenido del reporte
-        let htmlReporte = `
-            <html>
-            <head>
-                <title>Reporte General de Quinielas</title>
-                <style>
-                    body { font-family: sans-serif; padding: 20px; color: #333; }
-                    .usuario-section { page-break-after: always; border-bottom: 2px solid #01215b; margin-bottom: 40px; }
-                    h2 { color: #01215b; text-transform: uppercase; border-left: 5px solid #d4af37; padding-left: 10px; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                    th { background: #01215b; color: white; padding: 8px; text-align: left; }
-                    td { border: 1px solid #ddd; padding: 8px; }
-                    tr:nth-child(even) { background: #f9f9f9; }
-                    .marcador { font-weight: bold; text-align: center; background: #fffdf5; }
-                    @media print { .no-print { display: none; } }
-                </style>
-            </head>
-            <body>
-                <div class="no-print">
-                    <button onclick="window.print()" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                        🖨️ Guardar como PDF / Imprimir
-                    </button>
-                    <hr>
-                </div>
-        `;
+        let htmlReporte = `<html><head><style>
+            body { font-family: sans-serif; padding: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background: #01215b; color: white; }
+            .marcador { font-weight: bold; text-align: center; }
+        </style></head><body>`;
 
-        // Generar una tabla por cada usuario
         for (const usuario in agrupado) {
-            htmlReporte += `
-                <div class="usuario-section">
-                    <h2>Quiniela de: ${usuario}</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Local</th>
-                                <th>Res. Local</th>
-                                <th>Res. Visita</th>
-                                <th>Visita</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-
+            htmlReporte += `<h2>Quiniela de: ${usuario}</h2>
+                <table><thead><tr><th>ID</th><th>Local</th><th>GL</th><th>GV</th><th>Visita</th></tr></thead><tbody>`;
             agrupado[usuario].forEach(row => {
                 const p = partidosData.find(item => item.id === row.partido_id) || {};
-                htmlReporte += `
-                    <tr>
-                        <td>${row.partido_id}</td>
-                        <td>${p.local || '---'}</td>
-                        <td class="marcador">${row.goles_local}</td>
-                        <td class="marcador">${row.goles_visita}</td>
-                        <td>${p.visita || '---'}</td>
-                    </tr>
-                `;
+                htmlReporte += `<tr><td>${row.partido_id}</td><td>${p.local || '---'}</td>
+                <td class="marcador">${row.goles_local}</td><td class="marcador">${row.goles_visita}</td>
+                <td>${p.visita || '---'}</td></tr>`;
             });
-
-            htmlReporte += `</tbody></table></div>`;
+            htmlReporte += `</tbody></table>`;
         }
-
         htmlReporte += `</body></html>`;
-
-        // Abrir en una nueva pestaña
-        const ventana = window.open('', '_blank');
-        ventana.document.write(htmlReporte);
-        ventana.document.close();
-
-    } catch (error) {
-        console.error("Error:", error);
-        alert("No se pudo generar el reporte.");
-    }
+        const v = window.open('', '_blank');
+        v.document.write(htmlReporte);
+        v.document.close();
+    } catch (e) { alert("Error reporte."); }
 }
 
 async function resetearBaseDeDatos() {
-    if (!confirm("⚠️ ¿Estás SEGURO? Esto borrará TODAS las quinielas y resultados de la base de datos.")) return;
-
+    if (!confirm("⚠️ ¿Borrar todo?")) return;
     try {
         const res = await fetch(`${API_URL}/reset-db`, { method: 'DELETE' });
         const data = await res.json();
         alert(data.mensaje);
-        location.reload(); // Recarga la página para limpiar todo
-    } catch (e) {
-        alert("Error al intentar borrar la base de datos.");
-    }
+        location.reload();
+    } catch (e) { alert("Error reset."); }
 }
 
-// 1. Función para filtrar y sumar puntos de una fecha específica
-function obtenerPuntosPorFecha(fechaDeseada) {
-    // Asumiendo que 'quinielas' es tu array de objetos
-    return quinielas
-        .filter(q => q.fecha === fechaDeseada)
-        .reduce((sum, q) => sum + (q.acertado ? q.valorPunto : 0), 0);
-}
-
-
-
-// INICIO AL CARGAR PÁGINA
+// 10. INICIO AL CARGAR
 window.onload = async () => {
-    await renderizarFixture(); // Dibuja los partidos y resultados reales
-    actualizarListaLinks();    // Carga el ranking lateral
-    actualizarTorneo();        // Calcula clasificados y llena las llaves de eliminación
+    await renderizarFixture();
+    await actualizarListaLinks();
+    actualizarTorneo();
 };
-
