@@ -101,7 +101,7 @@ const partidosData = [
     { id: 71, fase: "Grupos", grupo: "L", fecha: "Sábado 27/06/2026", local: "Panamá", visita: "Inglaterra" },
     { id: 72, fase: "Grupos", grupo: "L", fecha: "Sábado 27/06/2026", local: "Croacia", visita: "Ghana" },
 
-    // DIECISEISAVOS (Ids 73-88)
+    // ELIMINATORIAS (Se llenan solos por la lógica)
     { id: 73, fase: "16vos", local: "2A", visita: "2B" },
     { id: 74, fase: "16vos", local: "1C", visita: "2F" },
     { id: 75, fase: "16vos", local: "1E", visita: "3T1" },
@@ -119,7 +119,7 @@ const partidosData = [
     { id: 87, fase: "16vos", local: "1J", visita: "2H" },
     { id: 88, fase: "16vos", local: "1K", visita: "3T8" },
 
-    // OCTAVOS (Ids 89-96)
+    // OCTAVOS
     { id: 89, fase: "8vos", local: "Ganador 73", visita: "Ganador 75" },
     { id: 90, fase: "8vos", local: "Ganador 74", visita: "Ganador 77" },
     { id: 91, fase: "8vos", local: "Ganador 76", visita: "Ganador 78" },
@@ -129,89 +129,80 @@ const partidosData = [
     { id: 95, fase: "8vos", local: "Ganador 86", visita: "Ganador 88" },
     { id: 96, fase: "8vos", local: "Ganador 85", visita: "Ganador 87" },
 
-    // CUARTOS (Ids 97-100)
+    // CUARTOS, SEMIS Y FINAL
     { id: 97, fase: "4tos", local: "Ganador 89", visita: "Ganador 90" },
     { id: 98, fase: "4tos", local: "Ganador 93", visita: "Ganador 94" },
     { id: 99, fase: "4tos", local: "Ganador 91", visita: "Ganador 92" },
     { id: 100, fase: "4tos", local: "Ganador 95", visita: "Ganador 96" },
-
-    // SEMIS (Ids 101-102)
     { id: 101, fase: "Semis", local: "Ganador 97", visita: "Ganador 98" },
     { id: 102, fase: "Semis", local: "Ganador 99", visita: "Ganador 100" },
-
-    // FINALES (Ids 103-104)
     { id: 103, fase: "3er Puesto", local: "Perdedor 101", visita: "Perdedor 102" },
-    { id: 104, fase: "Final", local: "Ganador 101", visita: "Ganador 102" }
+    { id: 104, fase: "FINAL", local: "Ganador 101", visita: "Ganador 102" }
 ];
 
-// 3. RENDERIZADO DEL FIXTURE
+// 2. RENDERIZAR LA QUINIELA EN EL HTML
 async function renderizarFixture() {
-    const fixtureCont = document.getElementById("fixture-container");
-    if (!fixtureCont) return;
-    fixtureCont.innerHTML = "";
+    const container = document.getElementById("fixture-container");
+    if (!container) return;
+    container.innerHTML = "";
 
     partidosData.forEach(p => {
         const card = document.createElement("div");
         card.className = "partido-card";
         card.innerHTML = `
             <div class="card-header">
-                <span class="txt-fase">${p.fase} ${p.grupo ? '- Grupo ' + p.grupo : ''}</span>
-                <span class="txt-fecha">${p.fecha || ''}</span>
+                <span>${p.fase} ${p.grupo ? '- Grupo ' + p.grupo : ''}</span>
             </div>
             <div class="card-body">
                 <div class="equipo-col local">${p.local}</div>
                 <div class="marcador-col">
                     <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
-                    <span class="separador">-</span>
+                    <span>-</span>
                     <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
                 </div>
                 <div class="equipo-col visita">${p.visita}</div>
             </div>
         `;
-        fixtureCont.appendChild(card);
+        container.appendChild(card);
     });
 }
 
-// 4. LÓGICA DE ACTUALIZACIÓN (EL MOTOR)
+// 3. LÓGICA DE AVANCE (Cadenas y Terceros)
 function actualizarTorneo() {
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
-    let clasificados = {}; 
+    let clasificados = {};
     let terceros = [];
 
-    // --- PROCESAR GRUPOS ---
+    // Cálculo de Grupos
     grupos.forEach(letra => {
         let tabla = {};
         const partidosGrupo = partidosData.filter(p => p.grupo === letra);
-        
         partidosGrupo.forEach(p => {
             const gL = parseInt(document.getElementById(`L-${p.id}`)?.value);
             const gV = parseInt(document.getElementById(`V-${p.id}`)?.value);
-            
-            if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0 };
-            if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0 };
-
+            if (!tabla[p.local]) tabla[p.local] = { n: p.local, pts: 0, dg: 0 };
+            if (!tabla[p.visita]) tabla[p.visita] = { n: p.visita, pts: 0, dg: 0 };
             if (!isNaN(gL) && !isNaN(gV)) {
-                tabla[p.local].gf += gL; tabla[p.visita].gf += gV;
                 tabla[p.local].dg += (gL - gV); tabla[p.visita].dg += (gV - gL);
                 if (gL > gV) tabla[p.local].pts += 3;
                 else if (gV > gL) tabla[p.visita].pts += 3;
                 else { tabla[p.local].pts += 1; tabla[p.visita].pts += 1; }
             }
         });
-
-        let ranking = Object.values(tabla).sort((a,b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
-        if (ranking.length >= 1) clasificados[`1${letra}`] = ranking[0].nombre;
-        if (ranking.length >= 2) clasificados[`2${letra}`] = ranking[1].nombre;
-        if (ranking.length >= 3) terceros.push(ranking[2]);
+        const rank = Object.values(tabla).sort((a,b) => b.pts - a.pts || b.dg - a.dg);
+        if (rank.length >= 2) {
+            clasificados[`1${letra}`] = rank[0].n;
+            clasificados[`2${letra}`] = rank[1].n;
+            if (rank[2]) terceros.push({ n: rank[2].n, pts: rank[2].pts, dg: rank[2].dg });
+        }
     });
 
-    // --- MEJORES TERCEROS ---
-    terceros.sort((a,b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf)
-            .slice(0, 8).forEach((t, i) => {
-        clasificados[`3T${i+1}`] = t.nombre;
+    // Mejores Terceros
+    terceros.sort((a,b) => b.pts - a.pts || b.dg - a.dg).slice(0, 8).forEach((t, i) => {
+        clasificados[`3T${i+1}`] = t.n;
     });
 
-    // --- PASAR A 16VOS ---
+    // Mapeo inicial a 16vos
     const mapeo16vos = [
         { id: 73, L: "2A", V: "2B" }, { id: 74, L: "1C", V: "2F" }, { id: 75, L: "1E", V: "3T1" },
         { id: 76, L: "1F", V: "2C" }, { id: 77, L: "2E", V: "2I" }, { id: 78, L: "1I", V: "3T2" },
@@ -221,67 +212,52 @@ function actualizarTorneo() {
     ];
 
     mapeo16vos.forEach(m => {
-        ponerNombre(m.id, 'L', clasificados[m.L] || m.L);
-        ponerNombre(m.id, 'V', clasificados[m.V] || m.V);
+        escribirNombre(m.id, 'L', clasificados[m.L] || m.L);
+        escribirNombre(m.id, 'V', clasificados[m.V] || m.V);
     });
 
-    // --- CADENA DE AVANCE (ELIMINATORIAS) ---
+    // Cadena de avance (Reaction en cadena)
     const avance = [
-        // 16vos -> 8vos
-        { de: 73, a: 89, pos: 'L', tipo: 'ganador' }, { de: 75, a: 89, pos: 'V', tipo: 'ganador' },
-        { de: 74, a: 90, pos: 'L', tipo: 'ganador' }, { de: 77, a: 90, pos: 'V', tipo: 'ganador' },
-        { de: 76, a: 91, pos: 'L', tipo: 'ganador' }, { de: 78, a: 91, pos: 'V', tipo: 'ganador' },
-        { de: 79, a: 92, pos: 'L', tipo: 'ganador' }, { de: 80, a: 92, pos: 'V', tipo: 'ganador' },
-        { de: 83, a: 93, pos: 'L', tipo: 'ganador' }, { de: 84, a: 93, pos: 'V', tipo: 'ganador' },
-        { de: 81, a: 94, pos: 'L', tipo: 'ganador' }, { de: 82, a: 94, pos: 'V', tipo: 'ganador' },
-        { de: 86, a: 95, pos: 'L', tipo: 'ganador' }, { de: 88, a: 95, pos: 'V', tipo: 'ganador' },
-        { de: 85, a: 96, pos: 'L', tipo: 'ganador' }, { de: 87, a: 96, pos: 'V', tipo: 'ganador' },
-        // 8vos -> 4tos
-        { de: 89, a: 97, pos: 'L', tipo: 'ganador' }, { de: 90, a: 97, pos: 'V', tipo: 'ganador' },
-        { de: 93, a: 98, pos: 'L', tipo: 'ganador' }, { de: 94, a: 98, pos: 'V', tipo: 'ganador' },
-        { de: 91, a: 99, pos: 'L', tipo: 'ganador' }, { de: 92, a: 99, pos: 'V', tipo: 'ganador' },
-        { de: 95, a: 100, pos: 'L', tipo: 'ganador' }, { de: 96, a: 100, pos: 'V', tipo: 'ganador' },
-        // 4tos -> Semis
-        { de: 97, a: 101, pos: 'L', tipo: 'ganador' }, { de: 98, a: 101, pos: 'V', tipo: 'ganador' },
-        { de: 99, a: 102, pos: 'L', tipo: 'ganador' }, { de: 100, a: 102, pos: 'V', tipo: 'ganador' },
-        // Semis -> Finales
-        { de: 101, a: 104, pos: 'L', tipo: 'ganador' }, { de: 102, a: 104, pos: 'V', tipo: 'ganador' },
-        { de: 101, a: 103, pos: 'L', tipo: 'perdedor' }, { de: 102, a: 103, pos: 'V', tipo: 'perdedor' }
+        { de: 73, a: 89, pos: 'L' }, { de: 75, a: 89, pos: 'V' },
+        { de: 74, a: 90, pos: 'L' }, { de: 77, a: 90, pos: 'V' },
+        { de: 76, a: 91, pos: 'L' }, { de: 78, a: 91, pos: 'V' },
+        { de: 79, a: 92, pos: 'L' }, { de: 80, a: 92, pos: 'V' },
+        { de: 83, a: 93, pos: 'L' }, { de: 84, a: 93, pos: 'V' },
+        { de: 81, a: 94, pos: 'L' }, { de: 82, a: 94, pos: 'V' },
+        { de: 86, a: 95, pos: 'L' }, { de: 88, a: 95, pos: 'V' },
+        { de: 85, a: 96, pos: 'L' }, { de: 87, a: 96, pos: 'V' },
+        // Siguiente fase: Octavos a Cuartos
+        { de: 89, a: 97, pos: 'L' }, { de: 90, a: 97, pos: 'V' },
+        { de: 93, a: 98, pos: 'L' }, { de: 94, a: 98, pos: 'V' },
+        { de: 91, a: 99, pos: 'L' }, { de: 92, a: 99, pos: 'V' },
+        { de: 95, a: 100, pos: 'L' }, { de: 96, a: 100, pos: 'V' },
+        // Cuartos a Semis
+        { de: 97, a: 101, pos: 'L' }, { de: 98, a: 101, pos: 'V' },
+        { de: 99, a: 102, pos: 'L' }, { de: 100, a: 102, pos: 'V' },
+        // Semis a Final
+        { de: 101, a: 104, pos: 'L' }, { de: 102, a: 104, pos: 'V' }
     ];
 
-    avance.forEach(paso => {
-        const equipo = calcularGanadorOPerdedor(paso.de, paso.tipo);
-        ponerNombre(paso.a, paso.pos, equipo);
+    avance.forEach(c => {
+        const ganador = obtenerGanador(c.de);
+        escribirNombre(c.a, c.pos, ganador);
     });
 }
 
-// --- FUNCIONES AUXILIARES ---
-function calcularGanadorOPerdedor(id, tipo) {
+function obtenerGanador(id) {
     const gl = parseInt(document.getElementById(`L-${id}`)?.value);
     const gv = parseInt(document.getElementById(`V-${id}`)?.value);
-    
-    if (isNaN(gl) || isNaN(gv)) return tipo === 'ganador' ? `Ganador ${id}` : `Perdedor ${id}`;
-
-    const card = document.getElementById(`L-${id}`).closest('.partido-card');
-    const nombreL = card.querySelector('.local').innerText;
-    const nombreV = card.querySelector('.visita').innerText;
-
-    if (gl > gv) return tipo === 'ganador' ? nombreL : nombreV;
-    if (gv > gl) return tipo === 'ganador' ? nombreV : nombreL;
-    return "Empate (Pen)";
+    if (isNaN(gl) || isNaN(gv)) return `Ganador ${id}`;
+    const card = document.getElementById(`L-${id}`).closest('.card-body');
+    return gl > gv ? card.querySelector('.local').innerText : card.querySelector('.visita').innerText;
 }
 
-function ponerNombre(id, lado, nombre) {
+function escribirNombre(id, lado, nombre) {
     const input = document.getElementById(`${lado}-${id}`);
     if (input) {
-        const card = input.closest('.partido-card');
-        const span = card.querySelector(lado === 'L' ? '.local' : '.visita');
-        if (span) span.innerText = nombre;
+        const cardBody = input.closest('.card-body');
+        cardBody.querySelector(lado === 'L' ? '.local' : '.visita').innerText = nombre;
     }
 }
 
-// Inicializar al cargar
-window.onload = async () => {
-    await renderizarFixture();
-    // Aquí puedes llamar a actualizarListaLinks si lo necesitas
-};
+window.onload = renderizarFixture;
