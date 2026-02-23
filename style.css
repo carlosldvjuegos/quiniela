@@ -53,6 +53,7 @@ header {
 
 /* BOTONES DE USUARIO */
 .btn-link {
+    color-font: white;
     background-color: #ffffff; /* Fondo blanco o gris muy claro */
     color: white !important; /* FUERZA EL COLOR NEGRO EN EL TEXTO */
     border: 1px solid #ddd;
@@ -191,6 +192,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
