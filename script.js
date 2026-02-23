@@ -147,74 +147,23 @@ const partidosData = [
 
 
 
-// LÓGICA DE PUNTOS
-function calcularLogicaPuntos(pL, pV, rL, rV) {
-    if (pL === rL && pV === rV) return 5;
-    let puntos = 0;
-    const tendenciaP = Math.sign(pL - pV);
-    const tendenciaR = Math.sign(rL - rV);
-    if (tendenciaP === tendenciaR) puntos = 2;
-    if (pL === rL) puntos += 1;
-    if (pV === rV) puntos += 1;
-    return puntos;
-}
-
-// RENDERIZAR TODO
-async function renderizarFixture() {
-    const fixtureCont = document.getElementById("fixture-container");
-    fixtureCont.innerHTML = "";
-    
-    let resultadosDB = [];
-    try {
-        const resp = await fetch(`${API_URL}/obtener-resultados-db`);
-        resultadosDB = await resp.json();
-    } catch (e) { console.error("Error cargando reales"); }
-
-    partidosData.forEach(p => {
-        const r = resultadosDB.find(res => res.id === p.id);
-        const textoReal = r ? `${r.gl} - ${r.gv}` : "-";
-
-        const card = document.createElement("div");
-        card.className = "partido-card";
-        card.innerHTML = `
-            <div class="card-header">
-                <span>${p.fase} ${p.grupo ? 'Grupo ' + p.grupo : ''}</span>
-                <span>${p.fecha}</span>
-            </div>
-            <div class="card-body">
-                <div class="equipo-col local">${p.local}</div>
-                <div class="marcador-col">
-                    <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
-                    <span>-</span>
-                    <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
-                </div>
-                <div class="equipo-col visita">${p.visita}</div>
-                <div class="real-col">
-                    <span class="etiqueta-real">Oficial</span>
-                    <div class="cuadro-real">${textoReal}</div>
-                </div>
-            </div>
-        `;
-        fixtureCont.appendChild(card);
-    });
-    actualizarListaLinks();
-}
-
-// ACTUALIZAR TORNEO Y FIFA TERCEROS
+// 2. FUNCIÓN PRINCIPAL DE ACTUALIZACIÓN (La que hace la magia)
 function actualizarTorneo() {
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let clasificados = {};
     let terceros = [];
 
+    // --- PASO 1: PROCESAR GRUPOS ---
     grupos.forEach(letra => {
         let tabla = {};
-        const partidos = partidosData.filter(p => p.grupo === letra);
-        partidos.forEach(p => {
-            const gL = parseInt(document.getElementById(`L-${p.id}`).value);
-            const gV = parseInt(document.getElementById(`V-${p.id}`).value);
-            if (!tabla[p.local]) tabla[p.local] = { n: p.local, pts: 0, dg: 0, grupo: letra };
-            if (!tabla[p.visita]) tabla[p.visita] = { n: p.visita, pts: 0, dg: 0, grupo: letra };
-            
+        const partidosGrupo = partidosData.filter(p => p.grupo === letra);
+        
+        partidosGrupo.forEach(p => {
+            const gL = parseInt(document.getElementById(`L-${p.id}`)?.value);
+            const gV = parseInt(document.getElementById(`V-${p.id}`)?.value);
+            if (!tabla[p.local]) tabla[p.local] = { n: p.local, pts: 0, dg: 0 };
+            if (!tabla[p.visita]) tabla[p.visita] = { n: p.visita, pts: 0, dg: 0 };
+
             if (!isNaN(gL) && !isNaN(gV)) {
                 tabla[p.local].dg += (gL - gV); tabla[p.visita].dg += (gV - gL);
                 if (gL > gV) tabla[p.local].pts += 3;
@@ -222,33 +171,67 @@ function actualizarTorneo() {
                 else { tabla[p.local].pts += 1; tabla[p.visita].pts += 1; }
             }
         });
+
         const rank = Object.values(tabla).sort((a,b) => b.pts - a.pts || b.dg - a.dg);
         if (rank.length >= 2) {
             clasificados[`1${letra}`] = rank[0].n;
             clasificados[`2${letra}`] = rank[1].n;
-            if (rank[2]) terceros.push(rank[2]);
+            if (rank[2]) {
+                terceros.push({ n: rank[2].n, pts: rank[2].pts, dg: rank[2].dg });
+            }
         }
     });
 
+    // --- PASO 2: MEJORES TERCEROS ---
     terceros.sort((a,b) => b.pts - a.pts || b.dg - a.dg).slice(0, 8).forEach((t, i) => {
         clasificados[`3T${i+1}`] = t.n;
     });
 
-    avanzarEliminatorias(clasificados);
-}
-
-function avanzarEliminatorias(clasificados) {
-    const mapeo = [
-        { id: 73, L: "2A", V: "2B" }, { id: 75, L: "1E", V: "3T1" }, { id: 79, L: "1A", V: "3T3" }
-        // Agrega aquí todos los mapeos de tu lista original
+    // --- PASO 3: AVANCE A 16vos ---
+    const mapeo16vos = [
+        { id: 73, L: "2A", V: "2B" }, { id: 74, L: "1C", V: "2F" }, { id: 75, L: "1E", V: "3T1" },
+        { id: 76, L: "1F", V: "2C" }, { id: 77, L: "2E", V: "2I" }, { id: 78, L: "1I", V: "3T2" },
+        { id: 79, L: "1A", V: "3T3" }, { id: 80, L: "1L", V: "3T4" }, { id: 81, L: "1G", V: "3T5" },
+        { id: 82, L: "1D", V: "3T6" }, { id: 83, L: "1H", V: "2J" }, { id: 84, L: "2K", V: "2L" },
+        { id: 85, L: "1B", V: "3T7" }, { id: 86, L: "2D", V: "2G" }, { id: 87, L: "1J", V: "2H" }, { id: 88, L: "1K", V: "3T8" }
     ];
 
-    mapeo.forEach(m => {
+    mapeo16vos.forEach(m => {
         escribirNombre(m.id, 'L', clasificados[m.L] || m.L);
         escribirNombre(m.id, 'V', clasificados[m.V] || m.V);
     });
+
+    // --- PASO 4: AVANCE AUTOMÁTICO DE ELIMINATORIAS (Cadena) ---
+    // Esta lista dice: "El ganador del ID X va al ID Y en la posición L o V"
+    const cadenaFinal = [
+        // De 16vos a 8vos
+        { de: 73, a: 89, pos: 'L' }, { de: 75, a: 89, pos: 'V' },
+        { de: 74, a: 90, pos: 'L' }, { de: 77, a: 90, pos: 'V' },
+        { de: 76, a: 91, pos: 'L' }, { de: 78, a: 91, pos: 'V' },
+        { de: 79, a: 92, pos: 'L' }, { de: 80, a: 92, pos: 'V' },
+        { de: 83, a: 93, pos: 'L' }, { de: 84, a: 93, pos: 'V' },
+        { de: 81, a: 94, pos: 'L' }, { de: 82, a: 94, pos: 'V' },
+        { de: 86, a: 95, pos: 'L' }, { de: 88, a: 95, pos: 'V' },
+        { de: 85, a: 96, pos: 'L' }, { de: 87, a: 96, pos: 'V' },
+        // De 8vos a 4tos
+        { de: 89, a: 97, pos: 'L' }, { de: 90, a: 97, pos: 'V' },
+        { de: 93, a: 98, pos: 'L' }, { de: 94, a: 98, pos: 'V' },
+        { de: 91, a: 99, pos: 'L' }, { de: 92, a: 99, pos: 'V' },
+        { de: 95, a: 100, pos: 'L' }, { de: 96, a: 100, pos: 'V' },
+        // De 4tos a Semis
+        { de: 97, a: 101, pos: 'L' }, { de: 98, a: 101, pos: 'V' },
+        { de: 99, a: 102, pos: 'L' }, { de: 100, a: 102, pos: 'V' },
+        // Semis a Final
+        { de: 101, a: 104, pos: 'L' }, { de: 102, a: 104, pos: 'V' }
+    ];
+
+    cadenaFinal.forEach(c => {
+        const ganador = obtenerGanador(c.de);
+        escribirNombre(c.a, c.pos, ganador);
+    });
 }
 
+// 3. FUNCIONES DE APOYO (No tocar, son las que mueven los datos)
 function escribirNombre(id, lado, nombre) {
     const input = document.getElementById(`${lado}-${id}`);
     if (input) {
@@ -257,50 +240,45 @@ function escribirNombre(id, lado, nombre) {
     }
 }
 
-// GUARDADO Y RANKING
-async function guardarQuinielaCompleta() {
-    const nombre = document.getElementById('nombre-usuario').value;
-    if (!nombre) return alert("Escribe tu nombre");
-    const predicciones = [];
+function obtenerGanador(id) {
+    const gL = parseInt(document.getElementById(`L-${id}`)?.value);
+    const gV = parseInt(document.getElementById(`V-${id}`)?.value);
+    if (isNaN(gL) || isNaN(gV)) return `Ganador ${id}`;
+    
+    // Obtenemos los nombres actuales de esa tarjeta
+    const card = document.getElementById(`L-${id}`).closest('.card-body');
+    const nombreL = card.querySelector('.local').innerText;
+    const nombreV = card.querySelector('.visita').innerText;
+
+    if (gL > gV) return nombreL;
+    if (gV > gL) return nombreV;
+    return `${nombreL}/${nombreV} (Pen)`; // Empate
+}
+
+// 4. INICIO Y RENDER
+async function renderizarFixture() {
+    const fixtureCont = document.getElementById("fixture-container");
+    fixtureCont.innerHTML = "Cargando partidos...";
+    
+    // Aquí podrías hacer el fetch de resultados reales si lo tienes
+    fixtureCont.innerHTML = ""; 
     partidosData.forEach(p => {
-        const gl = document.getElementById(`L-${p.id}`).value;
-        const gv = document.getElementById(`V-${p.id}`).value;
-        if (gl !== "" && gv !== "") predicciones.push({ id: p.id, gl: parseInt(gl), gv: parseInt(gv) });
+        const card = document.createElement("div");
+        card.className = "partido-card";
+        card.innerHTML = `
+            <div class="card-header"><span>${p.fase}</span></div>
+            <div class="card-body">
+                <div class="equipo-col local">${p.local}</div>
+                <div class="marcador-col">
+                    <input type="number" id="L-${p.id}" oninput="actualizarTorneo()">
+                    <span>-</span>
+                    <input type="number" id="V-${p.id}" oninput="actualizarTorneo()">
+                </div>
+                <div class="equipo-col visita">${p.visita}</div>
+            </div>
+        `;
+        fixtureCont.appendChild(card);
     });
-    await fetch(`${API_URL}/guardar`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ nombre, predicciones })
-    });
-    alert("¡Guardado!");
-    actualizarListaLinks();
-}
-
-async function actualizarListaLinks() {
-    const container = document.getElementById('links-container');
-    const resU = await fetch(`${API_URL}/registros`);
-    const usuarios = await resU.json();
-    container.innerHTML = "";
-    usuarios.forEach(u => {
-        const btn = document.createElement('button');
-        btn.className = "btn-link";
-        btn.innerHTML = `<span>${u.nombre_usuario}</span>`;
-        btn.onclick = () => cargarDesdeDB(u.nombre_usuario);
-        container.appendChild(btn);
-    });
-}
-
-async function cargarDesdeDB(nombre) {
-    const res = await fetch(`${API_URL}/cargar/${nombre}`);
-    const datos = await res.json();
-    document.getElementById('nombre-usuario').value = nombre;
-    datos.forEach(d => {
-        if (document.getElementById(`L-${d.id}`)) document.getElementById(`L-${d.id}`).value = d.gl;
-        if (document.getElementById(`V-${d.id}`)) document.getElementById(`V-${d.id}`).value = d.gv;
-    });
-    actualizarTorneo();
 }
 
 window.onload = renderizarFixture;
-
-
