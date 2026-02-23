@@ -144,33 +144,8 @@ const partidosData = [
     { id: 104, fase: "Final", grupo: "Eliminatoria", fecha: "Domingo 19/07/2026", local: "W101", visita: "W102" }
 ];
 
-const API_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-    ? window.location.origin 
-    : "https://quiniela-pcas.onrender.com";
 
-const partidosData = [
-    // GRUPO A
-    { id: 1, fase: "Grupos", grupo: "A", fecha: "11/06/2026", local: "México", visita: "Sudáfrica" },
-    { id: 2, fase: "Grupos", grupo: "A", fecha: "12/06/2026", local: "Rep. Corea", visita: "Polonia" },
-    { id: 3, fase: "Grupos", grupo: "A", fecha: "18/06/2026", local: "Polonia", visita: "Sudáfrica" },
-    { id: 4, fase: "Grupos", grupo: "A", fecha: "19/06/2026", local: "México", visita: "Rep. Corea" },
-    { id: 5, fase: "Grupos", grupo: "A", fecha: "24/06/2026", local: "Polonia", visita: "México" },
-    { id: 6, fase: "Grupos", grupo: "A", fecha: "24/06/2026", local: "Sudáfrica", visita: "Rep. Corea" },
-    // GRUPO B
-    { id: 7, fase: "Grupos", grupo: "B", fecha: "12/06/2026", local: "Canadá", visita: "Italia" },
-    { id: 8, fase: "Grupos", grupo: "B", fecha: "13/06/2026", local: "Catar", visita: "Suiza" },
-    { id: 9, fase: "Grupos", grupo: "B", fecha: "18/06/2026", local: "Suiza", visita: "Italia" },
-    { id: 10, fase: "Grupos", grupo: "B", fecha: "19/06/2026", local: "Canadá", visita: "Catar" },
-    { id: 11, fase: "Grupos", grupo: "B", fecha: "24/06/2026", local: "Suiza", visita: "Canadá" },
-    { id: 12, fase: "Grupos", grupo: "B", fecha: "24/06/2026", local: "Italia", visita: "Catar" },
-    // ELIMINATORIAS (IDs 73+)
-    { id: 73, fase: "16vos", grupo: "", fecha: "28/06/2026", local: "2A", visita: "2B" },
-    { id: 74, fase: "16vos", grupo: "", fecha: "29/06/2026", local: "1C", visita: "2F" },
-    { id: 75, fase: "16vos", grupo: "", fecha: "29/06/2026", local: "1E", visita: "3T1" },
-    { id: 79, fase: "16vos", grupo: "", fecha: "01/07/2026", local: "1A", visita: "3T3" },
-    { id: 104, fase: "FINAL", grupo: "", fecha: "19/07/2026", local: "Finalista 1", visita: "Finalista 2" }
-    // Nota: He resumido los IDs para el ejemplo, pero tu lista completa de 104 partidos funciona igual.
-];
+
 
 // LÓGICA DE PUNTOS
 function calcularLogicaPuntos(pL, pV, rL, rV) {
@@ -327,4 +302,5 @@ async function cargarDesdeDB(nombre) {
 }
 
 window.onload = renderizarFixture;
+
 
