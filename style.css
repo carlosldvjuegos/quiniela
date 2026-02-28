@@ -51,11 +51,10 @@ header {
     padding-bottom: 5px;
 }
 
-/* BOTONES DE USUARIO */
+/* BOTONES DE USUARIO CORREGIDOS */
 .btn-link {
-    color-font: black;
-    background-color: #ffffff; /* Fondo blanco o gris muy claro */
-    color: white !important; /* FUERZA EL COLOR NEGRO EN EL TEXTO */
+    background-color: #ffffff; 
+    color: #000000 !important; /* CAMBIADO A NEGRO */
     border: 1px solid #ddd;
     padding: 10px 15px;
     margin-bottom: 8px;
@@ -64,28 +63,40 @@ header {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    font-weight: 700; /* Hace la letra más gruesa */
-    text-transform: uppercase; /* Opcional: pone el nombre en mayúsculas para que se vea mejor */
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.1); /* Le da un poco de sombra */
+    font-weight: 700; 
+    text-transform: uppercase;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    text-decoration: none; /* Por si es un enlace, que no salga azul */
 }
 
-/* Para asegurar que el texto dentro del span también sea negro */
+/* Asegura que el texto (nombres) sea negro */
 .btn-link span {
-    color: white !important;
-    color-font: black;
+    color: #000000 !important;
 }
 
-/* El color de los puntos (el número a la derecha) */
-.badge-puntos {
-    background-color: #e9dcc9; /* Fondo beige oscuro para el puntaje */
-    color: black !important; /* Número en blanco para que resalte sobre el azul */
-    color-font: black;
-    padding: 4px 8px;
+/* EL CUADRO DE LOS PUNTOS (CORRECCIÓN DEFINITIVA) */
+.btn-link .badge-puntos {
+    background-color: #01215b !important; /* Fondo azul oscuro */
+    color: #ffffff !important;           /* FUERZA EL BLANCO */
+    padding: 4px 10px;
     border-radius: 5px;
     font-weight: bold;
+    min-width: 50px;
+    text-align: center;
+    display: inline-block;
 }
 
-.btn-link:hover { background: #e9ecef; }
+/* ESTO ASEGURA QUE NADA DENTRO DEL BADGE SEA NEGRO */
+.badge-puntos span, 
+.btn-link .badge-puntos {
+    color: #ffffff !important;
+}
+
+/* Estilo para cuando pasas el mouse por encima */
+.btn-link:hover { 
+    background: #f8f9fa; 
+    border-color: #01215b;
+}
 
 .quiniela-activa {
     background: var(--primary) !important;
@@ -194,6 +205,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
