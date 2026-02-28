@@ -117,23 +117,15 @@ header {
 
 /* FIXTURE */
 /* Esto obliga a que tanto Index como Admin se vean iguales */
-.content-fixture {
-    display: flex1;
-    flex-direction: column;
-    gap: 15px; /* Espacio entre partidos */
-    padding: 10px;
-}
+.content-fixture { flex: 1; }
 
-/* Diseño de la tarjeta del partido */
 .partido-card {
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px;
-    border-left: 5px solid #0066B2; /* Azul BMW */
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border-left: 6px solid var(--primary);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    overflow: hidden;
 }
 
 .card-header {
@@ -273,4 +265,5 @@ button {
         height: 45px !important;
     }
 }
+
 
