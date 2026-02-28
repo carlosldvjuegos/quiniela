@@ -211,75 +211,56 @@ button {
 .btn-save { background: #27ae60; }
 .btn-report-master { background: #2980b9; }
 
+
+
+
+
 /* AJUSTE PARA MÓVILES: EVITAR QUE SE DESORDENEN LOS PARTIDOS */
 @media (max-width: 768px) {
-    /* Mantenemos el diseño horizontal en los partidos */
+    /* 1. Permitir el movimiento lateral (Izquierda/Derecha) */
+    .layout-principal {
+        display: flex;
+        flex-direction: column;
+        overflow-x: auto; /* Esto permite el scroll horizontal de toda la página */
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* 2. Forzar que los partidos NO se achiquen */
+    .content-fixture {
+        min-width: 600px; /* Obliga a los partidos a mantener un ancho de 'computadora' */
+        padding-bottom: 20px;
+    }
+
+    /* 3. Mantener la estructura horizontal del partido */
     .card-body {
         display: flex !important;
-        flex-direction: row !important; /* Fuerza a que se queden en fila */
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
         justify-content: space-between;
         align-items: center;
-        padding: 10px 5px;
-        gap: 5px;
+        min-width: 580px; /* Asegura que el contenido interno no se colapse */
     }
 
-    /* Reducimos un poco el tamaño de la letra para que quepa todo */
-    .equipo-col {
-        font-size: 0.75rem !important;
-        flex: 1.5; /* Ajusta el espacio para los nombres de equipos */
-    }
-
-    /* Ajustamos los cuadros de los goles para que no sean tan anchos */
-    .marcador-col input {
-        width: 30px !important;
-        height: 35px !important;
-        font-size: 1rem !important;
-    }
-
-    /* Hacemos que la sidebar (donde está Luis y Cambiar Usuario) 
-       se vea compacta arriba */
-    .layout-principal {
-        flex-direction: column;
-    }
-    
+    /* 4. La Quiniela Registrada (Sidebar) */
     .sidebar {
         width: 100%;
-        position: relative;
+        position: sticky; /* Se queda pegada arriba mientras haces scroll vertical */
         top: 0;
-        margin-bottom: 15px;
+        z-index: 100;
+        background: white;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Ajuste de los nombres de los equipos para que no se corten */
+    .equipo-col {
+        min-width: 150px;
+        font-size: 0.9rem;
+    }
+
+    /* Cuadros de goles */
+    .marcador-col input {
+        width: 45px !important;
+        height: 45px !important;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
