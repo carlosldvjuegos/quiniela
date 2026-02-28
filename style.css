@@ -76,7 +76,7 @@ header {
 
 /* EL CUADRO DE LOS PUNTOS (CORRECCIÓN DEFINITIVA) */
 .btn-link .badge-puntos {
-    background-color: #e9dcc9 !important; /* Fondo azul oscuro */
+    background-color: #01215b !important; /* Fondo azul oscuro */
     color: #ffffff !important;           /* FUERZA EL BLANCO */
     padding: 4px 10px;
     border-radius: 5px;
@@ -206,6 +206,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
