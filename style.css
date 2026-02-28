@@ -103,6 +103,16 @@ header {
     background: var(--primary) !important;
     color: black !important;
     border-color: var(--gold) !important;
+
+    /* ESTO ES LO QUE BUSCÁBAMOS: */
+    pointer-events: none !important; /* Desactiva el clic */
+    cursor: default !important;      /* Quita la manito */
+
+    /* ESTO ASEGURA QUE EL BOTÓN ROJO SÍ FUNCIONE SIEMPRE */
+    #btn-volver-lista {
+        pointer-events: auto !important;
+        cursor: pointer !important;
+    }
 }
 
 /* FIXTURE */
@@ -206,6 +216,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
