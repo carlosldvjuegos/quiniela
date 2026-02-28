@@ -211,12 +211,44 @@ button {
 .btn-save { background: #27ae60; }
 .btn-report-master { background: #2980b9; }
 
+/* AJUSTE PARA MÓVILES: EVITAR QUE SE DESORDENEN LOS PARTIDOS */
 @media (max-width: 768px) {
-    .layout-principal { flex-direction: column; }
-    .sidebar { width: 100%; position: relative; top: 0; }
-    .equipo-col { font-size: 0.85rem; }
-}
+    /* Mantenemos el diseño horizontal en los partidos */
+    .card-body {
+        display: flex !important;
+        flex-direction: row !important; /* Fuerza a que se queden en fila */
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 5px;
+        gap: 5px;
+    }
 
+    /* Reducimos un poco el tamaño de la letra para que quepa todo */
+    .equipo-col {
+        font-size: 0.75rem !important;
+        flex: 1.5; /* Ajusta el espacio para los nombres de equipos */
+    }
+
+    /* Ajustamos los cuadros de los goles para que no sean tan anchos */
+    .marcador-col input {
+        width: 30px !important;
+        height: 35px !important;
+        font-size: 1rem !important;
+    }
+
+    /* Hacemos que la sidebar (donde está Luis y Cambiar Usuario) 
+       se vea compacta arriba */
+    .layout-principal {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        position: relative;
+        top: 0;
+        margin-bottom: 15px;
+    }
+}
 
 
 
