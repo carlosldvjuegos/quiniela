@@ -69,20 +69,6 @@ header {
     text-decoration: none; /* Por si es un enlace, que no salga azul */
 }
 
-/* 3. LA REGLA MAESTRA: BLOQUEO SOLO EN "REGISTRADAS" */
-/* Esta regla dice: Si el botón está dentro de 'sidebar', desactiva el clic */
-.sidebar .btn-link {
-    pointer-events: none !important; 
-    cursor: default !important;
-}
-
-/* 4. EXCEPCIÓN: EL BOTÓN DE CAMBIAR USUARIO SIEMPRE DEBE FUNCIONAR */
-.sidebar button, 
-.sidebar .btn-report-master {
-    pointer-events: auto !important;
-    cursor: pointer !important;
-}
-
 /* Asegura que el texto (nombres) sea negro */
 .btn-link span {
     color: white !important;
@@ -220,6 +206,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
