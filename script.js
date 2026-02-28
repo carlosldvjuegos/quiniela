@@ -472,62 +472,75 @@ async function generarReporteMaestro() {
 
 
 function imprimirReporteDosColumnas() {
-    // 1. Acceder a la librería correctamente
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+    const doc = new jsPDF('p', 'mm', 'a4');
+
+    // --- INTENTO DE OBTENER DATOS ---
+    // 1. Intentar desde una variable global común (ajusta 'quinielas' si tu variable se llama distinto)
+    // 2. Intentar desde el almacenamiento local
+    let datos = (typeof quinielas !== 'undefined') ? quinielas : [];
     
-    // 2. Verificar si hay datos (ajusta 'usuarios' al nombre de tu variable de datos)
-    if (typeof usuarios === 'undefined' || usuarios.length === 0) {
-        alert("No hay datos registrados para imprimir.");
+    if (datos.length === 0) {
+        const localData = localStorage.getItem('quinielas');
+        if (localData) datos = JSON.parse(localData);
+    }
+
+    // SI SIGUE VACÍO, DAMOS UN AVISO MÁS DETALLADO
+    if (!datos || datos.length === 0) {
+        alert("Error: No encontré la lista de quinielas. Asegúrate de haber guardado al menos una.");
         return;
     }
 
-    let y = 25;
-    let columna = 0; 
-    const anchoColumna = 90; 
-    const margenDerecho = 105;
-
-    doc.setFontSize(18);
+    doc.setFontSize(14);
     doc.text("REPORTE MAESTRO DE QUINIELAS", 105, 15, { align: "center" });
 
-    usuarios.forEach((user) => {
-        const posX = (columna === 0) ? 10 : margenDerecho;
+    let y = 25;
+    let columna = 0;
+    const anchoColumna = 90; 
+    const separacion = 105; 
 
-        // Título de la quiniela individual
-        doc.setFontSize(10);
-        doc.setTextColor(40);
-        doc.text(`Quiniela de: ${user.nombre.toUpperCase()}`, posX, y);
+    datos.forEach((quiniela) => {
+        const posX = (columna === 0) ? 10 : separacion;
 
-        // Generar la tabla pequeña
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'bold');
+        doc.text(`Usuario: ${quiniela.usuario || quiniela.nombre}`, posX, y);
+
+        // Ajustamos los nombres de las propiedades (local, golesLocal, etc.)
+        // según lo que vi en tus capturas anteriores
+        const filas = (quiniela.pronosticos || []).map(p => [
+            (p.local || p.equipo1 || "").substring(0, 12),
+            p.golesLocal ?? p.gl ?? "-",
+            p.golesVisita ?? p.gv ?? "-",
+            (p.visita || p.equipo2 || "").substring(0, 12)
+        ]);
+
         doc.autoTable({
             startY: y + 2,
             margin: { left: posX },
             tableWidth: anchoColumna,
-            styles: { fontSize: 7, cellPadding: 1 },
-            headStyles: { fillColor: [1, 33, 91] }, // Tu azul --primary
-            head: [['ID', 'Local', 'GL', 'GV', 'Visita']],
-            body: user.pronosticos.map(p => [p.id, p.local, p.gl, p.gv, p.visita]),
+            styles: { fontSize: 7, cellPadding: 0.5 },
+            headStyles: { fillColor: [1, 33, 91] },
+            head: [['Local', 'GL', 'GV', 'Visita']],
+            body: filas,
+            theme: 'grid'
         });
 
-        // Lógica de columnas
         if (columna === 0) {
             columna = 1;
         } else {
             columna = 0;
-            // Solo bajamos la 'y' después de completar la fila de dos columnas
-            y = doc.lastAutoTable.finalY + 15;
+            y = doc.lastAutoTable.finalY + 10;
         }
 
-        // Control de salto de página
         if (y > 270) {
             doc.addPage();
-            y = 25;
+            y = 20;
             columna = 0;
         }
     });
 
-    // Abrir el PDF en una pestaña nueva o descargar
-    doc.save("Reporte_Quinielas.pdf");
+    doc.save("Reporte_Doble_Columna.pdf");
 }
 
 
@@ -550,6 +563,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
