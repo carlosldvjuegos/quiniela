@@ -53,7 +53,7 @@ header {
 
 /* BOTONES DE USUARIO */
 .btn-link {
-    color-font: Black;
+    color-font: black;
     background-color: #ffffff; /* Fondo blanco o gris muy claro */
     color: white !important; /* FUERZA EL COLOR NEGRO EN EL TEXTO */
     border: 1px solid #ddd;
@@ -72,7 +72,7 @@ header {
 /* Para asegurar que el texto dentro del span también sea negro */
 .btn-link span {
     color: white !important;
-    color-font: white;
+    color-font: black;
 }
 
 /* El color de los puntos (el número a la derecha) */
@@ -194,6 +194,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
