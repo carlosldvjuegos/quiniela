@@ -51,6 +51,21 @@ header {
     padding-bottom: 5px;
 }
 
+/* SOLO bloquea los nombres en la lista lateral */
+.sidebar .btn-link {
+    pointer-events: none !important; /* No se puede clickear */
+    cursor: default !important;      /* Flecha normal, no manito */
+    user-select: none;               /* No se puede sombrear el texto */
+}
+
+/* ASEGURA que el botón de "Cambiar Usuario" SIEMPRE funcione */
+.sidebar button, 
+.user-panel button,
+.btn-report-master {
+    pointer-events: auto !important; 
+    cursor: pointer !important;
+}
+
 /* BOTONES DE USUARIO CORREGIDOS */
 .btn-link {
     background-color: #27ae60; 
@@ -206,6 +221,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
