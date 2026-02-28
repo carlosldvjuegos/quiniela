@@ -10,6 +10,9 @@ body {
     background-color: var(--bg);
     margin: 0;
     color: #333;
+    /* Optimización para iPhone */
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
 }
 
 header {
@@ -54,7 +57,7 @@ header {
 /* BOTONES DE USUARIO CORREGIDOS */
 .btn-link {
     background-color: #27ae60; 
-    color: #000000 !important; /* CAMBIADO A NEGRO */
+    color: #000000 !important;
     border: 1px solid #ddd;
     padding: 10px 15px;
     margin-bottom: 8px;
@@ -66,34 +69,30 @@ header {
     font-weight: 700; 
     text-transform: uppercase;
     box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-    text-decoration: none; /* Por si es un enlace, que no salga azul */
+    text-decoration: none;
 }
 
-/* Asegura que el texto (nombres) sea negro */
 .btn-link span {
     color: white !important;
 }
 
-/* EL CUADRO DE LOS PUNTOS (CORRECCIÓN DEFINITIVA) */
 .btn-link .badge-puntos {
-    background-color: #01215b !important; /* Fondo azul oscuro */
-    color: #ffffff !important;           /* FUERZA EL BLANCO */
+    background-color: #01215b !important;
+    color: #ffffff !important;
     padding: 4px 10px;
     border-radius: 5px;
     font-weight: bold;
     min-width: 50px;
     text-align: center;
     display: inline-block;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.2); /* Sombra suave para que el blanco resalte sobre el beige */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
 }
 
-/* ESTO ASEGURA QUE NADA DENTRO DEL BADGE SEA NEGRO */
 .badge-puntos span, 
 .btn-link .badge-puntos {
     color: #ffffff !important;
 }
 
-/* Estilo para cuando pasas el mouse por encima */
 .btn-link:hover { 
     background: #0066B2; 
     border-color: red;
@@ -103,20 +102,16 @@ header {
     background: var(--primary) !important;
     color: black !important;
     border-color: var(--gold) !important;
+    pointer-events: none !important;
+    cursor: default !important;
+}
 
-    /* ESTO ES LO QUE BUSCÁBAMOS: */
-    pointer-events: none !important; /* Desactiva el clic */
-    cursor: default !important;      /* Quita la manito */
-
-    /* ESTO ASEGURA QUE EL BOTÓN ROJO SÍ FUNCIONE SIEMPRE */
-    #btn-volver-lista {
-        pointer-events: auto !important;
-        cursor: pointer !important;
-    }
+#btn-volver-lista {
+    pointer-events: auto !important;
+    cursor: pointer !important;
 }
 
 /* FIXTURE */
-/* Esto obliga a que tanto Index como Admin se vean iguales */
 .content-fixture { flex: 1; }
 
 .partido-card {
@@ -207,45 +202,67 @@ button {
     cursor: pointer;
     font-weight: bold;
     color: black;
+    /* Mejora tacto iPhone */
+    touch-action: manipulation;
 }
 
 .btn-save { background: #27ae60; }
 .btn-report-master { background: #2980b9; }
 
+/* --- SECCIÓN NUEVA: COMPATIBILIDAD TOTAL IPHONE / iOS --- */
 
+/* 1. Evitar zoom automático en campos de texto al tocar en iPhone */
+input[type="number"], 
+input[type="text"],
+.user-panel input {
+    font-size: 16px !important; /* Mínimo requerido por iOS para no hacer zoom */
+}
 
+/* 2. Quitar estilos nativos de Safari que redondean botones de más */
+input, button, select, textarea {
+    -webkit-appearance: none;
+    border-radius: 5px;
+}
+
+/* 3. Asegurar scroll suave en la lista de partidos */
+.content-fixture {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 4. Estilo para el botón de imprimir en el modal (si lo usas) */
+.btn-pdf-print {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* --- CIERRE SECCIÓN IPHONE --- */
 
 
 /* AJUSTE PARA MÓVILES: EVITAR QUE SE DESORDENEN LOS PARTIDOS */
 @media (max-width: 768px) {
-    /* 1. Permitir el movimiento lateral (Izquierda/Derecha) */
     .layout-principal {
         display: flex;
         flex-direction: column;
-        overflow-x: auto; /* Esto permite el scroll horizontal de toda la página */
+        overflow-x: auto; 
         -webkit-overflow-scrolling: touch;
     }
 
-    /* 2. Forzar que los partidos NO se achiquen */
     .content-fixture {
-        min-width: 600px; /* Obliga a los partidos a mantener un ancho de 'computadora' */
+        min-width: 600px; 
         padding-bottom: 20px;
     }
 
-    /* 3. Mantener la estructura horizontal del partido */
     .card-body {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         justify-content: space-between;
         align-items: center;
-        min-width: 580px; /* Asegura que el contenido interno no se colapse */
+        min-width: 580px; 
     }
 
-    /* 4. La Quiniela Registrada (Sidebar) */
     .sidebar {
         width: 100%;
-        position: sticky; /* Se queda pegada arriba mientras haces scroll vertical */
+        position: sticky; 
         top: 0;
         z-index: 100;
         background: white;
@@ -253,17 +270,13 @@ button {
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    /* Ajuste de los nombres de los equipos para que no se corten */
     .equipo-col {
         min-width: 150px;
         font-size: 0.9rem;
     }
 
-    /* Cuadros de goles */
     .marcador-col input {
         width: 45px !important;
         height: 45px !important;
     }
 }
-
-
