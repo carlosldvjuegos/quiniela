@@ -301,7 +301,7 @@ async function cargarDesdeDB(nombre) {
                 btn.style.setProperty('display', 'flex', 'important');
                 btn.classList.add('quiniela-activa');
             } else {
-                btn.style.setProperty('display', 'none', 'important');
+                btn.style.setProperty('none', 'important');
             }
         });
 
@@ -485,3 +485,4 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
