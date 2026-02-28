@@ -51,21 +51,6 @@ header {
     padding-bottom: 5px;
 }
 
-/* SOLO bloquea los nombres en la lista lateral */
-.sidebar .btn-link {
-    pointer-events: none !important; /* No se puede clickear */
-    cursor: default !important;      /* Flecha normal, no manito */
-    user-select: none;               /* No se puede sombrear el texto */
-}
-
-/* ASEGURA que el botón de "Cambiar Usuario" SIEMPRE funcione */
-.sidebar button, 
-.user-panel button,
-.btn-report-master {
-    pointer-events: auto !important; 
-    cursor: pointer !important;
-}
-
 /* BOTONES DE USUARIO CORREGIDOS */
 .btn-link {
     background-color: #27ae60; 
@@ -82,6 +67,20 @@ header {
     text-transform: uppercase;
     box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
     text-decoration: none; /* Por si es un enlace, que no salga azul */
+}
+
+/* 3. LA REGLA MAESTRA: BLOQUEO SOLO EN "REGISTRADAS" */
+/* Esta regla dice: Si el botón está dentro de 'sidebar', desactiva el clic */
+.sidebar .btn-link {
+    pointer-events: none !important; 
+    cursor: default !important;
+}
+
+/* 4. EXCEPCIÓN: EL BOTÓN DE CAMBIAR USUARIO SIEMPRE DEBE FUNCIONAR */
+.sidebar button, 
+.sidebar .btn-report-master {
+    pointer-events: auto !important;
+    cursor: pointer !important;
 }
 
 /* Asegura que el texto (nombres) sea negro */
@@ -221,6 +220,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
