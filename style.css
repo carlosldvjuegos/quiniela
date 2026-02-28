@@ -71,7 +71,7 @@ header {
 
 /* Asegura que el texto (nombres) sea negro */
 .btn-link span {
-    color: #000000 !important;
+    color: white !important;
 }
 
 /* EL CUADRO DE LOS PUNTOS (CORRECCIÓN DEFINITIVA) */
@@ -206,6 +206,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
