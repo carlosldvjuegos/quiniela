@@ -51,10 +51,11 @@ header {
     padding-bottom: 5px;
 }
 
-/* BOTONES DE USUARIO CORREGIDOS */
+/* BOTONES DE USUARIO */
 .btn-link {
-    background-color: #ffffff; 
-    color: #000000 !important; /* CAMBIADO A NEGRO */
+    color-font: black;
+    background-color: #ffffff; /* Fondo blanco o gris muy claro */
+    color: white !important; /* FUERZA EL COLOR NEGRO EN EL TEXTO */
     border: 1px solid #ddd;
     padding: 10px 15px;
     margin-bottom: 8px;
@@ -63,33 +64,28 @@ header {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    font-weight: 700; 
-    text-transform: uppercase;
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-    text-decoration: none; /* Por si es un enlace, que no salga azul */
+    font-weight: 700; /* Hace la letra más gruesa */
+    text-transform: uppercase; /* Opcional: pone el nombre en mayúsculas para que se vea mejor */
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1); /* Le da un poco de sombra */
 }
 
-/* Asegura que el texto (nombres) sea negro */
+/* Para asegurar que el texto dentro del span también sea negro */
 .btn-link span {
-    color: #000000 !important;
+    color: white !important;
+    color-font: black;
 }
 
-/* El cuadro de los puntos (el número a la derecha) */
+/* El color de los puntos (el número a la derecha) */
 .badge-puntos {
-    background-color: #e9dcc9; /* Fondo beige oscuro */
-    color: #ffffff !important; /* El número en BLANCO para que se lea sobre el azul */
-    padding: 4px 10px;
+    background-color: #e9dcc9; /* Fondo beige oscuro para el puntaje */
+    color: black !important; /* Número en blanco para que resalte sobre el azul */
+    color-font: black;
+    padding: 4px 8px;
     border-radius: 5px;
     font-weight: bold;
-    min-width: 50px;
-    text-align: center;
 }
 
-/* Estilo para cuando pasas el mouse por encima */
-.btn-link:hover { 
-    background: #f8f9fa; 
-    border-color: #01215b;
-}
+.btn-link:hover { background: #e9ecef; }
 
 .quiniela-activa {
     background: var(--primary) !important;
@@ -198,6 +194,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
