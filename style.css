@@ -54,7 +54,7 @@ header {
 /* BOTONES DE USUARIO CORREGIDOS */
 .btn-link {
     background-color: #ffffff; 
-    color: #000000 !important; /* CAMBIADO A NEGRO */
+    color: white !important; /* CAMBIADO A NEGRO */
     border: 1px solid #ddd;
     padding: 10px 15px;
     margin-bottom: 8px;
@@ -206,6 +206,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
