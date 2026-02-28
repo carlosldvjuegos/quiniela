@@ -147,8 +147,8 @@ const partidosData = [
 ];
 
 // DIBUJAR LOS PARTIDOS
+// DIBUJAR LOS PARTIDOS (CON EL DISEÑO DEL INDEX)
 function renderizarPartidosAdmin() {
-    // CAMBIO IMPORTANTE: Usamos el ID correcto del admin.html
     const container = document.getElementById('admin-fixture-container'); 
     
     if (!container) {
@@ -159,23 +159,44 @@ function renderizarPartidosAdmin() {
     container.innerHTML = "";
     partidosData.forEach(p => {
         const card = document.createElement('div');
-        card.className = "card";
+        // Usamos la clase 'card' o 'partido-card' según tengas en tu style.css
+        card.className = "partido-card"; 
+        
         card.innerHTML = `
-            <span class="col-fase">${p.fase}</span>
-            <span class="col-fecha">${p.fecha}</span>
-            <span class="txt-right">${p.local}</span>
-            <div class="marcador">
-                <input type="number" id="R-L-${p.id}" placeholder="0">
-                <span>-</span>
-                <input type="number" id="R-V-${p.id}" placeholder="0">
+            <div class="partido-info">
+                <span class="grupo-label">${p.fase} - Grupo ${p.grupo}</span>
+                <span class="fecha-label">${p.fecha}</span>
             </div>
-            <span class="txt-left">${p.visita}</span>
+            
+            <div class="card-body">
+                <div class="equipo-col left">
+                    <span class="nombre-equipo">${p.local}</span>
+                </div>
+
+                <div class="marcador-col">
+                    <input type="number" 
+                           id="R-L-${p.id}" 
+                           class="input-gol" 
+                           placeholder="0">
+                    <span class="separador">-</span>
+                    <input type="number" 
+                           id="R-V-${p.id}" 
+                           class="input-gol" 
+                           placeholder="0">
+                </div>
+
+                <div class="equipo-col right">
+                    <span class="nombre-equipo">${p.visita}</span>
+                </div>
+            </div>
+            <div style="text-align: center; font-size: 0.7rem; color: #0066B2; font-weight: bold; margin-top: 5px;">
+                RESULTADO OFICIAL
+            </div>
         `;
         container.appendChild(card);
     });
-    console.log("✅ Partidos dibujados en pantalla.");
+    console.log("✅ Partidos dibujados con diseño de Index.");
 }
-
 // CARGAR RESULTADOS DESDE LA BASE DE DATOS
 async function cargarResultadosExistentes() {
     try {
@@ -239,6 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderizarPartidosAdmin();
     cargarResultadosExistentes();
 });
+
 
 
 
