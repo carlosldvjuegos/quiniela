@@ -475,7 +475,7 @@ async function generarReporteMaestro() {
             
             <div class="header-actions">
                 <h1>Reporte Maestro de Quinielas</h1>
-                <button class="btn-pdf" onclick="ventanaImprimirPDF()">📥 Descargar en PDF (2 Columnas)</button>
+                <button class="btn-pdf" onclick="ventanaImprimirPDF()">📥 Descargar en PDF</button>
             </div>`;
 
         for (const usuario in agrupado) {
@@ -652,6 +652,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
