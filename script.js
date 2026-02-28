@@ -443,30 +443,112 @@ async function generarReporteMaestro() {
             return acc;
         }, {});
 
-        let htmlReporte = `<html><head><style>
-            body { font-family: sans-serif; padding: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background: #01215b; color: white; }
-            .marcador { font-weight: bold; text-align: center; }
-        </style></head><body>`;
+        // --- INICIO DEL HTML PARA LA NUEVA VENTANA ---
+        let htmlReporte = `<html><head>
+            <title>Reporte Maestro</title>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+            
+            <style>
+                body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+                .header-actions { 
+                    position: sticky; top: 0; background: white; padding: 15px; 
+                    border-bottom: 2px solid #01215b; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
+                }
+                .btn-pdf { 
+                    background: #d32f2f; color: white; border: none; padding: 10px 20px; 
+                    cursor: pointer; font-weight: bold; border-radius: 5px; font-size: 14px;
+                }
+                .btn-pdf:hover { background: #b71c1c; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background: #01215b; color: white; }
+                .marcador { font-weight: bold; text-align: center; }
+                h2 { color: #01215b; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+            </style>
+        </head><body>
+            
+            <div class="header-actions">
+                <h1>Reporte Maestro de Quinielas</h1>
+                <button class="btn-pdf" onclick="ventanaImprimirPDF()">📥 Descargar en PDF (2 Columnas)</button>
+            </div>`;
 
         for (const usuario in agrupado) {
             htmlReporte += `<h2>Quiniela de: ${usuario}</h2>
-                <table><thead><tr><th>ID</th><th>Local</th><th>GL</th><th>GV</th><th>Visita</th></tr></thead><tbody>`;
+                <table id="tabla-${usuario}">
+                    <thead><tr><th>ID</th><th>Local</th><th>GL</th><th>GV</th><th>Visita</th></tr></thead>
+                    <tbody>`;
+            
             agrupado[usuario].forEach(row => {
                 const p = partidosData.find(item => item.id === row.partido_id) || {};
-                htmlReporte += `<tr><td>${row.partido_id}</td><td>${p.local || '---'}</td>
-                <td class="marcador">${row.goles_local}</td><td class="marcador">${row.goles_visita}</td>
-                <td>${p.visita || '---'}</td></tr>`;
+                htmlReporte += `<tr>
+                    <td>${row.partido_id}</td>
+                    <td>${p.local || '---'}</td>
+                    <td class="marcador">${row.goles_local}</td>
+                    <td class="marcador">${row.goles_visita}</td>
+                    <td>${p.visita || '---'}</td>
+                </tr>`;
             });
             htmlReporte += `</tbody></table>`;
         }
-        htmlReporte += `</body></html>`;
+
+        // --- INYECTAMOS LA LÓGICA DEL PDF DENTRO DE LA VENTANA NUEVA ---
+        htmlReporte += `
+        <script>
+            function ventanaImprimirPDF() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const tablas = document.querySelectorAll('table');
+                const titulos = document.querySelectorAll('h2');
+                
+                let y = 20;
+                let columna = 0;
+                const anchoCol = 90;
+                const xDerecha = 105;
+
+                doc.setFontSize(16);
+                doc.text("REPORTE MAESTRO - 2 COLUMNAS", 105, 10, { align: "center" });
+
+                tablas.forEach((tabla, index) => {
+                    const nombreUsuario = titulos[index].innerText;
+                    const xPos = (columna === 0) ? 10 : xDerecha;
+
+                    doc.setFontSize(10);
+                    doc.text(nombreUsuario, xPos, y);
+
+                    doc.autoTable({
+                        html: tabla,
+                        startY: y + 2,
+                        margin: { left: xPos },
+                        tableWidth: anchoCol,
+                        theme: 'grid',
+                        styles: { fontSize: 7, cellPadding: 1 },
+                        headStyles: { fillColor: [1, 33, 91] }
+                    });
+
+                    if (columna === 0) {
+                        columna = 1;
+                    } else {
+                        columna = 0;
+                        y = doc.lastAutoTable.finalY + 15;
+                    }
+
+                    if (y > 270) { doc.addPage(); y = 20; columna = 0; }
+                });
+
+                doc.save("Reporte_Quinielas.pdf");
+            }
+        </script>
+        </body></html>`;
+
         const v = window.open('', '_blank');
         v.document.write(htmlReporte);
         v.document.close();
-    } catch (e) { alert("Error reporte."); }
+        
+    } catch (e) { 
+        console.error(e);
+        alert("Error al generar el reporte."); 
+    }
 }
 
 
@@ -563,6 +645,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
