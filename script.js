@@ -472,48 +472,62 @@ async function generarReporteMaestro() {
 
 
 function imprimirReporteDosColumnas() {
+    // 1. Acceder a la librería correctamente
+    const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    let y = 20;
-    let columna = 0; // 0 para izquierda, 1 para derecha
-    const anchoColumna = 90; // Ancho reducido para que quepan dos
-    const margenSegundoColumna = 105; // Donde empieza la columna derecha
+    
+    // 2. Verificar si hay datos (ajusta 'usuarios' al nombre de tu variable de datos)
+    if (typeof usuarios === 'undefined' || usuarios.length === 0) {
+        alert("No hay datos registrados para imprimir.");
+        return;
+    }
 
-    doc.setFontSize(16);
-    doc.text("Reporte Maestro de Quinielas", 105, 10, { align: "center" });
+    let y = 25;
+    let columna = 0; 
+    const anchoColumna = 90; 
+    const margenDerecho = 105;
 
-    // Recorremos los datos de tus usuarios
-    usuarios.forEach((user, index) => {
-        const posX = (columna === 0) ? 10 : margenSegundoColumna;
+    doc.setFontSize(18);
+    doc.text("REPORTE MAESTRO DE QUINIELAS", 105, 15, { align: "center" });
 
-        doc.setFontSize(12);
-        doc.text(`Quiniela de: ${user.nombre}`, posX, y);
+    usuarios.forEach((user) => {
+        const posX = (columna === 0) ? 10 : margenDerecho;
 
+        // Título de la quiniela individual
+        doc.setFontSize(10);
+        doc.setTextColor(40);
+        doc.text(`Quiniela de: ${user.nombre.toUpperCase()}`, posX, y);
+
+        // Generar la tabla pequeña
         doc.autoTable({
             startY: y + 2,
             margin: { left: posX },
-            tableWidth: anchoColumna, // AQUÍ REDUCIMOS EL ANCHO
-            head: [['ID', 'L', 'GL', 'GV', 'V']], // Nombres cortos para ahorrar espacio
-            body: user.pronosticos, // Tus datos
-            theme: 'striped',
-            styles: { fontSize: 8 }
+            tableWidth: anchoColumna,
+            styles: { fontSize: 7, cellPadding: 1 },
+            headStyles: { fillColor: [1, 33, 91] }, // Tu azul --primary
+            head: [['ID', 'Local', 'GL', 'GV', 'Visita']],
+            body: user.pronosticos.map(p => [p.id, p.local, p.gl, p.gv, p.visita]),
         });
 
-        // Lógica para saltar de columna o de página
+        // Lógica de columnas
         if (columna === 0) {
-            columna = 1; // El siguiente va a la derecha
+            columna = 1;
         } else {
-            columna = 0; // El siguiente vuelve a la izquierda
-            y = doc.lastAutoTable.finalY + 15; // Bajamos la fila
+            columna = 0;
+            // Solo bajamos la 'y' después de completar la fila de dos columnas
+            y = doc.lastAutoTable.finalY + 15;
         }
 
-        // Si llegamos al final de la hoja, creamos una nueva
-        if (y > 250) {
+        // Control de salto de página
+        if (y > 270) {
             doc.addPage();
-            y = 20;
+            y = 25;
+            columna = 0;
         }
     });
 
-    doc.save("Reporte_Maestro_2_Columnas.pdf");
+    // Abrir el PDF en una pestaña nueva o descargar
+    doc.save("Reporte_Quinielas.pdf");
 }
 
 
@@ -536,6 +550,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
