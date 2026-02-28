@@ -95,8 +95,8 @@ header {
 
 /* Estilo para cuando pasas el mouse por encima */
 .btn-link:hover { 
-    background: #f8f9fa; 
-    border-color: #01215b;
+    background: ; 
+    border-color: #0066B2;
 }
 
 .quiniela-activa {
@@ -206,6 +206,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
