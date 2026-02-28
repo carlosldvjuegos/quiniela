@@ -76,7 +76,7 @@ header {
 
 /* El cuadro de los puntos (el número a la derecha) */
 .badge-puntos {
-    background-color: #e9dcc9; /* Fondo azul oscuro */
+    background-color: #e9dcc9; /* Fondo beige oscuro */
     color: #ffffff !important; /* El número en BLANCO para que se lea sobre el azul */
     padding: 4px 10px;
     border-radius: 5px;
@@ -198,6 +198,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
