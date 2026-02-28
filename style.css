@@ -195,7 +195,7 @@ button {
     border-radius: 5px;
     cursor: pointer;
     font-weight: bold;
-    color: white;
+    color: black;
 }
 
 .btn-save { background: #27ae60; }
@@ -206,6 +206,7 @@ button {
     .sidebar { width: 100%; position: relative; top: 0; }
     .equipo-col { font-size: 0.85rem; }
 }
+
 
 
 
