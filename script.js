@@ -469,6 +469,57 @@ async function generarReporteMaestro() {
     } catch (e) { alert("Error reporte."); }
 }
 
+
+
+function imprimirReporteDosColumnas() {
+    const doc = new jsPDF();
+    let y = 20;
+    let columna = 0; // 0 para izquierda, 1 para derecha
+    const anchoColumna = 90; // Ancho reducido para que quepan dos
+    const margenSegundoColumna = 105; // Donde empieza la columna derecha
+
+    doc.setFontSize(16);
+    doc.text("Reporte Maestro de Quinielas", 105, 10, { align: "center" });
+
+    // Recorremos los datos de tus usuarios
+    usuarios.forEach((user, index) => {
+        const posX = (columna === 0) ? 10 : margenSegundoColumna;
+
+        doc.setFontSize(12);
+        doc.text(`Quiniela de: ${user.nombre}`, posX, y);
+
+        doc.autoTable({
+            startY: y + 2,
+            margin: { left: posX },
+            tableWidth: anchoColumna, // AQUÍ REDUCIMOS EL ANCHO
+            head: [['ID', 'L', 'GL', 'GV', 'V']], // Nombres cortos para ahorrar espacio
+            body: user.pronosticos, // Tus datos
+            theme: 'striped',
+            styles: { fontSize: 8 }
+        });
+
+        // Lógica para saltar de columna o de página
+        if (columna === 0) {
+            columna = 1; // El siguiente va a la derecha
+        } else {
+            columna = 0; // El siguiente vuelve a la izquierda
+            y = doc.lastAutoTable.finalY + 15; // Bajamos la fila
+        }
+
+        // Si llegamos al final de la hoja, creamos una nueva
+        if (y > 250) {
+            doc.addPage();
+            y = 20;
+        }
+    });
+
+    doc.save("Reporte_Maestro_2_Columnas.pdf");
+}
+
+
+
+
+
 async function resetearBaseDeDatos() {
     if (!confirm("⚠️ ¿Borrar todo?")) return;
     try {
@@ -485,5 +536,6 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
