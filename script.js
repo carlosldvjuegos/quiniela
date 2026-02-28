@@ -440,11 +440,7 @@ async function generarReporteMaestro() {
     try {
         const response = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await response.json();
-        
-        if (!datos || datos.length === 0) {
-            alert("No hay datos disponibles.");
-            return;
-        }
+        if (!datos || datos.length === 0) return alert("No hay datos.");
 
         const agrupado = datos.reduce((acc, row) => {
             if (!acc[row.nombre_usuario]) acc[row.nombre_usuario] = [];
@@ -452,108 +448,111 @@ async function generarReporteMaestro() {
             return acc;
         }, {});
 
-        // Crear la ventana ANTES de escribir para evitar bloqueos
-        const v = window.open('', '_blank');
-        if (!v) {
-            alert("El navegador bloqueó la ventana emergente. Por favor, permítela.");
-            return;
-        }
-
-        let contenido = `
-        <!DOCTYPE html>
-        <html lang="es">
-        <head>
-            <meta charset="UTF-8">
-            <title>Imprimir Reporte Maestro</title>
+        // --- INICIO DEL HTML PARA LA NUEVA VENTANA ---
+        let htmlReporte = `<html><head>
+            <title>Reporte Maestro</title>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+            
             <style>
-                body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; background: #f4f7f6; }
-                .nav-admin { background: #01215b; color: white; padding: 20px; position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.3); z-index: 100; }
-                .btn-pdf-print { background: #28a745; color: white; border: none; padding: 12px 24px; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 1rem; transition: 0.3s; }
-                .btn-pdf-print:hover { background: #218838; transform: scale(1.05); }
-                .container-reporte { padding: 30px; max-width: 900px; margin: auto; }
-                table { width: 100%; border-collapse: collapse; background: white; margin-bottom: 40px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-                th, td { padding: 12px; border: 1px solid #eee; text-align: left; }
-                th { background: #01215b; color: white; text-transform: uppercase; font-size: 0.8rem; }
-                h2 { color: #01215b; border-left: 6px solid #28a745; padding-left: 15px; }
+                body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+                .header-actions { 
+                    position: sticky; top: 0; background: white; padding: 15px; 
+                    border-bottom: 2px solid #01215b; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
+                }
+                .btn-pdf { 
+                    background: #d32f2f; color: white; border: none; padding: 10px 20px; 
+                    cursor: pointer; font-weight: bold; border-radius: 5px; font-size: 14px;
+                }
+                .btn-pdf:hover { background: #b71c1c; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background: #01215b; color: white; }
+                .marcador { font-weight: bold; text-align: center; }
+                h2 { color: #01215b; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
             </style>
-        </head>
-        <body>
-            <div class="nav-admin">
-                <strong>PANEL DE IMPRESIÓN OFICIAL</strong>
-                <button class="btn-pdf-print" onclick="generarPDF()">📥 DESCARGAR PDF (2 COLUMNAS)</button>
-            </div>
-            <div class="container-reporte">`;
+        </head><body>
+            
+            <div class="header-actions">
+                <h1>Reporte Maestro de Quinielas</h1>
+                <button class="btn-pdf" onclick="ventanaImprimirPDF()">📥 Descargar en PDF (2 Columnas)</button>
+            </div>`;
 
         for (const usuario in agrupado) {
-            contenido += `<h2>Quiniela de: ${usuario}</h2>
-                <table class="tabla-datos">
+            htmlReporte += `<h2>Quiniela de: ${usuario}</h2>
+                <table id="tabla-${usuario}">
                     <thead><tr><th>ID</th><th>Local</th><th>GL</th><th>GV</th><th>Visita</th></tr></thead>
                     <tbody>`;
+            
             agrupado[usuario].forEach(row => {
-                const p = (typeof partidosData !== 'undefined') ? partidosData.find(item => item.id === row.partido_id) : {};
-                contenido += `<tr>
+                const p = partidosData.find(item => item.id === row.partido_id) || {};
+                htmlReporte += `<tr>
                     <td>${row.partido_id}</td>
-                    <td>${p.local || 'Equipo L'}</td>
-                    <td style="text-align:center; font-weight:bold;">${row.goles_local}</td>
-                    <td style="text-align:center; font-weight:bold;">${row.goles_visita}</td>
-                    <td>${p.visita || 'Equipo V'}</td>
+                    <td>${p.local || '---'}</td>
+                    <td class="marcador">${row.goles_local}</td>
+                    <td class="marcador">${row.goles_visita}</td>
+                    <td>${p.visita || '---'}</td>
                 </tr>`;
             });
-            contenido += `</tbody></table>`;
+            htmlReporte += `</tbody></table>`;
         }
 
-        contenido += `</div>
-            <script>
-                function generarPDF() {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF('p', 'mm', 'a4');
-                    const tablas = document.querySelectorAll('.tabla-datos');
-                    const titulos = document.querySelectorAll('h2');
-                    let y = 20;
-                    let col = 0;
+        // --- INYECTAMOS LA LÓGICA DEL PDF DENTRO DE LA VENTANA NUEVA ---
+        htmlReporte += `
+        <script>
+            function ventanaImprimirPDF() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const tablas = document.querySelectorAll('table');
+                const titulos = document.querySelectorAll('h2');
+                
+                let y = 20;
+                let columna = 0;
+                const anchoCol = 90;
+                const xDerecha = 105;
 
-                    doc.setFontSize(18);
-                    doc.setTextColor(1, 33, 91);
-                    doc.text("REPORTE MAESTRO DE QUINIELAS", 105, 12, { align: 'center' });
+                doc.setFontSize(16);
+                doc.text("REPORTE MAESTRO - 2 COLUMNAS", 105, 10, { align: "center" });
 
-                    tablas.forEach((tabla, i) => {
-                        const xPos = (col === 0) ? 10 : 105;
-                        doc.setFontSize(10);
-                        doc.setTextColor(0);
-                        doc.text(titulos[i].innerText, xPos, y);
+                tablas.forEach((tabla, index) => {
+                    const nombreUsuario = titulos[index].innerText;
+                    const xPos = (columna === 0) ? 10 : xDerecha;
 
-                        doc.autoTable({
-                            html: tabla,
-                            startY: y + 2,
-                            margin: { left: xPos },
-                            tableWidth: 90,
-                            styles: { fontSize: 7, cellPadding: 1 },
-                            headStyles: { fillColor: [1, 33, 91] },
-                            theme: 'grid'
-                        });
+                    doc.setFontSize(10);
+                    doc.text(nombreUsuario, xPos, y);
 
-                        if (col === 0) {
-                            col = 1;
-                        } else {
-                            col = 0;
-                            y = doc.lastAutoTable.finalY + 15;
-                        }
-
-                        if (y > 275) { doc.addPage(); y = 20; col = 0; }
+                    doc.autoTable({
+                        html: tabla,
+                        startY: y + 2,
+                        margin: { left: xPos },
+                        tableWidth: anchoCol,
+                        theme: 'grid',
+                        styles: { fontSize: 7, cellPadding: 1 },
+                        headStyles: { fillColor: [1, 33, 91] }
                     });
-                    doc.save("Reporte_Quiniela_PCAS.pdf");
-                }
-            <\/script>
+
+                    if (columna === 0) {
+                        columna = 1;
+                    } else {
+                        columna = 0;
+                        y = doc.lastAutoTable.finalY + 15;
+                    }
+
+                    if (y > 270) { doc.addPage(); y = 20; columna = 0; }
+                });
+
+                doc.save("Reporte_Quinielas.pdf");
+            }
+        </script>
         </body></html>`;
 
-        v.document.write(contenido);
+        const v = window.open('', '_blank');
+        v.document.write(htmlReporte);
         v.document.close();
-
-    } catch (error) {
-        console.error("Error:", error);
-        alert("Hubo un problema al conectar con el servidor.");
+        
+    } catch (e) { 
+        console.error(e);
+        alert("Error al generar el reporte."); 
     }
 }
 
@@ -653,6 +652,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
