@@ -118,7 +118,7 @@ header {
 /* FIXTURE */
 /* Esto obliga a que tanto Index como Admin se vean iguales */
 .content-fixture {
-    display: flex;
+    display: flex1;
     flex-direction: column;
     gap: 15px; /* Espacio entre partidos */
     padding: 10px;
