@@ -560,78 +560,6 @@ async function generarReporteMaestro() {
 
 
 
-function imprimirReporteDosColumnas() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
-
-    // --- INTENTO DE OBTENER DATOS ---
-    // 1. Intentar desde una variable global común (ajusta 'quinielas' si tu variable se llama distinto)
-    // 2. Intentar desde el almacenamiento local
-    let datos = (typeof quinielas !== 'undefined') ? quinielas : [];
-    
-    if (datos.length === 0) {
-        const localData = localStorage.getItem('quinielas');
-        if (localData) datos = JSON.parse(localData);
-    }
-
-    // SI SIGUE VACÍO, DAMOS UN AVISO MÁS DETALLADO
-    if (!datos || datos.length === 0) {
-        alert("Error: No encontré la lista de quinielas. Asegúrate de haber guardado al menos una.");
-        return;
-    }
-
-    doc.setFontSize(14);
-    doc.text("REPORTE MAESTRO DE QUINIELAS", 105, 15, { align: "center" });
-
-    let y = 25;
-    let columna = 0;
-    const anchoColumna = 90; 
-    const separacion = 105; 
-
-    datos.forEach((quiniela) => {
-        const posX = (columna === 0) ? 10 : separacion;
-
-        doc.setFontSize(9);
-        doc.setFont(undefined, 'bold');
-        doc.text(`Usuario: ${quiniela.usuario || quiniela.nombre}`, posX, y);
-
-        // Ajustamos los nombres de las propiedades (local, golesLocal, etc.)
-        // según lo que vi en tus capturas anteriores
-        const filas = (quiniela.pronosticos || []).map(p => [
-            (p.local || p.equipo1 || "").substring(0, 12),
-            p.golesLocal ?? p.gl ?? "-",
-            p.golesVisita ?? p.gv ?? "-",
-            (p.visita || p.equipo2 || "").substring(0, 12)
-        ]);
-
-        doc.autoTable({
-            startY: y + 2,
-            margin: { left: posX },
-            tableWidth: anchoColumna,
-            styles: { fontSize: 7, cellPadding: 0.5 },
-            headStyles: { fillColor: [1, 33, 91] },
-            head: [['Local', 'GL', 'GV', 'Visita']],
-            body: filas,
-            theme: 'grid'
-        });
-
-        if (columna === 0) {
-            columna = 1;
-        } else {
-            columna = 0;
-            y = doc.lastAutoTable.finalY + 10;
-        }
-
-        if (y > 270) {
-            doc.addPage();
-            y = 20;
-            columna = 0;
-        }
-    });
-
-    doc.save("Reporte_Doble_Columna.pdf");
-}
-
 
 
 
@@ -652,6 +580,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
