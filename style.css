@@ -209,6 +209,31 @@ button {
 .btn-save { background: #27ae60; }
 .btn-report-master { background: #2980b9; }
 
+.marcador-desempate {
+    background: #fff9c4; /* Amarillo claro tipo marcador */
+    padding: 8px;
+    border-radius: 8px;
+    border: 2px dashed #fbc02d;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.etiqueta-desempate {
+    font-size: 0.7rem;
+    color: #856404;
+    font-weight: 900;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.in-desempate {
+    background-color: white;
+    border: 1px solid #fbc02d !important;
+    color: #333;
+}
+
+
 /* --- SECCIÓN NUEVA: COMPATIBILIDAD TOTAL IPHONE / iOS --- */
 
 /* 1. Evitar zoom automático en campos de texto al tocar en iPhone */
@@ -280,3 +305,4 @@ input, button, select, textarea {
         height: 45px !important;
     }
 }
+
