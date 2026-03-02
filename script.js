@@ -250,9 +250,10 @@ async function actualizarListaLinks() {
 
         container.innerHTML = "";
         listaRanking.forEach((u, index) => {
+            const icono = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : "•"));
             const btn = document.createElement('button');
             btn.className = "btn-link";
-            btn.innerHTML = `<span>• ${u.nombre}</span><span class="badge-puntos">${u.puntos} pts</span>`;
+            btn.innerHTML = `<span>${icono} ${u.nombre}</span><span class="badge-puntos">${u.puntos} pts</span>`;
             btn.onclick = () => cargarDesdeDB(u.nombre);
             container.appendChild(btn);
         });
@@ -570,6 +571,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
