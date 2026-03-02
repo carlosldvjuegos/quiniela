@@ -270,33 +270,49 @@ async function calcularPuntos() {
 async function guardarQuinielaCompleta() {
     const nombre = document.getElementById('nombre-usuario').value;
     if (!nombre) return alert("Escribe tu nombre.");
+
     const predicciones = [];
     partidosData.forEach(p => {
         const gl = document.getElementById(`L-${p.id}`).value;
         const gv = document.getElementById(`V-${p.id}`).value;
+        
+        // Capturar los valores de desempate si existen
         const inDL = document.getElementById(`DL-${p.id}`);
         const inDV = document.getElementById(`DV-${p.id}`);
-        
+
         if (gl !== "" && gv !== "") {
             predicciones.push({ 
                 id: p.id, 
                 gl: parseInt(gl), 
                 gv: parseInt(gv),
+                // Enviamos null si el campo no existe o está vacío
                 dl: (inDL && inDL.value !== "") ? parseInt(inDL.value) : null,
                 dv: (inDV && inDV.value !== "") ? parseInt(inDV.value) : null
             });
         }
     });
+
+    if (predicciones.length === 0) return alert("Completa al menos un resultado.");
+
     try {
         const res = await fetch(`${API_URL}/guardar`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ nombre, predicciones })
         });
+
         const data = await res.json();
-        alert(data.mensaje);
-        actualizarListaLinks();
-    } catch (e) { alert("Error al guardar."); }
+
+        if (res.ok) {
+            alert(data.mensaje || "Quiniela guardada correctamente");
+            actualizarListaLinks();
+        } else {
+            alert("Error del servidor: " + (data.error || "No se pudo guardar"));
+        }
+    } catch (e) {
+        console.error("Error al guardar:", e);
+        alert("Error de conexión con el servidor.");
+    }
 }
 
 // 7. CARGAR DESDE DB
@@ -527,3 +543,4 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
