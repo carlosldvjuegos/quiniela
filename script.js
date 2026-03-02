@@ -340,6 +340,34 @@ async function cargarDesdeDB(nombre) {
 
 // 8. LÓGICA DE TORNEO Y AVANCES
 function actualizarTorneo() {
+
+    // Agrega esto al inicio de tu función actualizarTorneo()
+    partidosData.forEach(p => {
+        if (p.fase !== "Grupos") {
+            const inL = document.getElementById(`L-${p.id}`);
+            const inV = document.getElementById(`V-${p.id}`);
+            const wrapper = document.getElementById(`wrapper-desempate-${p.id}`);
+    
+            if (inL && inV && wrapper) {
+                const valL = inL.value;
+                const valV = inV.value;
+    
+                // Si ambos campos tienen números y son iguales (Empate)
+                if (valL !== "" && valV !== "" && parseInt(valL) === parseInt(valV)) {
+                    wrapper.style.display = "block"; // Mostrar marcador de desempate
+                } else {
+                    wrapper.style.display = "none";  // Ocultar si hay un ganador o está vacío
+                    // Limpiar los valores de desempate si se oculta
+                    document.getElementById(`DL-${p.id}`).value = "";
+                    document.getElementById(`DV-${p.id}`).value = "";
+                }
+            }
+        }
+    });
+
+
+
+    
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let clasificados = {}; 
     let datosGrupos = {};
@@ -379,36 +407,6 @@ function actualizarTorneo() {
     mejoresTerceros.slice(0, 8).forEach((t, i) => clasificados[`3T${i+1}`] = t.nombre);
 
     actualizarFasesEliminatorias(clasificados);
-
-
-
-    
-    // Agrega esto al inicio de tu función actualizarTorneo()
-    partidosData.forEach(p => {
-        if (p.fase !== "Grupos") {
-            const inL = document.getElementById(`L-${p.id}`);
-            const inV = document.getElementById(`V-${p.id}`);
-            const wrapper = document.getElementById(`wrapper-desempate-${p.id}`);
-    
-            if (inL && inV && wrapper) {
-                const valL = inL.value;
-                const valV = inV.value;
-    
-                // Si ambos campos tienen números y son iguales (Empate)
-                if (valL !== "" && valV !== "" && parseInt(valL) === parseInt(valV)) {
-                    wrapper.style.display = "block"; // Mostrar marcador de desempate
-                } else {
-                    wrapper.style.display = "none";  // Ocultar si hay un ganador o está vacío
-                    // Limpiar los valores de desempate si se oculta
-                    document.getElementById(`DL-${p.id}`).value = "";
-                    document.getElementById(`DV-${p.id}`).value = "";
-                }
-            }
-        }
-    });
-
-
-
     
 }
 
@@ -652,6 +650,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
