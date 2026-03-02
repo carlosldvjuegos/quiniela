@@ -437,10 +437,17 @@ function actualizarFasesEliminatorias(clasificados) {
         { id: 85, L: "1B", V: "3T7" }, { id: 86, L: "2D", V: "2G" },
         { id: 87, L: "1J", V: "2H" }, { id: 88, L: "1K", V: "3T8" }
     ];
+
     mapeo16vos.forEach(m => {
-        ponerNombreEnCard(m.id, 'L', clasificados[m.L] || m.L);
-        ponerNombreEnCard(m.id, 'V', clasificados[m.V] || m.V);
+        // Si el clasificado existe en el objeto (porque hay goles), lo ponemos.
+        // Si no existe, ponemos el código original (2A, 1C, etc.)
+        const nombreL = clasificados[m.L] || m.L;
+        const nombreV = clasificados[m.V] || m.V;
+        
+        ponerNombreEnCard(m.id, 'L', nombreL);
+        ponerNombreEnCard(m.id, 'V', nombreV);
     });
+
     const avance = [
         { de: 73, a: 89, pos: 'L', tipo: 'ganador' }, { de: 74, a: 89, pos: 'V', tipo: 'ganador' },
         { de: 75, a: 90, pos: 'L', tipo: 'ganador' }, { de: 76, a: 90, pos: 'V', tipo: 'ganador' },
@@ -462,38 +469,54 @@ function actualizarFasesEliminatorias(clasificados) {
     procesarAvanceFutbol(avance);
 }
 
+
 function procesarAvanceFutbol(llaves) {
     llaves.forEach(llave => {
         const inL = document.getElementById(`L-${llave.de}`);
         const inV = document.getElementById(`V-${llave.de}`);
         const inDL = document.getElementById(`DL-${llave.de}`);
         const inDV = document.getElementById(`DV-${llave.de}`);
+        
         if (!inL || !inV) return;
-        const gL = parseInt(inL.value);
-        const gV = parseInt(inV.value);
-        if (!isNaN(gL) && !isNaN(gV)) {
-            const card = inL.closest('.partido-card');
-            const nombreL = card.querySelector('.local').innerText;
-            const nombreV = card.querySelector('.visita').innerText;
-            
-            // Buscar el código original en partidosData para mantenerlo si no hay ganador
-            const pOrig = partidosData.find(p => p.id === llave.a);
-            let equipoAvanza = (llave.pos === 'L') ? pOrig.local : pOrig.visita;
 
-            if (gL > gV) {
-                equipoAvanza = (llave.tipo === 'ganador') ? nombreL : nombreV;
-            } else if (gV > gL) {
-                equipoAvanza = (llave.tipo === 'ganador') ? nombreV : nombreL;
-            } else {
-                if (inDL && inDV && inDL.value !== "" && inDV.value !== "") {
-                    const dL = parseInt(inDL.value);
-                    const dV = parseInt(inDV.value);
-                    if (llave.tipo === 'ganador') equipoAvanza = (dL > dV) ? nombreL : nombreV;
-                    else equipoAvanza = (dL < dV) ? nombreL : nombreV;
+        const gL = inL.value;
+        const gV = inV.value;
+        
+        // Buscamos el nombre original del equipo en partidosData por si hay que resetear
+        const partidoDestino = partidosData.find(pd => pd.id === llave.a);
+        let nombreDefault = (llave.pos === 'L') ? partidoDestino.local : partidoDestino.visita;
+
+        // Si los inputs están vacíos, reseteamos al nombre por defecto (ej: "Ganador 73")
+        if (gL === "" || gV === "") {
+            ponerNombreEnCard(llave.a, llave.pos, nombreDefault);
+            return;
+        }
+
+        const golesL = parseInt(gL);
+        const golesV = parseInt(gV);
+        const cardOrigen = inL.closest('.partido-card');
+        const nombreLocalOrigen = cardOrigen.querySelector('.local').innerText;
+        const nombreVisitaOrigen = cardOrigen.querySelector('.visita').innerText;
+
+        let equipoAvanza = nombreDefault;
+
+        if (golesL > golesV) {
+            equipoAvanza = (llave.tipo === 'ganador') ? nombreLocalOrigen : nombreVisitaOrigen;
+        } else if (golesV > golesL) {
+            equipoAvanza = (llave.tipo === 'ganador') ? nombreVisitaOrigen : nombreLocalOrigen;
+        } else {
+            // Empate: chequear desempate
+            if (inDL && inDV && inDL.value !== "" && inDV.value !== "") {
+                const dL = parseInt(inDL.value);
+                const dV = parseInt(inDV.value);
+                if (dL > dV) {
+                    equipoAvanza = (llave.tipo === 'ganador') ? nombreLocalOrigen : nombreVisitaOrigen;
+                } else if (dV > dL) {
+                    equipoAvanza = (llave.tipo === 'ganador') ? nombreVisitaOrigen : nombreLocalOrigen;
                 }
             }
-            ponerNombreEnCard(llave.a, llave.pos, equipoAvanza);
         }
+        ponerNombreEnCard(llave.a, llave.pos, equipoAvanza);
     });
 }
 
@@ -549,3 +572,4 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo(); // Esto limpia los nombres fantasmas al inicio
 };
+
