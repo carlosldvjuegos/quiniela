@@ -115,15 +115,18 @@ app.get('/registros', async (req, res) => {
     }
 });
 
-// --- CARGAR QUINIELA DE UN USUARIO ---
+// --- CARGAR QUINIELA DE UN USUARIO (CORREGIDA) ---
 app.get('/cargar/:nombre', async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT partido_id as id, goles_local as gl, goles_visita as gv FROM predicciones WHERE nombre_usuario = $1',
+            `SELECT partido_id as id, goles_local as gl, goles_visita as gv, 
+                    goles_desempate_local as dl, goles_desempate_visita as dv 
+             FROM predicciones WHERE nombre_usuario = $1`,
             [req.params.nombre]
         );
         res.json(result.rows);
     } catch (err) {
+        console.error("Error al cargar quiniela:", err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -180,6 +183,7 @@ app.listen(PORT, () => {
     console.log(`Servidor activo en: http://localhost:${PORT}`);
 
 });
+
 
 
 
