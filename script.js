@@ -3,7 +3,7 @@ const API_URL = (window.location.hostname === "localhost" || window.location.hos
     ? window.location.origin 
     : "https://quiniela-pcas.onrender.com"; 
 
-// 1. LISTA DE PARTIDOS
+// 1. LISTA DE PARTIDOS (Mundial 2026)
 const partidosData = [
     // GRUPO A
     { id: 1, fase: "Grupos", grupo: "A", fecha: "11/06/2026", local: "México", visita: "Sudáfrica" },
@@ -13,7 +13,7 @@ const partidosData = [
     { id: 5, fase: "Grupos", grupo: "A", fecha: "24/06/2026", local: "DEN/MKD/CZE/IRL", visita: "México" },
     { id: 6, fase: "Grupos", grupo: "A", fecha: "24/06/2026", local: "Sudáfrica", visita: "Rep. Corea" },
 
-    // --- GRUPO B (IDs 7-12) ---
+    // --- GRUPO B ---
     { id: 7, fase: "Grupos", grupo: "B", fecha: "Viernes 12/06/2026", local: "Canadá", visita: "ITA/NIR/WAL/BIH" },
     { id: 8, fase: "Grupos", grupo: "B", fecha: "Sábado 13/06/2026", local: "Catar", visita: "Suiza" },
     { id: 9, fase: "Grupos", grupo: "B", fecha: "Jueves 18/06/2026", local: "Suiza", visita: "ITA/NIR/WAL/BIH" },
@@ -21,7 +21,7 @@ const partidosData = [
     { id: 11, fase: "Grupos", grupo: "B", fecha: "Miércoles 24/06/2026", local: "Suiza", visita: "Canadá" },
     { id: 12, fase: "Grupos", grupo: "B", fecha: "Miércoles 24/06/2026", local: "ITA/NIR/WAL/BIH", visita: "Catar" },
 
-    // --- GRUPO C (IDs 13-18) ---
+    // --- GRUPO C ---
     { id: 13, fase: "Grupos", grupo: "C", fecha: "Domingo 14/06/2026", local: "Brasil", visita: "Marruecos" },
     { id: 14, fase: "Grupos", grupo: "C", fecha: "Domingo 14/06/2026", local: "Haití", visita: "Escocia" },
     { id: 15, fase: "Grupos", grupo: "C", fecha: "Sábado 20/06/2026", local: "Escocia", visita: "Marruecos" },
@@ -29,7 +29,7 @@ const partidosData = [
     { id: 17, fase: "Grupos", grupo: "C", fecha: "Jueves 25/06/2026", local: "Escocia", visita: "Brasil" },
     { id: 18, fase: "Grupos", grupo: "C", fecha: "Jueves 25/06/2026", local: "Marruecos", visita: "Haití" },
 
-    // --- GRUPO D (IDs 19-24) ---
+    // --- GRUPO D ---
     { id: 19, fase: "Grupos", grupo: "D", fecha: "Sábado 13/06/2026", local: "EE. UU.", visita: "Paraguay" },
     { id: 20, fase: "Grupos", grupo: "D", fecha: "Domingo 14/06/2026", local: "Australia", visita: "TUR/RU/SVK/KOS" },
     { id: 21, fase: "Grupos", grupo: "D", fecha: "Sábado 20/06/2026", local: "TUR/RU/SVK/KOS", visita: "Paraguay" },
@@ -37,7 +37,7 @@ const partidosData = [
     { id: 23, fase: "Grupos", grupo: "D", fecha: "Viernes 26/06/2026", local: "TUR/RU/SVK/KOS", visita: "EE. UU." },
     { id: 24, fase: "Grupos", grupo: "D", fecha: "Viernes 26/06/2026", local: "Paraguay", visita: "Australia" },
 
-    // --- GRUPO E (IDs 25-30) ---
+    // --- GRUPO E ---
     { id: 25, fase: "Grupos", grupo: "E", fecha: "Domingo 14/06/2026", local: "Alemania", visita: "Curazao" },
     { id: 26, fase: "Grupos", grupo: "E", fecha: "Lunes 15/06/2026", local: "Costa de Marfil", visita: "Ecuador" },
     { id: 27, fase: "Grupos", grupo: "E", fecha: "Sábado 20/06/2026", local: "Alemania", visita: "Costa de Marfil" },
@@ -45,7 +45,7 @@ const partidosData = [
     { id: 29, fase: "Grupos", grupo: "E", fecha: "Jueves 25/06/2026", local: "Curazao", visita: "Costa de Marfil" },
     { id: 30, fase: "Grupos", grupo: "E", fecha: "Jueves 25/06/2026", local: "Ecuador", visita: "Alemania" },
 
-    // --- GRUPO F (IDs 31-36) ---
+    // --- GRUPO F ---
     { id: 31, fase: "Grupos", grupo: "F", fecha: "Domingo 14/06/2026", local: "Países Bajos", visita: "Japón" },
     { id: 32, fase: "Grupos", grupo: "F", fecha: "Lunes 15/06/2026", local: "UKR/SWE/POL/ALB", visita: "Túnez" },
     { id: 33, fase: "Grupos", grupo: "F", fecha: "Sábado 20/06/2026", local: "Países Bajos", visita: "UKR/SWE/POL/ALB" },
@@ -53,7 +53,7 @@ const partidosData = [
     { id: 35, fase: "Grupos", grupo: "F", fecha: "Viernes 26/06/2026", local: "Japón", visita: "UKR/SWE/POL/ALB" },
     { id: 36, fase: "Grupos", grupo: "F", fecha: "Viernes 26/06/2026", local: "Túnez", visita: "Países Bajos" },
 
-    // --- GRUPO G (IDs 37-42) ---
+    // --- GRUPO G ---
     { id: 37, fase: "Grupos", grupo: "G", fecha: "Lunes 15/06/2026", local: "Bélgica", visita: "Egipto" },
     { id: 38, fase: "Grupos", grupo: "G", fecha: "Martes 16/06/2026", local: "RI de Irán", visita: "Nueva Zelanda" },
     { id: 39, fase: "Grupos", grupo: "G", fecha: "Domingo 21/06/2026", local: "Bélgica", visita: "RI de Irán" },
@@ -61,7 +61,7 @@ const partidosData = [
     { id: 41, fase: "Grupos", grupo: "G", fecha: "Sábado 27/06/2026", local: "Egipto", visita: "RI de Irán" },
     { id: 42, fase: "Grupos", grupo: "G", fecha: "Sábado 27/06/2026", local: "Nueva Zelanda", visita: "Bélgica" },
 
-    // --- GRUPO H (IDs 43-48) ---
+    // --- GRUPO H ---
     { id: 43, fase: "Grupos", grupo: "H", fecha: "Lunes 15/06/2026", local: "España", visita: "Islas de Cabo Verde" },
     { id: 44, fase: "Grupos", grupo: "H", fecha: "Martes 16/06/2026", local: "Arabia Saudita", visita: "Uruguay" },
     { id: 45, fase: "Grupos", grupo: "H", fecha: "Domingo 21/06/2026", local: "España", visita: "Arabia Saudita" },
@@ -69,7 +69,7 @@ const partidosData = [
     { id: 47, fase: "Grupos", grupo: "H", fecha: "Sábado 27/06/2026", local: "Islas de Cabo Verde", visita: "Arabia Saudita" },
     { id: 48, fase: "Grupos", grupo: "H", fecha: "Sábado 27/06/2026", local: "Uruguay", visita: "España" },
 
-    // --- GRUPO I (IDs 49-54) ---
+    // --- GRUPO I ---
     { id: 49, fase: "Grupos", grupo: "I", fecha: "Martes 16/06/2026", local: "Francia", visita: "Senegal" },
     { id: 50, fase: "Grupos", grupo: "I", fecha: "Miércoles 17/06/2026", local: "BOL/SUR/IRQ", visita: "Noruega" },
     { id: 51, fase: "Grupos", grupo: "I", fecha: "Lunes 22/06/2026", local: "Francia", visita: "BOL/SUR/IRQ" },
@@ -77,7 +77,7 @@ const partidosData = [
     { id: 53, fase: "Grupos", grupo: "I", fecha: "Viernes 26/06/2026", local: "Noruega", visita: "Francia" },
     { id: 54, fase: "Grupos", grupo: "I", fecha: "Viernes 26/06/2026", local: "Senegal", visita: "BOL/SUR/IRQ" },
 
-    // --- GRUPO J (IDs 55-60) ---
+    // --- GRUPO J ---
     { id: 55, fase: "Grupos", grupo: "J", fecha: "Miércoles 17/06/2026", local: "Argentina", visita: "Argelia" },
     { id: 56, fase: "Grupos", grupo: "J", fecha: "Miércoles 17/06/2026", local: "Austria", visita: "Jordania" },
     { id: 57, fase: "Grupos", grupo: "J", fecha: "Lunes 22/06/2026", local: "Argentina", visita: "Austria" },
@@ -85,7 +85,7 @@ const partidosData = [
     { id: 59, fase: "Grupos", grupo: "J", fecha: "Domingo 28/06/2026", local: "Argelia", visita: "Austria" },
     { id: 60, fase: "Grupos", grupo: "J", fecha: "Domingo 28/06/2026", local: "Jordania", visita: "Argentina" },
 
-    // --- GRUPO K (IDs 61-66) ---
+    // --- GRUPO K ---
     { id: 61, fase: "Grupos", grupo: "K", fecha: "Miércoles 17/06/2026", local: "Portugal", visita: "NCL/JAM/COD" },
     { id: 62, fase: "Grupos", grupo: "K", fecha: "Jueves 18/06/2026", local: "Uzbekistán", visita: "Colombia" },
     { id: 63, fase: "Grupos", grupo: "K", fecha: "Martes 23/06/2026", local: "Portugal", visita: "Uzbekistán" },
@@ -93,7 +93,7 @@ const partidosData = [
     { id: 65, fase: "Grupos", grupo: "K", fecha: "Domingo 28/06/2026", local: "Colombia", visita: "Portugal" },
     { id: 66, fase: "Grupos", grupo: "K", fecha: "Domingo 28/06/2026", local: "NCL/JAM/COD", visita: "Uzbekistán" },
 
-    // --- GRUPO L (IDs 67-72) ---
+    // --- GRUPO L ---
     { id: 67, fase: "Grupos", grupo: "L", fecha: "Miércoles 17/06/2026", local: "Inglaterra", visita: "Croacia" },
     { id: 68, fase: "Grupos", grupo: "L", fecha: "Jueves 18/06/2026", local: "Ghana", visita: "Panamá" },
     { id: 69, fase: "Grupos", grupo: "L", fecha: "Martes 23/06/2026", local: "Inglaterra", visita: "Ghana" },
@@ -119,7 +119,7 @@ const partidosData = [
     { id: 87, fase: "16vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "1J", visita: "2H" },
     { id: 88, fase: "16vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "1K", visita: "3T8" },
 
-    // --- OCTAVOS (IDs 89-96) ---
+    // --- OCTAVOS ---
     { id: 89, fase: "8vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "W73", visita: "W75" },
     { id: 90, fase: "8vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "W74", visita: "W77" },
     { id: 91, fase: "8vos", grupo: "Eliminatoria", fecha: "Domingo 05/07/2026", local: "W76", visita: "W78" },
@@ -129,17 +129,17 @@ const partidosData = [
     { id: 95, fase: "8vos", grupo: "Eliminatoria", fecha: "Martes 07/07/2026", local: "W86", visita: "W88" },
     { id: 96, fase: "8vos", grupo: "Eliminatoria", fecha: "Martes 07/07/2026", local: "W85", visita: "W87" },
 
-    // --- CUARTOS (IDs 97-100) ---
+    // --- CUARTOS ---
     { id: 97, fase: "4tos", grupo: "Eliminatoria", fecha: "Jueves 09/07/2026", local: "W89", visita: "W90" },
     { id: 98, fase: "4tos", grupo: "Eliminatoria", fecha: "Viernes 10/07/2026", local: "W93", visita: "W94" },
     { id: 99, fase: "4tos", grupo: "Eliminatoria", fecha: "Sábado 11/07/2026", local: "W91", visita: "W92" },
     { id: 100, fase: "4tos", grupo: "Eliminatoria", fecha: "Domingo 12/07/2026", local: "W95", visita: "W96" },
 
-    // --- SEMIS (IDs 101-102) ---
+    // --- SEMIS ---
     { id: 101, fase: "Semis", grupo: "Eliminatoria", fecha: "Martes 14/07/2026", local: "W97", visita: "W98" },
     { id: 102, fase: "Semis", grupo: "Eliminatoria", fecha: "Miércoles 15/07/2026", local: "W99", visita: "W100" },
 
-    // --- FINALES (IDs 103-104) ---
+    // --- FINALES ---
     { id: 103, fase: "3er Puesto", grupo: "Eliminatoria", fecha: "Sábado 18/07/2026", local: "L101", visita: "L102" },
     { id: 104, fase: "Final", grupo: "Eliminatoria", fecha: "Domingo 19/07/2026", local: "W101", visita: "W102" }
 ];
@@ -165,12 +165,24 @@ async function renderizarFixture() {
     let resultadosDB = [];
     try {
         const resp = await fetch(`${API_URL}/obtener-resultados-db`);
-        resultadosDB = await resp.json();
+        if (resp.ok) resultadosDB = await resp.json();
     } catch (e) { console.log("Error al cargar reales"); }
 
     partidosData.forEach(p => {
         const r = resultadosDB.find(res => res.id === p.id);
         const textoReal = r ? `${r.gl} - ${r.gv}` : "-";
+
+        const esEliminatoria = p.fase !== "Grupos";
+        const htmlDesempate = esEliminatoria ? `
+            <div id="wrapper-desempate-${p.id}" class="marcador-desempate" style="display: none;">
+                <span class="etiqueta-desempate">Marcador para pasar de fase:</span>
+                <div class="inputs-desempate">
+                    <input type="number" id="DL-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="L">
+                    <span class="sep">-</span>
+                    <input type="number" id="DV-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="V">
+                </div>
+            </div>
+        ` : "";
 
         const card = document.createElement("div");
         card.className = "partido-card";
@@ -181,10 +193,13 @@ async function renderizarFixture() {
             </div>
             <div class="card-body">
                 <div class="equipo-col local">${p.local}</div>
-                <div class="marcador-col">
-                    <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
-                    <span class="separador">-</span>
-                    <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
+                <div class="marcador-col-container">
+                    <div class="marcador-col">
+                        <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
+                        <span class="separador">-</span>
+                        <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
+                    </div>
+                    ${htmlDesempate}
                 </div>
                 <div class="equipo-col visita">${p.visita}</div>
                 <div class="real-col">
@@ -197,41 +212,18 @@ async function renderizarFixture() {
     });
 }
 
-
-
-
-// Dentro de renderizarFixture, al crear el HTML de la card:
-const esEliminatoria = p.fase !== "Grupos";
-const htmlDesempate = esEliminatoria ? `
-    <div id="wrapper-desempate-${p.id}" class="marcador-desempate" style="display: none;">
-        <span class="etiqueta-desempate">Marcador para pasar de fase:</span>
-        <div class="inputs-desempate">
-            <input type="number" id="DL-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="L">
-            <span class="sep">-</span>
-            <input type="number" id="DV-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="V">
-        </div>
-    </div>
-` : "";
-
-
-
-
-
 // 4. RANKING
 async function actualizarListaLinks() {
     const container = document.getElementById('links-container');
     if (!container) return;
-
     try {
         const [resNombres, resOficiales] = await Promise.all([
             fetch(`${API_URL}/registros`),
             fetch(`${API_URL}/obtener-resultados-db`)
         ]);
-
         const usuarios = await resNombres.json();
         const resultadosOficiales = await resOficiales.json();
         let listaRanking = [];
-
         for (const user of usuarios) {
             const resPred = await fetch(`${API_URL}/cargar/${user.nombre_usuario}`);
             const predicciones = await resPred.json();
@@ -242,7 +234,6 @@ async function actualizarListaLinks() {
             });
             listaRanking.push({ nombre: user.nombre_usuario, puntos: ptsTotales });
         }
-
         listaRanking.sort((a, b) => b.puntos - a.puntos);
         container.innerHTML = "";
         listaRanking.forEach((u, index) => {
@@ -283,7 +274,18 @@ async function guardarQuinielaCompleta() {
     partidosData.forEach(p => {
         const gl = document.getElementById(`L-${p.id}`).value;
         const gv = document.getElementById(`V-${p.id}`).value;
-        if (gl !== "" && gv !== "") predicciones.push({ id: p.id, gl: parseInt(gl), gv: parseInt(gv) });
+        const inDL = document.getElementById(`DL-${p.id}`);
+        const inDV = document.getElementById(`DV-${p.id}`);
+        
+        if (gl !== "" && gv !== "") {
+            predicciones.push({ 
+                id: p.id, 
+                gl: parseInt(gl), 
+                gv: parseInt(gv),
+                dl: (inDL && inDL.value !== "") ? parseInt(inDL.value) : null,
+                dv: (inDV && inDV.value !== "") ? parseInt(inDV.value) : null
+            });
+        }
     });
     try {
         const res = await fetch(`${API_URL}/guardar`, {
@@ -303,6 +305,7 @@ async function cargarDesdeDB(nombre) {
         const inputNombrePrincipal = document.getElementById('nombre-usuario');
         if (inputNombrePrincipal) inputNombrePrincipal.value = nombre;
         document.querySelectorAll('.marcador-col input').forEach(input => input.value = "");
+        document.querySelectorAll('.in-desempate').forEach(input => input.value = "");
 
         const respuesta = await fetch(`${API_URL}/cargar/${nombre}`);
         const datos = await respuesta.json();
@@ -311,10 +314,14 @@ async function cargarDesdeDB(nombre) {
             const inV = document.getElementById(`V-${partido.id}`);
             if (inL) inL.value = partido.gl;
             if (inV) inV.value = partido.gv;
+            
+            const inDL = document.getElementById(`DL-${partido.id}`);
+            const inDV = document.getElementById(`DV-${partido.id}`);
+            if (inDL) inDL.value = partido.dl || "";
+            if (inDV) inDV.value = partido.dv || "";
         });
 
         actualizarTorneo();
-        
         const botones = document.querySelectorAll('.btn-link');
         botones.forEach(btn => {
             if (btn.innerText.toLowerCase().includes(nombre.toLowerCase())) {
@@ -340,37 +347,27 @@ async function cargarDesdeDB(nombre) {
 
 // 8. LÓGICA DE TORNEO Y AVANCES
 function actualizarTorneo() {
+    const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
+    let clasificados = {}; 
+    let datosGrupos = {};
 
-    // Agrega esto al inicio de tu función actualizarTorneo()
+    // Control visual de desempates
     partidosData.forEach(p => {
         if (p.fase !== "Grupos") {
             const inL = document.getElementById(`L-${p.id}`);
             const inV = document.getElementById(`V-${p.id}`);
             const wrapper = document.getElementById(`wrapper-desempate-${p.id}`);
-    
             if (inL && inV && wrapper) {
                 const valL = inL.value;
                 const valV = inV.value;
-    
-                // Si ambos campos tienen números y son iguales (Empate)
                 if (valL !== "" && valV !== "" && parseInt(valL) === parseInt(valV)) {
-                    wrapper.style.display = "block"; // Mostrar marcador de desempate
+                    wrapper.style.display = "block";
                 } else {
-                    wrapper.style.display = "none";  // Ocultar si hay un ganador o está vacío
-                    // Limpiar los valores de desempate si se oculta
-                    document.getElementById(`DL-${p.id}`).value = "";
-                    document.getElementById(`DV-${p.id}`).value = "";
+                    wrapper.style.display = "none";
                 }
             }
         }
     });
-
-
-
-    
-    const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
-    let clasificados = {}; 
-    let datosGrupos = {};
 
     grupos.forEach(letra => {
         let tabla = {};
@@ -407,7 +404,6 @@ function actualizarTorneo() {
     mejoresTerceros.slice(0, 8).forEach((t, i) => clasificados[`3T${i+1}`] = t.nombre);
 
     actualizarFasesEliminatorias(clasificados);
-    
 }
 
 function actualizarFasesEliminatorias(clasificados) {
@@ -421,12 +417,10 @@ function actualizarFasesEliminatorias(clasificados) {
         { id: 85, L: "1B", V: "3T7" }, { id: 86, L: "2D", V: "2G" },
         { id: 87, L: "1J", V: "2H" }, { id: 88, L: "1K", V: "3T8" }
     ];
-
     mapeo16vos.forEach(m => {
         ponerNombreEnCard(m.id, 'L', clasificados[m.L] || m.L);
         ponerNombreEnCard(m.id, 'V', clasificados[m.V] || m.V);
     });
-
     const avance = [
         { de: 73, a: 89, pos: 'L', tipo: 'ganador' }, { de: 74, a: 89, pos: 'V', tipo: 'ganador' },
         { de: 75, a: 90, pos: 'L', tipo: 'ganador' }, { de: 76, a: 90, pos: 'V', tipo: 'ganador' },
@@ -454,38 +448,28 @@ function procesarAvanceFutbol(llaves) {
         const inV = document.getElementById(`V-${llave.de}`);
         const inDL = document.getElementById(`DL-${llave.de}`);
         const inDV = document.getElementById(`DV-${llave.de}`);
-
         if (!inL || !inV) return;
-
         const gL = parseInt(inL.value);
         const gV = parseInt(inV.value);
-
         if (!isNaN(gL) && !isNaN(gV)) {
             const card = inL.closest('.partido-card');
             const nombreL = card.querySelector('.local').innerText;
             const nombreV = card.querySelector('.visita').innerText;
             let equipoAvanza = "---";
-
-            // CASO 1: Hay un ganador claro en los 90 min
             if (gL > gV) {
-                equipoAvanza = nombreL;
+                equipoAvanza = (llave.tipo === 'ganador') ? nombreL : nombreV;
             } else if (gV > gL) {
-                equipoAvanza = nombreV;
-            } 
-            // CASO 2: Hay empate, revisar el marcador de desempate (DL y DV)
-            else {
-                const dL = parseInt(inDL.value);
-                const dV = parseInt(inDV.value);
-                
-                if (!isNaN(dL) && !isNaN(dV)) {
-                    if (dL > dV) equipoAvanza = nombreL;
-                    else if (dV > dL) equipoAvanza = nombreV;
-                    else equipoAvanza = "Empate en Penales"; // Evitar bucle infinito de empates
-                } else {
-                    equipoAvanza = "Definir Ganador"; 
+                equipoAvanza = (llave.tipo === 'ganador') ? nombreV : nombreL;
+            } else {
+                if (inDL && inDV) {
+                    const dL = parseInt(inDL.value);
+                    const dV = parseInt(inDV.value);
+                    if (!isNaN(dL) && !isNaN(dV)) {
+                        if (llave.tipo === 'ganador') equipoAvanza = (dL > dV) ? nombreL : nombreV;
+                        else equipoAvanza = (dL < dV) ? nombreL : nombreV;
+                    }
                 }
             }
-
             ponerNombreEnCard(llave.a, llave.pos, equipoAvanza);
         }
     });
@@ -500,139 +484,32 @@ function ponerNombreEnCard(id, lado, nombre) {
     }
 }
 
-
-
-
-
-
-// 9. REPORTES Y ADMIN
+// 9. REPORTES
 async function generarReporteMaestro() {
     try {
         const response = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await response.json();
         if (!datos || datos.length === 0) return alert("No hay datos.");
-
         const agrupado = datos.reduce((acc, row) => {
             if (!acc[row.nombre_usuario]) acc[row.nombre_usuario] = [];
             acc[row.nombre_usuario].push(row);
             return acc;
         }, {});
-
-        // --- INICIO DEL HTML PARA LA NUEVA VENTANA ---
-        let htmlReporte = `<html><head>
-            <title>Reporte Maestro</title>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-            
-            <style>
-                body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-                .header-actions { 
-                    position: sticky; top: 0; background: white; padding: 15px; 
-                    border-bottom: 2px solid #01215b; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
-                }
-                .btn-pdf { 
-                    background: #d32f2f; color: white; border: none; padding: 10px 20px; 
-                    cursor: pointer; font-weight: bold; border-radius: 5px; font-size: 14px;
-                }
-                .btn-pdf:hover { background: #b71c1c; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; }
-                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                th { background: #01215b; color: white; }
-                .marcador { font-weight: bold; text-align: center; }
-                h2 { color: #01215b; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
-            </style>
-        </head><body>
-            
-            <div class="header-actions">
-                <h1>Reporte Maestro de Quinielas</h1>
-                <button class="btn-pdf" onclick="ventanaImprimirPDF()">📥 Descargar en PDF</button>
-            </div>`;
-
+        let htmlReporte = `<html><head><title>Reporte Maestro</title><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script><style>body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }.header-actions { position: sticky; top: 0; background: white; padding: 15px; border-bottom: 2px solid #01215b; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }.btn-pdf { background: #d32f2f; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 5px; font-size: 14px; }.btn-pdf:hover { background: #b71c1c; }table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; }th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }th { background: #01215b; color: white; }.marcador { font-weight: bold; text-align: center; }h2 { color: #01215b; border-bottom: 1px solid #ccc; padding-bottom: 5px; }</style></head><body><div class="header-actions"><h1>Reporte Maestro de Quinielas</h1><button class="btn-pdf" onclick="ventanaImprimirPDF()">📥 Descargar en PDF</button></div>`;
         for (const usuario in agrupado) {
-            htmlReporte += `<h2>Quiniela de: ${usuario}</h2>
-                <table id="tabla-${usuario}">
-                    <thead><tr><th>ID</th><th>Local</th><th>GL</th><th>GV</th><th>Visita</th></tr></thead>
-                    <tbody>`;
-            
+            htmlReporte += `<h2>Quiniela de: ${usuario}</h2><table id="tabla-${usuario}"><thead><tr><th>ID</th><th>Local</th><th>GL</th><th>GV</th><th>Visita</th><th>Des. L</th><th>Des. V</th></tr></thead><tbody>`;
             agrupado[usuario].forEach(row => {
                 const p = partidosData.find(item => item.id === row.partido_id) || {};
-                htmlReporte += `<tr>
-                    <td>${row.partido_id}</td>
-                    <td>${p.local || '---'}</td>
-                    <td class="marcador">${row.goles_local}</td>
-                    <td class="marcador">${row.goles_visita}</td>
-                    <td>${p.visita || '---'}</td>
-                </tr>`;
+                htmlReporte += `<tr><td>${row.partido_id}</td><td>${p.local || '---'}</td><td class="marcador">${row.goles_local}</td><td class="marcador">${row.goles_visita}</td><td>${p.visita || '---'}</td><td>${row.goles_desempate_local || '-'}</td><td>${row.goles_desempate_visita || '-'}</td></tr>`;
             });
             htmlReporte += `</tbody></table>`;
         }
-
-        // --- INYECTAMOS LA LÓGICA DEL PDF DENTRO DE LA VENTANA NUEVA ---
-        htmlReporte += `
-        <script>
-            function ventanaImprimirPDF() {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('p', 'mm', 'a4');
-                const tablas = document.querySelectorAll('table');
-                const titulos = document.querySelectorAll('h2');
-                
-                let y = 20;
-                let columna = 0;
-                const anchoCol = 90;
-                const xDerecha = 105;
-
-                doc.setFontSize(16);
-                doc.text("REPORTE MAESTRO - 2 COLUMNAS", 105, 10, { align: "center" });
-
-                tablas.forEach((tabla, index) => {
-                    const nombreUsuario = titulos[index].innerText;
-                    const xPos = (columna === 0) ? 10 : xDerecha;
-
-                    doc.setFontSize(10);
-                    doc.text(nombreUsuario, xPos, y);
-
-                    doc.autoTable({
-                        html: tabla,
-                        startY: y + 2,
-                        margin: { left: xPos },
-                        tableWidth: anchoCol,
-                        theme: 'grid',
-                        styles: { fontSize: 7, cellPadding: 1 },
-                        headStyles: { fillColor: [1, 33, 91] }
-                    });
-
-                    if (columna === 0) {
-                        columna = 1;
-                    } else {
-                        columna = 0;
-                        y = doc.lastAutoTable.finalY + 15;
-                    }
-
-                    if (y > 270) { doc.addPage(); y = 20; columna = 0; }
-                });
-
-                doc.save("Reporte_Quinielas.pdf");
-            }
-        </script>
-        </body></html>`;
-
+        htmlReporte += `<script>function ventanaImprimirPDF() { const { jsPDF } = window.jspdf; const doc = new jsPDF('p', 'mm', 'a4'); const tablas = document.querySelectorAll('table'); const titulos = document.querySelectorAll('h2'); let y = 20; let columna = 0; const anchoCol = 90; const xDerecha = 105; doc.setFontSize(16); doc.text("REPORTE MAESTRO", 105, 10, { align: "center" }); tablas.forEach((tabla, index) => { const nombreUsuario = titulos[index].innerText; const xPos = (columna === 0) ? 10 : xDerecha; doc.setFontSize(10); doc.text(nombreUsuario, xPos, y); doc.autoTable({ html: tabla, startY: y + 2, margin: { left: xPos }, tableWidth: anchoCol, theme: 'grid', styles: { fontSize: 7, cellPadding: 1 }, headStyles: { fillColor: [1, 33, 91] } }); if (columna === 0) { columna = 1; } else { columna = 0; y = doc.lastAutoTable.finalY + 15; } if (y > 270) { doc.addPage(); y = 20; columna = 0; } }); doc.save("Reporte_Quinielas.pdf"); }</script></body></html>`;
         const v = window.open('', '_blank');
         v.document.write(htmlReporte);
         v.document.close();
-        
-    } catch (e) { 
-        console.error(e);
-        alert("Error al generar el reporte."); 
-    }
+    } catch (e) { alert("Error al generar el reporte."); }
 }
-
-        
-
-
-
-
-
-
 
 async function resetearBaseDeDatos() {
     if (!confirm("⚠️ ¿Borrar todo?")) return;
@@ -650,17 +527,3 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
