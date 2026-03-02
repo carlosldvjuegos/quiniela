@@ -320,42 +320,53 @@ async function guardarQuinielaCompleta() {
     }
 }
 
-// 7. CARGAR DESDE DB (CORREGIDA para los cuadros amarillos)
+// 7. CARGAR DESDE DB (RESTAURADA CON BOTÓN ROJO Y FILTRO)
 async function cargarDesdeDB(nombre) {
     try {
         const inputNombrePrincipal = document.getElementById('nombre-usuario');
         if (inputNombrePrincipal) inputNombrePrincipal.value = nombre;
         
-        // Limpiar todo antes de cargar
         document.querySelectorAll('.marcador-col input').forEach(input => input.value = "");
         document.querySelectorAll('.in-desempate').forEach(input => input.value = "");
 
         const respuesta = await fetch(`${API_URL}/cargar/${nombre}`);
         const datos = await respuesta.json();
-
+        
         datos.forEach(partido => {
-            // Cargar goles normales
             const inL = document.getElementById(`L-${partido.id}`);
             const inV = document.getElementById(`V-${partido.id}`);
             if (inL) inL.value = partido.gl;
             if (inV) inV.value = partido.gv;
             
-            // Cargar goles de desempate (CUADROS AMARILLOS)
             const inDL = document.getElementById(`DL-${partido.id}`);
             const inDV = document.getElementById(`DV-${partido.id}`);
             if (inDL && partido.dl !== null) inDL.value = partido.dl;
             if (inDV && partido.dv !== null) inDV.value = partido.dv;
         });
 
-        // Ejecutar la lógica de avance para que se vean los ganadores y los cuadros amarillos
         actualizarTorneo();
-        
-        // Feedback visual de quién está seleccionado
-        document.querySelectorAll('.btn-link').forEach(btn => {
-            btn.classList.remove('quiniela-activa');
-            if (btn.innerText.includes(nombre)) btn.classList.add('quiniela-activa');
+
+        // LÓGICA DE FILTRO: Ocultar otros y mostrar botón rojo
+        const botones = document.querySelectorAll('.btn-link');
+        botones.forEach(btn => {
+            if (btn.innerText.includes(nombre)) {
+                btn.style.display = 'flex';
+                btn.classList.add('quiniela-activa');
+            } else {
+                btn.style.display = 'none';
+            }
         });
 
+        if (!document.getElementById('btn-volver-lista')) {
+            const btnReset = document.createElement('button');
+            btnReset.id = 'btn-volver-lista';
+            btnReset.innerText = "✕ Cambiar Usuario";
+            btnReset.className = "btn-link";
+            btnReset.style.backgroundColor = "#ff4444";
+            btnReset.style.color = "white";
+            btnReset.onclick = () => location.reload();
+            document.getElementById('links-container').appendChild(btnReset);
+        }
     } catch (error) { console.error("Error al cargar:", error); }
 }
 
@@ -541,5 +552,6 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
