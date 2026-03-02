@@ -155,57 +155,58 @@ function calcularLogicaPuntos(pL, pV, rL, rV) {
     if (pV === rV) puntos += 1;
     return puntos;
 }
-// ==========================================
-// 3. FUNCIONES DE AYUDA (PARA LIMPIEZA)
-// ==========================================
 
-function obtenerCodigoInicial(id, lado) {
-    const mapeoCompleto = {
-        // 16AVOS DE FINAL (Los que te daban problemas)
-        73: {L: "2A", V: "2B"}, 74: {L: "1C", V: "2F"}, 75: {L: "1E", V: "3T1"},
-        76: {L: "1F", V: "2C"}, 77: {L: "2E", V: "2I"}, 78: {L: "1I", V: "3T2"},
-        79: {L: "1A", V: "3T3"}, 80: {L: "1L", V: "3T4"}, 81: {L: "1G", V: "3T5"},
-        82: {L: "1D", V: "3T6"}, 83: {L: "1H", V: "2J"}, 84: {L: "2K", V: "2L"},
-        85: {L: "1B", V: "3T7"}, 86: {L: "2D", V: "2G"}, 87: {L: "1J", V: "2H"},
-        88: {L: "1K", V: "3T8"},
-        // 8AVOS
-        89: {L: "G73", V: "G74"}, 90: {L: "G75", V: "G76"}, 91: {L: "G77", V: "G78"},
-        92: {L: "G79", V: "G80"}, 93: {L: "G81", V: "G82"}, 94: {L: "G83", V: "G84"},
-        95: {L: "G85", V: "G86"}, 96: {L: "G87", V: "G88"},
-        // CUARTOS
-        97: {L: "G89", V: "G90"}, 98: {L: "G91", V: "G92"}, 99: {L: "G93", V: "G94"}, 100: {L: "G95", V: "G96"},
-        // SEMIS, 3ER PUESTO Y FINAL
-        101: {L: "G97", V: "G98"}, 102: {L: "G99", V: "G100"},
-        103: {L: "P101", V: "P102"}, 104: {L: "G101", V: "G102"}
-    };
-    return mapeoCompleto[id] ? mapeoCompleto[id][lado] : "---";
-}
-
-// ==========================================
-// 4. RENDERIZAR LA TABLA (LIMPIA)
-// ==========================================
+// 3. RENDERIZAR LA TABLA (CON LIMPIEZA Y DESEMPATE)
 async function renderizarFixture() {
     const fixtureCont = document.getElementById("fixture-container");
     if (!fixtureCont) return;
     fixtureCont.innerHTML = "";
 
+    // Mapeo interno para forzar la limpieza de nombres fantasma en 16avos
+    const iniciales16vos = {
+        73: ["2A", "2B"], 74: ["1C", "2F"], 75: ["1E", "3T1"],
+        76: ["1F", "2C"], 77: ["2E", "2I"], 78: ["1I", "3T2"],
+        79: ["1A", "3T3"], 80: ["1L", "3T4"], 81: ["1G", "3T5"],
+        82: ["1D", "3T6"], 83: ["1H", "2J"], 84: ["2K", "2L"],
+        85: ["1B", "3T7"], 86: ["2D", "2G"], 87: ["1J", "2H"],
+        88: ["1K", "3T8"]
+    };
+
     let resultadosDB = [];
     try {
         const resp = await fetch(`${API_URL}/obtener-resultados-db`);
-        if (resp.ok) resultadosDB = await resp.json();
+        resultadosDB = await resp.json();
     } catch (e) { console.log("Error al cargar reales"); }
 
     partidosData.forEach(p => {
         const r = resultadosDB.find(res => res.id === p.id);
         const textoReal = r ? `${r.gl} - ${r.gv}` : "-";
 
-        // Lógica de Limpieza Proactiva
-        let nombreLocal = p.local;
-        let nombreVisita = p.visita;
+        // LIMPIEZA: Forzamos el nombre técnico si no es fase de grupos
+        let nomL = p.local;
+        let nomV = p.visita;
         if (p.fase !== "Grupos") {
-            nombreLocal = obtenerCodigoInicial(p.id, 'L');
-            nombreVisita = obtenerCodigoInicial(p.id, 'V');
+            if (iniciales16vos[p.id]) {
+                nomL = iniciales16vos[p.id][0];
+                nomV = iniciales16vos[p.id][1];
+            } else if (p.id >= 89) {
+                nomL = "Local"; nomV = "Visita";
+            }
         }
+
+        const esEliminatoria = p.fase !== "Grupos";
+        
+        // Mejora visual: Cuadros de desempate pequeños
+        const htmlDesempate = esEliminatoria ? `
+            <div id="wrapper-desempate-${p.id}" class="marcador-desempate" style="display: none;">
+                <span class="etiqueta-desempate">Penales</span>
+                <div class="inputs-desempate">
+                    <input type="number" id="DL-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="L">
+                    <span class="sep">-</span>
+                    <input type="number" id="DV-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="V">
+                </div>
+            </div>
+        ` : "";
 
         const card = document.createElement("div");
         card.className = "partido-card";
@@ -215,24 +216,16 @@ async function renderizarFixture() {
                 <span class="txt-fecha">${p.fecha}</span>
             </div>
             <div class="card-body">
-                <div class="equipo-col local">${nombreLocal}</div>
+                <div class="equipo-col local">${nomL}</div>
                 <div class="marcador-col-container">
                     <div class="marcador-col">
                         <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
                         <span class="separador">-</span>
                         <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
                     </div>
-                    ${p.fase !== "Grupos" ? `
-                        <div id="wrapper-desempate-${p.id}" class="marcador-desempate" style="display: none;">
-                            <span class="etiqueta-desempate">Definición</span>
-                            <div class="inputs-desempate">
-                                <input type="number" id="DL-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="L">
-                                <span class="sep">-</span>
-                                <input type="number" id="DV-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="V">
-                            </div>
-                        </div>` : ""}
+                    ${htmlDesempate}
                 </div>
-                <div class="equipo-col visita">${nombreVisita}</div>
+                <div class="equipo-col visita">${nomV}</div>
                 <div class="real-col">
                     <div class="etiqueta-real">Resultados Reales</div>
                     <div class="cuadro-real">${textoReal}</div>
@@ -243,38 +236,36 @@ async function renderizarFixture() {
     });
 }
 
-// ==========================================
-// 5. RANKING Y GUARDADO
-// ==========================================
+// 4. RANKING
 async function actualizarListaLinks() {
     const container = document.getElementById('links-container');
     if (!container) return;
+
     try {
         const [resNombres, resOficiales] = await Promise.all([
             fetch(`${API_URL}/registros`),
             fetch(`${API_URL}/obtener-resultados-db`)
         ]);
+
         const usuarios = await resNombres.json();
         const resultadosOficiales = await resOficiales.json();
-
         let listaRanking = [];
+
         for (const user of usuarios) {
-            try {
-                const resPred = await fetch(`${API_URL}/cargar/${user.nombre_usuario}`);
-                const predicciones = await resPred.json();
-                let pts = 0;
-                predicciones.forEach(pred => {
-                    const ofi = resultadosOficiales.find(r => r.id === pred.id);
-                    if (ofi) pts += calcularLogicaPuntos(pred.gl, pred.gv, ofi.gl, ofi.gv);
-                });
-                listaRanking.push({ nombre: user.nombre_usuario, puntos: pts });
-            } catch (e) { listaRanking.push({ nombre: user.nombre_usuario, puntos: 0 }); }
+            const resPred = await fetch(`${API_URL}/cargar/${user.nombre_usuario}`);
+            const predicciones = await resPred.json();
+            let ptsTotales = 0;
+            predicciones.forEach(pred => {
+                const oficial = resultadosOficiales.find(r => r.id === pred.id);
+                if (oficial) ptsTotales += calcularLogicaPuntos(pred.gl, pred.gv, oficial.gl, oficial.gv);
+            });
+            listaRanking.push({ nombre: user.nombre_usuario, puntos: ptsTotales });
         }
 
         listaRanking.sort((a, b) => b.puntos - a.puntos);
         container.innerHTML = "";
-        listaRanking.forEach((u, i) => {
-            const icono = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : "•"));
+        listaRanking.forEach((u, index) => {
+            const icono = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : "•"));
             const btn = document.createElement('button');
             btn.className = "btn-link";
             btn.innerHTML = `<span>${icono} ${u.nombre}</span><span class="badge-puntos">${u.puntos} pts</span>`;
@@ -284,125 +275,155 @@ async function actualizarListaLinks() {
     } catch (err) { console.error("Error ranking:", err); }
 }
 
+// 5. CALCULAR PUNTOS MANUAL
+async function calcularPuntos() {
+    try {
+        const response = await fetch(`${API_URL}/obtener-resultados-db`);
+        const oficiales = await response.json();
+        let sumaPuntos = 0;
+        partidosData.forEach(p => {
+            const gl = document.getElementById(`L-${p.id}`).value;
+            const gv = document.getElementById(`V-${p.id}`).value;
+            const oficial = oficiales.find(r => r.id === p.id);
+            if (gl !== "" && gv !== "" && oficial) {
+                sumaPuntos += calcularLogicaPuntos(parseInt(gl), parseInt(gv), oficial.gl, oficial.gv);
+            }
+        });
+        alert(`Tu puntaje actual es de: ${sumaPuntos} puntos.`);
+        actualizarListaLinks();
+    } catch (e) { alert("Error al obtener resultados oficiales."); }
+}
+
+// 6. GUARDAR QUINIELA COMPLETA
 async function guardarQuinielaCompleta() {
     const nombre = document.getElementById('nombre-usuario').value;
     if (!nombre) return alert("Escribe tu nombre.");
-
     const predicciones = [];
     partidosData.forEach(p => {
         const gl = document.getElementById(`L-${p.id}`).value;
         const gv = document.getElementById(`V-${p.id}`).value;
         const inDL = document.getElementById(`DL-${p.id}`);
         const inDV = document.getElementById(`DV-${p.id}`);
+
         if (gl !== "" && gv !== "") {
             predicciones.push({ 
-                id: p.id, gl: parseInt(gl), gv: parseInt(gv),
+                id: p.id, 
+                gl: parseInt(gl), 
+                gv: parseInt(gv),
                 dl: (inDL && inDL.value !== "") ? parseInt(inDL.value) : null,
                 dv: (inDV && inDV.value !== "") ? parseInt(inDV.value) : null
             });
         }
     });
-
-    if (predicciones.length === 0) return alert("Completa al menos un resultado.");
-
     try {
         const res = await fetch(`${API_URL}/guardar`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ nombre, predicciones })
         });
-        if (res.ok) {
-            alert("¡Guardado con éxito!");
-            actualizarListaLinks();
-        }
-    } catch (e) { alert("Error al conectar con el servidor."); }
+        const data = await res.json();
+        alert(data.mensaje);
+        actualizarListaLinks();
+    } catch (e) { alert("Error al guardar."); }
 }
 
+// 7. CARGAR DESDE DB (CON BOTÓN ROJO)
 async function cargarDesdeDB(nombre) {
     try {
-        const inputNombre = document.getElementById('nombre-usuario');
-        if (inputNombre) inputNombre.value = nombre;
-        
-        document.querySelectorAll('input[type="number"]').forEach(i => i.value = "");
+        const inputNombrePrincipal = document.getElementById('nombre-usuario');
+        if (inputNombrePrincipal) inputNombrePrincipal.value = nombre;
+        document.querySelectorAll('input[type="number"]').forEach(input => input.value = "");
 
-        const res = await fetch(`${API_URL}/cargar/${nombre}`);
-        const datos = await res.json();
-        
+        const respuesta = await fetch(`${API_URL}/cargar/${nombre}`);
+        const datos = await respuesta.json();
         datos.forEach(partido => {
             const inL = document.getElementById(`L-${partido.id}`);
             const inV = document.getElementById(`V-${partido.id}`);
             if (inL) inL.value = partido.gl;
             if (inV) inV.value = partido.gv;
+            
             const inDL = document.getElementById(`DL-${partido.id}`);
             const inDV = document.getElementById(`DV-${partido.id}`);
-            if (inDL && partido.dl !== null) inDL.value = partido.dl;
-            if (inDV && partido.dv !== null) inDV.value = partido.dv;
+            if(inDL && partido.dl !== null) inDL.value = partido.dl;
+            if(inDV && partido.dv !== null) inDV.value = partido.dv;
         });
 
         actualizarTorneo();
-        // Ocultar otros botones de usuario
-        document.querySelectorAll('.btn-link').forEach(btn => {
-            if (!btn.innerText.includes(nombre)) btn.style.display = "none";
+        
+        const botones = document.querySelectorAll('.btn-link');
+        botones.forEach(btn => {
+            if (btn.innerText.toLowerCase().includes(nombre.toLowerCase())) {
+                btn.style.setProperty('display', 'flex', 'important');
+                btn.classList.add('quiniela-activa');
+                // Convertir en botón de cerrar (rojo)
+                btn.style.backgroundColor = "#ff4444";
+                btn.style.color = "white";
+                btn.innerHTML = `✕ Cerrar registro de ${nombre}`;
+                btn.onclick = () => location.reload();
+            } else {
+                btn.style.setProperty('display', 'none', 'important');
+            }
         });
-    } catch (e) { console.error("Error al cargar."); }
+    } catch (error) { console.error("Error al cargar:", error); }
 }
 
-// ==========================================
-// 6. LÓGICA DE AVANCE (EL CEREBRO)
-// ==========================================
+// 8. LÓGICA DE TORNEO Y AVANCES
 function actualizarTorneo() {
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let clasificados = {}; 
+    let datosGrupos = {};
 
-    // Limpieza de eliminatorias antes de recalcular
+    // Reset visual de eliminatorias antes de calcular
     partidosData.forEach(p => {
         if (p.fase !== "Grupos") {
-            ponerNombreEnCard(p.id, 'L', obtenerCodigoInicial(p.id, 'L'));
-            ponerNombreEnCard(p.id, 'V', obtenerCodigoInicial(p.id, 'V'));
-            // Control visual desempate
-            const inL = document.getElementById(`L-${p.id}`);
-            const inV = document.getElementById(`V-${p.id}`);
+            const valL = document.getElementById(`L-${p.id}`).value;
+            const valV = document.getElementById(`V-${p.id}`).value;
             const wrap = document.getElementById(`wrapper-desempate-${p.id}`);
-            if (wrap && inL.value !== "" && inV.value !== "" && inL.value === inV.value) {
-                wrap.style.display = "block";
-            } else if (wrap) {
-                wrap.style.display = "none";
+            if (wrap) {
+                wrap.style.display = (valL !== "" && valV !== "" && valL === valV) ? "block" : "none";
             }
         }
     });
 
-    let datosGrupos = {};
     grupos.forEach(letra => {
         let tabla = {};
-        partidosData.filter(p => p.grupo === letra).forEach(p => {
-            const gL = parseInt(document.getElementById(`L-${p.id}`).value);
-            const gV = parseInt(document.getElementById(`V-${p.id}`).value);
-            if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0 };
-            if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0 };
-            if (!isNaN(gL) && !isNaN(gV)) {
-                tabla[p.local].gf += gL; tabla[p.visita].gf += gV;
-                tabla[p.local].dg += (gL - gV); tabla[p.visita].dg += (gV - gL);
-                if (gL > gV) tabla[p.local].pts += 3;
-                else if (gV > gL) tabla[p.visita].pts += 3;
-                else { tabla[p.local].pts += 1; tabla[p.visita].pts += 1; }
+        const partidosGrupo = partidosData.filter(p => p.grupo === letra);
+        partidosGrupo.forEach(p => {
+            const inputL = document.getElementById(`L-${p.id}`);
+            const inputV = document.getElementById(`V-${p.id}`);
+            if (inputL && inputV) {
+                const gL = parseInt(inputL.value);
+                const gV = parseInt(inputV.value);
+                if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0 };
+                if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0 };
+                if (!isNaN(gL) && !isNaN(gV)) {
+                    tabla[p.local].gf += gL; tabla[p.visita].gf += gV;
+                    tabla[p.local].dg += (gL - gV); tabla[p.visita].dg += (gV - gL);
+                    if (gL > gV) tabla[p.local].pts += 3;
+                    else if (gV > gL) tabla[p.visita].pts += 3;
+                    else { tabla[p.local].pts += 1; tabla[p.visita].pts += 1; }
+                }
             }
         });
         let ranking = Object.values(tabla).sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
         datosGrupos[letra] = { ranking };
-        if (ranking[0]) clasificados[`1${letra}`] = ranking[0].nombre;
-        if (ranking[1]) clasificados[`2${letra}`] = ranking[1].nombre;
-        if (ranking[2]) clasificados[`3${letra}`] = ranking[2].nombre;
+        if (ranking.length >= 1) clasificados[`1${letra}`] = ranking[0].nombre;
+        if (ranking.length >= 2) clasificados[`2${letra}`] = ranking[1].nombre;
+        if (ranking.length >= 3) clasificados[`3${letra}`] = ranking[2].nombre;
     });
 
-    const terceros = Object.keys(datosGrupos).map(l => datosGrupos[l].ranking[2]).filter(x => x);
-    terceros.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
-    terceros.slice(0, 8).forEach((t, i) => clasificados[`3T${i+1}`] = t.nombre);
+    const mejoresTerceros = [];
+    Object.keys(datosGrupos).forEach(l => {
+        if (datosGrupos[l].ranking[2]) mejoresTerceros.push(datosGrupos[l].ranking[2]);
+    });
+    mejoresTerceros.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
+    mejoresTerceros.slice(0, 8).forEach((t, i) => clasificados[`3T${i+1}`] = t.nombre);
 
     actualizarFasesEliminatorias(clasificados);
 }
 
 function actualizarFasesEliminatorias(clasificados) {
-    const llaves = [
+    const mapeo16vos = [
         { id: 73, L: "2A", V: "2B" }, { id: 74, L: "1C", V: "2F" },
         { id: 75, L: "1E", V: "3T1" }, { id: 76, L: "1F", V: "2C" },
         { id: 77, L: "2E", V: "2I" }, { id: 78, L: "1I", V: "3T2" },
@@ -412,12 +433,13 @@ function actualizarFasesEliminatorias(clasificados) {
         { id: 85, L: "1B", V: "3T7" }, { id: 86, L: "2D", V: "2G" },
         { id: 87, L: "1J", V: "2H" }, { id: 88, L: "1K", V: "3T8" }
     ];
-    llaves.forEach(m => {
-        if (clasificados[m.L]) ponerNombreEnCard(m.id, 'L', clasificados[m.L]);
-        if (clasificados[m.V]) ponerNombreEnCard(m.id, 'V', clasificados[m.V]);
+
+    mapeo16vos.forEach(m => {
+        ponerNombreEnCard(m.id, 'L', clasificados[m.L] || m.L);
+        ponerNombreEnCard(m.id, 'V', clasificados[m.V] || m.V);
     });
 
-    const avances = [
+    const avance = [
         { de: 73, a: 89, pos: 'L', tipo: 'ganador' }, { de: 74, a: 89, pos: 'V', tipo: 'ganador' },
         { de: 75, a: 90, pos: 'L', tipo: 'ganador' }, { de: 76, a: 90, pos: 'V', tipo: 'ganador' },
         { de: 77, a: 91, pos: 'L', tipo: 'ganador' }, { de: 78, a: 91, pos: 'V', tipo: 'ganador' },
@@ -435,26 +457,34 @@ function actualizarFasesEliminatorias(clasificados) {
         { de: 101, a: 104, pos: 'L', tipo: 'ganador' }, { de: 102, a: 104, pos: 'V', tipo: 'ganador' },
         { de: 101, a: 103, pos: 'L', tipo: 'perdedor' }, { de: 102, a: 103, pos: 'V', tipo: 'perdedor' }
     ];
+    procesarAvanceFutbol(avance);
+}
 
-    avances.forEach(llave => {
-        const gL = parseInt(document.getElementById(`L-${llave.de}`).value);
-        const gV = parseInt(document.getElementById(`V-${llave.de}`).value);
+function procesarAvanceFutbol(llaves) {
+    llaves.forEach(llave => {
+        const inputL = document.getElementById(`L-${llave.de}`);
+        const inputV = document.getElementById(`V-${llave.de}`);
+        if (!inputL || !inputV) return;
+        const gL = parseInt(inputL.value);
+        const gV = parseInt(inputV.value);
         if (!isNaN(gL) && !isNaN(gV)) {
-            const card = document.getElementById(`L-${llave.de}`).closest('.partido-card');
-            const nL = card.querySelector('.local').innerText;
-            const nV = card.querySelector('.visita').innerText;
-            let avanza = "";
-            if (gL > gV) avanza = (llave.tipo === 'ganador') ? nL : nV;
-            else if (gV > gL) avanza = (llave.tipo === 'ganador') ? nV : nL;
-            else {
+            const card = inputL.closest('.partido-card');
+            const nombreL = card.querySelector('.local').innerText;
+            const nombreV = card.querySelector('.visita').innerText;
+            let equipo = "---";
+            
+            if (gL > gV) {
+                equipo = (llave.tipo === 'ganador') ? nombreL : nombreV;
+            } else if (gV > gL) {
+                equipo = (llave.tipo === 'ganador') ? nombreV : nombreL;
+            } else {
+                // Caso empate: Miramos Penales
                 const dL = parseInt(document.getElementById(`DL-${llave.de}`).value);
                 const dV = parseInt(document.getElementById(`DV-${llave.de}`).value);
-                if (dL > dV) avanza = (llave.tipo === 'ganador') ? nL : nV;
-                else if (dV > dL) avanza = (llave.tipo === 'ganador') ? nV : nL;
+                if (dL > dV) equipo = (llave.tipo === 'ganador') ? nombreL : nombreV;
+                else if (dV > dL) equipo = (llave.tipo === 'ganador') ? nombreV : nombreL;
             }
-            if (avanza && !avanza.includes("G") && !avanza.includes("P")) {
-                ponerNombreEnCard(llave.a, llave.pos, avanza);
-            }
+            ponerNombreEnCard(llave.a, llave.pos, equipo);
         }
     });
 }
@@ -462,14 +492,103 @@ function actualizarFasesEliminatorias(clasificados) {
 function ponerNombreEnCard(id, lado, nombre) {
     const el = document.getElementById(`${lado}-${id}`);
     if (el) {
-        const span = el.closest('.partido-card').querySelector(lado === 'L' ? '.local' : '.visita');
-        span.innerText = nombre;
+        const card = el.closest('.partido-card');
+        const span = lado === 'L' ? card.querySelector('.local') : card.querySelector('.visita');
+        if (span) span.innerText = nombre;
     }
 }
 
-// ==========================================
-// 7. INICIO
-// ==========================================
+// 9. REPORTES Y ADMIN
+async function generarReporteMaestro() {
+    try {
+        const response = await fetch(`${API_URL}/obtener-todas-predicciones`);
+        const datos = await response.json();
+        if (!datos || datos.length === 0) return alert("No hay datos.");
+
+        const agrupado = datos.reduce((acc, row) => {
+            if (!acc[row.nombre_usuario]) acc[row.nombre_usuario] = [];
+            acc[row.nombre_usuario].push(row);
+            return acc;
+        }, {});
+
+        let htmlReporte = `<html><head>
+            <title>Reporte Maestro</title>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+            <style>
+                body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+                .header-actions { position: sticky; top: 0; background: white; padding: 15px; border-bottom: 2px solid #01215b; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+                .btn-pdf { background: #d32f2f; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 5px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background: #01215b; color: white; }
+                h2 { color: #01215b; border-bottom: 1px solid #ccc; }
+            </style>
+        </head><body>
+            <div class="header-actions">
+                <h1>Reporte Maestro de Quinielas</h1>
+                <button class="btn-pdf" onclick="ventanaImprimirPDF()">📥 Descargar en PDF</button>
+            </div>`;
+
+        for (const usuario in agrupado) {
+            htmlReporte += `<h2>Quiniela de: ${usuario}</h2>
+                <table id="tabla-${usuario}">
+                    <thead><tr><th>ID</th><th>Local</th><th>GL</th><th>GV</th><th>Visita</th></tr></thead>
+                    <tbody>`;
+            agrupado[usuario].forEach(row => {
+                const p = partidosData.find(item => item.id === row.partido_id) || {};
+                htmlReporte += `<tr>
+                    <td>${row.partido_id}</td>
+                    <td>${p.local || '---'}</td>
+                    <td>${row.goles_local}</td>
+                    <td>${row.goles_visita}</td>
+                    <td>${p.visita || '---'}</td>
+                </tr>`;
+            });
+            htmlReporte += `</tbody></table>`;
+        }
+
+        htmlReporte += `
+        <script>
+            function ventanaImprimirPDF() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const tablas = document.querySelectorAll('table');
+                const titulos = document.querySelectorAll('h2');
+                let y = 20; let columna = 0; const anchoCol = 90; const xDerecha = 105;
+                doc.setFontSize(16);
+                doc.text("REPORTE MAESTRO", 105, 10, { align: "center" });
+                tablas.forEach((tabla, index) => {
+                    const nombreUsuario = titulos[index].innerText;
+                    const xPos = (columna === 0) ? 10 : xDerecha;
+                    doc.setFontSize(10);
+                    doc.text(nombreUsuario, xPos, y);
+                    doc.autoTable({ html: tabla, startY: y + 2, margin: { left: xPos }, tableWidth: anchoCol, theme: 'grid', styles: { fontSize: 7 } });
+                    if (columna === 0) { columna = 1; } else { columna = 0; y = doc.lastAutoTable.finalY + 15; }
+                    if (y > 270) { doc.addPage(); y = 20; columna = 0; }
+                });
+                doc.save("Reporte_Quinielas.pdf");
+            }
+        </script>
+        </body></html>`;
+
+        const v = window.open('', '_blank');
+        v.document.write(htmlReporte);
+        v.document.close();
+    } catch (e) { alert("Error al generar el reporte."); }
+}
+
+async function resetearBaseDeDatos() {
+    if (!confirm("⚠️ ¿Borrar todo?")) return;
+    try {
+        const res = await fetch(`${API_URL}/reset-db`, { method: 'DELETE' });
+        const data = await res.json();
+        alert(data.mensaje);
+        location.reload();
+    } catch (e) { alert("Error reset."); }
+}
+
+// 10. INICIO AL CARGAR
 window.onload = async () => {
     await renderizarFixture();
     await actualizarListaLinks();
