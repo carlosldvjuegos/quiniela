@@ -155,43 +155,35 @@ function calcularLogicaPuntos(pL, pV, rL, rV) {
     if (pV === rV) puntos += 1;
     return puntos;
 }
-// 3. RENDERIZAR LA TABLA
-// Función para limpiar de raíz los nombres fantasma en TODAS las fases
+// ==========================================
+// 3. FUNCIONES DE AYUDA (PARA LIMPIEZA)
+// ==========================================
+
 function obtenerCodigoInicial(id, lado) {
     const mapeoCompleto = {
-        // 16AVOS DE FINAL
+        // 16AVOS DE FINAL (Los que te daban problemas)
         73: {L: "2A", V: "2B"}, 74: {L: "1C", V: "2F"}, 75: {L: "1E", V: "3T1"},
         76: {L: "1F", V: "2C"}, 77: {L: "2E", V: "2I"}, 78: {L: "1I", V: "3T2"},
         79: {L: "1A", V: "3T3"}, 80: {L: "1L", V: "3T4"}, 81: {L: "1G", V: "3T5"},
         82: {L: "1D", V: "3T6"}, 83: {L: "1H", V: "2J"}, 84: {L: "2K", V: "2L"},
         85: {L: "1B", V: "3T7"}, 86: {L: "2D", V: "2G"}, 87: {L: "1J", V: "2H"},
         88: {L: "1K", V: "3T8"},
-
-        // 8AVOS DE FINAL (Ganadores de 16avos)
+        // 8AVOS
         89: {L: "G73", V: "G74"}, 90: {L: "G75", V: "G76"}, 91: {L: "G77", V: "G78"},
         92: {L: "G79", V: "G80"}, 93: {L: "G81", V: "G82"}, 94: {L: "G83", V: "G84"},
         95: {L: "G85", V: "G86"}, 96: {L: "G87", V: "G88"},
-
-        // CUARTOS DE FINAL (Ganadores de 8avos)
-        97: {L: "G89", V: "G90"}, 98: {L: "G91", V: "G92"}, 
-        99: {L: "G93", V: "G94"}, 100: {L: "G95", V: "G96"},
-
-        // SEMIFINALES
+        // CUARTOS
+        97: {L: "G89", V: "G90"}, 98: {L: "G91", V: "G92"}, 99: {L: "G93", V: "G94"}, 100: {L: "G95", V: "G96"},
+        // SEMIS, 3ER PUESTO Y FINAL
         101: {L: "G97", V: "G98"}, 102: {L: "G99", V: "G100"},
-
-        // TERCER PUESTO (Perdedores de Semis)
-        103: {L: "P101", V: "P102"},
-
-        // FINAL (Ganadores de Semis)
-        104: {L: "G101", V: "G102"}
+        103: {L: "P101", V: "P102"}, 104: {L: "G101", V: "G102"}
     };
-    
-    if (mapeoCompleto[id]) {
-        return mapeoCompleto[id][lado];
-    }
-    return "---"; // Por si algún ID se escapa
+    return mapeoCompleto[id] ? mapeoCompleto[id][lado] : "---";
 }
 
+// ==========================================
+// 4. RENDERIZAR LA TABLA (LIMPIA)
+// ==========================================
 async function renderizarFixture() {
     const fixtureCont = document.getElementById("fixture-container");
     if (!fixtureCont) return;
@@ -207,26 +199,13 @@ async function renderizarFixture() {
         const r = resultadosDB.find(res => res.id === p.id);
         const textoReal = r ? `${r.gl} - ${r.gv}` : "-";
 
-        // Lógica de limpieza: Si no es grupos, buscamos el código (1A, G73, etc.)
-        let nombreLocalMostrar = p.local;
-        let nombreVisitaMostrar = p.visita;
-
+        // Lógica de Limpieza Proactiva
+        let nombreLocal = p.local;
+        let nombreVisita = p.visita;
         if (p.fase !== "Grupos") {
-            nombreLocalMostrar = obtenerCodigoInicial(p.id, 'L');
-            nombreVisitaMostrar = obtenerCodigoInicial(p.id, 'V');
+            nombreLocal = obtenerCodigoInicial(p.id, 'L');
+            nombreVisita = obtenerCodigoInicial(p.id, 'V');
         }
-
-        const esEliminatoria = p.fase !== "Grupos";
-        const htmlDesempate = esEliminatoria ? `
-            <div id="wrapper-desempate-${p.id}" class="marcador-desempate" style="display: none;">
-                <span class="etiqueta-desempate">Definición</span>
-                <div class="inputs-desempate">
-                    <input type="number" id="DL-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="L">
-                    <span class="sep">-</span>
-                    <input type="number" id="DV-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="V">
-                </div>
-            </div>
-        ` : "";
 
         const card = document.createElement("div");
         card.className = "partido-card";
@@ -236,16 +215,24 @@ async function renderizarFixture() {
                 <span class="txt-fecha">${p.fecha}</span>
             </div>
             <div class="card-body">
-                <div class="equipo-col local">${nombreLocalMostrar}</div>
+                <div class="equipo-col local">${nombreLocal}</div>
                 <div class="marcador-col-container">
                     <div class="marcador-col">
                         <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
                         <span class="separador">-</span>
                         <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
                     </div>
-                    ${htmlDesempate}
+                    ${p.fase !== "Grupos" ? `
+                        <div id="wrapper-desempate-${p.id}" class="marcador-desempate" style="display: none;">
+                            <span class="etiqueta-desempate">Definición</span>
+                            <div class="inputs-desempate">
+                                <input type="number" id="DL-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="L">
+                                <span class="sep">-</span>
+                                <input type="number" id="DV-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="V">
+                            </div>
+                        </div>` : ""}
                 </div>
-                <div class="equipo-col visita">${nombreVisitaMostrar}</div>
+                <div class="equipo-col visita">${nombreVisita}</div>
                 <div class="real-col">
                     <div class="etiqueta-real">Resultados Reales</div>
                     <div class="cuadro-real">${textoReal}</div>
@@ -256,72 +243,47 @@ async function renderizarFixture() {
     });
 }
 
-// 4. RANKING / LISTA (CORREGIDA PARA QUE NADIE DESAPAREZCA)
+// ==========================================
+// 5. RANKING Y GUARDADO
+// ==========================================
 async function actualizarListaLinks() {
     const container = document.getElementById('links-container');
     if (!container) return;
     try {
-        const resNombres = await fetch(`${API_URL}/registros`);
-        const resOficiales = await fetch(`${API_URL}/obtener-resultados-db`);
+        const [resNombres, resOficiales] = await Promise.all([
+            fetch(`${API_URL}/registros`),
+            fetch(`${API_URL}/obtener-resultados-db`)
+        ]);
         const usuarios = await resNombres.json();
         const resultadosOficiales = await resOficiales.json();
 
         let listaRanking = [];
-
         for (const user of usuarios) {
             try {
                 const resPred = await fetch(`${API_URL}/cargar/${user.nombre_usuario}`);
                 const predicciones = await resPred.json();
-                
-                let ptsTotales = 0;
-                if (predicciones && predicciones.length > 0) {
-                    predicciones.forEach(pred => {
-                        const oficial = resultadosOficiales.find(r => r.id === pred.id);
-                        if (oficial) {
-                            ptsTotales += calcularLogicaPuntos(pred.gl, pred.gv, oficial.gl, oficial.gv);
-                        }
-                    });
-                }
-                listaRanking.push({ nombre: user.nombre_usuario, puntos: ptsTotales });
-            } catch (e) {
-                listaRanking.push({ nombre: user.nombre_usuario, puntos: 0 });
-            }
+                let pts = 0;
+                predicciones.forEach(pred => {
+                    const ofi = resultadosOficiales.find(r => r.id === pred.id);
+                    if (ofi) pts += calcularLogicaPuntos(pred.gl, pred.gv, ofi.gl, ofi.gv);
+                });
+                listaRanking.push({ nombre: user.nombre_usuario, puntos: pts });
+            } catch (e) { listaRanking.push({ nombre: user.nombre_usuario, puntos: 0 }); }
         }
 
         listaRanking.sort((a, b) => b.puntos - a.puntos);
-
         container.innerHTML = "";
-        listaRanking.forEach((u, index) => {
-            const icono = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : "•"));
+        listaRanking.forEach((u, i) => {
+            const icono = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : "•"));
             const btn = document.createElement('button');
             btn.className = "btn-link";
             btn.innerHTML = `<span>${icono} ${u.nombre}</span><span class="badge-puntos">${u.puntos} pts</span>`;
             btn.onclick = () => cargarDesdeDB(u.nombre);
             container.appendChild(btn);
         });
-    } catch (err) { console.error("Error en ranking:", err); }
+    } catch (err) { console.error("Error ranking:", err); }
 }
 
-// 5. CALCULAR PUNTOS MANUAL
-async function calcularPuntos() {
-    try {
-        const response = await fetch(`${API_URL}/obtener-resultados-db`);
-        const oficiales = await response.json();
-        let sumaPuntos = 0;
-        partidosData.forEach(p => {
-            const gl = document.getElementById(`L-${p.id}`).value;
-            const gv = document.getElementById(`V-${p.id}`).value;
-            const oficial = oficiales.find(r => r.id === p.id);
-            if (gl !== "" && gv !== "" && oficial) {
-                sumaPuntos += calcularLogicaPuntos(parseInt(gl), parseInt(gv), oficial.gl, oficial.gv);
-            }
-        });
-        alert(`Tu puntaje actual es de: ${sumaPuntos} puntos.`);
-        actualizarListaLinks();
-    } catch (e) { alert("Error al obtener resultados oficiales."); }
-}
-
-// 6. GUARDAR (CON DESEMPATE Y MENSAJES ORIGINALES)
 async function guardarQuinielaCompleta() {
     const nombre = document.getElementById('nombre-usuario').value;
     if (!nombre) return alert("Escribe tu nombre.");
@@ -332,21 +294,16 @@ async function guardarQuinielaCompleta() {
         const gv = document.getElementById(`V-${p.id}`).value;
         const inDL = document.getElementById(`DL-${p.id}`);
         const inDV = document.getElementById(`DV-${p.id}`);
-
         if (gl !== "" && gv !== "") {
             predicciones.push({ 
-                id: p.id, 
-                gl: parseInt(gl), 
-                gv: parseInt(gv),
+                id: p.id, gl: parseInt(gl), gv: parseInt(gv),
                 dl: (inDL && inDL.value !== "") ? parseInt(inDL.value) : null,
                 dv: (inDV && inDV.value !== "") ? parseInt(inDV.value) : null
             });
         }
     });
 
-    if (predicciones.length === 0) {
-        return alert("Completa al menos un resultado para que se pueda guardar la quiniela.");
-    }
+    if (predicciones.length === 0) return alert("Completa al menos un resultado.");
 
     try {
         const res = await fetch(`${API_URL}/guardar`, {
@@ -354,29 +311,22 @@ async function guardarQuinielaCompleta() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ nombre, predicciones })
         });
-        const data = await res.json();
         if (res.ok) {
-            alert(data.mensaje || "Quiniela guardada correctamente");
+            alert("¡Guardado con éxito!");
             actualizarListaLinks();
-        } else {
-            alert("No se pudo guardar: " + (data.error || "Error desconocido"));
         }
-    } catch (e) {
-        alert("Error de conexión con el servidor.");
-    }
+    } catch (e) { alert("Error al conectar con el servidor."); }
 }
 
-// 7. CARGAR DESDE DB
 async function cargarDesdeDB(nombre) {
     try {
-        const inputNombrePrincipal = document.getElementById('nombre-usuario');
-        if (inputNombrePrincipal) inputNombrePrincipal.value = nombre;
+        const inputNombre = document.getElementById('nombre-usuario');
+        if (inputNombre) inputNombre.value = nombre;
         
-        document.querySelectorAll('.marcador-col input').forEach(input => input.value = "");
-        document.querySelectorAll('.in-desempate').forEach(input => input.value = "");
+        document.querySelectorAll('input[type="number"]').forEach(i => i.value = "");
 
-        const respuesta = await fetch(`${API_URL}/cargar/${nombre}`);
-        const datos = await respuesta.json();
+        const res = await fetch(`${API_URL}/cargar/${nombre}`);
+        const datos = await res.json();
         
         datos.forEach(partido => {
             const inL = document.getElementById(`L-${partido.id}`);
@@ -390,45 +340,33 @@ async function cargarDesdeDB(nombre) {
         });
 
         actualizarTorneo();
-        
-        const botones = document.querySelectorAll('.btn-link');
-        botones.forEach(btn => {
-            if (btn.innerText.toLowerCase().includes(nombre.toLowerCase())) {
-                btn.style.setProperty('display', 'flex', 'important');
-                btn.classList.add('quiniela-activa');
-            } else {
-                btn.style.setProperty('display', 'none', 'important');
-            }
+        // Ocultar otros botones de usuario
+        document.querySelectorAll('.btn-link').forEach(btn => {
+            if (!btn.innerText.includes(nombre)) btn.style.display = "none";
         });
-
-        if (!document.getElementById('btn-volver-lista')) {
-            const btnReset = document.createElement('button');
-            btnReset.id = 'btn-volver-lista';
-            btnReset.innerText = "✕ Cambiar Usuario";
-            btnReset.className = "btn-link";
-            btnReset.style.backgroundColor = "#ff4444";
-            btnReset.style.color = "white";
-            btnReset.onclick = () => location.reload();
-            document.getElementById('links-container').appendChild(btnReset);
-        }
-    } catch (error) { console.error("Error al cargar:", error); }
+    } catch (e) { console.error("Error al cargar."); }
 }
 
-// 8. LÓGICA DE TORNEO Y AVANCES
+// ==========================================
+// 6. LÓGICA DE AVANCE (EL CEREBRO)
+// ==========================================
 function actualizarTorneo() {
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let clasificados = {}; 
 
-    // Control de desempates
+    // Limpieza de eliminatorias antes de recalcular
     partidosData.forEach(p => {
         if (p.fase !== "Grupos") {
+            ponerNombreEnCard(p.id, 'L', obtenerCodigoInicial(p.id, 'L'));
+            ponerNombreEnCard(p.id, 'V', obtenerCodigoInicial(p.id, 'V'));
+            // Control visual desempate
             const inL = document.getElementById(`L-${p.id}`);
             const inV = document.getElementById(`V-${p.id}`);
-            const wrapper = document.getElementById(`wrapper-desempate-${p.id}`);
-            if (inL && inV && wrapper) {
-                const valL = inL.value;
-                const valV = inV.value;
-                wrapper.style.display = (valL !== "" && valV !== "" && parseInt(valL) === parseInt(valV)) ? "block" : "none";
+            const wrap = document.getElementById(`wrapper-desempate-${p.id}`);
+            if (wrap && inL.value !== "" && inV.value !== "" && inL.value === inV.value) {
+                wrap.style.display = "block";
+            } else if (wrap) {
+                wrap.style.display = "none";
             }
         }
     });
@@ -436,43 +374,35 @@ function actualizarTorneo() {
     let datosGrupos = {};
     grupos.forEach(letra => {
         let tabla = {};
-        const partidosGrupo = partidosData.filter(p => p.grupo === letra);
-        partidosGrupo.forEach(p => {
-            const inputL = document.getElementById(`L-${p.id}`);
-            const inputV = document.getElementById(`V-${p.id}`);
-            if (inputL && inputV) {
-                const gL = parseInt(inputL.value);
-                const gV = parseInt(inputV.value);
-                if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0 };
-                if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0 };
-                if (!isNaN(gL) && !isNaN(gV)) {
-                    tabla[p.local].gf += gL; tabla[p.visita].gf += gV;
-                    tabla[p.local].dg += (gL - gV); tabla[p.visita].dg += (gV - gL);
-                    if (gL > gV) tabla[p.local].pts += 3;
-                    else if (gV > gL) tabla[p.visita].pts += 3;
-                    else { tabla[p.local].pts += 1; tabla[p.visita].pts += 1; }
-                }
+        partidosData.filter(p => p.grupo === letra).forEach(p => {
+            const gL = parseInt(document.getElementById(`L-${p.id}`).value);
+            const gV = parseInt(document.getElementById(`V-${p.id}`).value);
+            if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0 };
+            if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0 };
+            if (!isNaN(gL) && !isNaN(gV)) {
+                tabla[p.local].gf += gL; tabla[p.visita].gf += gV;
+                tabla[p.local].dg += (gL - gV); tabla[p.visita].dg += (gV - gL);
+                if (gL > gV) tabla[p.local].pts += 3;
+                else if (gV > gL) tabla[p.visita].pts += 3;
+                else { tabla[p.local].pts += 1; tabla[p.visita].pts += 1; }
             }
         });
         let ranking = Object.values(tabla).sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
         datosGrupos[letra] = { ranking };
-        if (ranking.length >= 1) clasificados[`1${letra}`] = ranking[0].nombre;
-        if (ranking.length >= 2) clasificados[`2${letra}`] = ranking[1].nombre;
-        if (ranking.length >= 3) clasificados[`3${letra}`] = ranking[2].nombre;
+        if (ranking[0]) clasificados[`1${letra}`] = ranking[0].nombre;
+        if (ranking[1]) clasificados[`2${letra}`] = ranking[1].nombre;
+        if (ranking[2]) clasificados[`3${letra}`] = ranking[2].nombre;
     });
 
-    const mejoresTerceros = [];
-    Object.keys(datosGrupos).forEach(l => {
-        if (datosGrupos[l].ranking[2]) mejoresTerceros.push(datosGrupos[l].ranking[2]);
-    });
-    mejoresTerceros.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
-    mejoresTerceros.slice(0, 8).forEach((t, i) => clasificados[`3T${i+1}`] = t.nombre);
+    const terceros = Object.keys(datosGrupos).map(l => datosGrupos[l].ranking[2]).filter(x => x);
+    terceros.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
+    terceros.slice(0, 8).forEach((t, i) => clasificados[`3T${i+1}`] = t.nombre);
 
     actualizarFasesEliminatorias(clasificados);
 }
 
 function actualizarFasesEliminatorias(clasificados) {
-    const mapeo16vos = [
+    const llaves = [
         { id: 73, L: "2A", V: "2B" }, { id: 74, L: "1C", V: "2F" },
         { id: 75, L: "1E", V: "3T1" }, { id: 76, L: "1F", V: "2C" },
         { id: 77, L: "2E", V: "2I" }, { id: 78, L: "1I", V: "3T2" },
@@ -482,18 +412,12 @@ function actualizarFasesEliminatorias(clasificados) {
         { id: 85, L: "1B", V: "3T7" }, { id: 86, L: "2D", V: "2G" },
         { id: 87, L: "1J", V: "2H" }, { id: 88, L: "1K", V: "3T8" }
     ];
-
-    mapeo16vos.forEach(m => {
-        // Si el clasificado existe en el objeto (porque hay goles), lo ponemos.
-        // Si no existe, ponemos el código original (2A, 1C, etc.)
-        const nombreL = clasificados[m.L] || m.L;
-        const nombreV = clasificados[m.V] || m.V;
-        
-        ponerNombreEnCard(m.id, 'L', nombreL);
-        ponerNombreEnCard(m.id, 'V', nombreV);
+    llaves.forEach(m => {
+        if (clasificados[m.L]) ponerNombreEnCard(m.id, 'L', clasificados[m.L]);
+        if (clasificados[m.V]) ponerNombreEnCard(m.id, 'V', clasificados[m.V]);
     });
 
-    const avance = [
+    const avances = [
         { de: 73, a: 89, pos: 'L', tipo: 'ganador' }, { de: 74, a: 89, pos: 'V', tipo: 'ganador' },
         { de: 75, a: 90, pos: 'L', tipo: 'ganador' }, { de: 76, a: 90, pos: 'V', tipo: 'ganador' },
         { de: 77, a: 91, pos: 'L', tipo: 'ganador' }, { de: 78, a: 91, pos: 'V', tipo: 'ganador' },
@@ -511,112 +435,43 @@ function actualizarFasesEliminatorias(clasificados) {
         { de: 101, a: 104, pos: 'L', tipo: 'ganador' }, { de: 102, a: 104, pos: 'V', tipo: 'ganador' },
         { de: 101, a: 103, pos: 'L', tipo: 'perdedor' }, { de: 102, a: 103, pos: 'V', tipo: 'perdedor' }
     ];
-    procesarAvanceFutbol(avance);
-}
 
-
-function procesarAvanceFutbol(llaves) {
-    llaves.forEach(llave => {
-        const inL = document.getElementById(`L-${llave.de}`);
-        const inV = document.getElementById(`V-${llave.de}`);
-        const inDL = document.getElementById(`DL-${llave.de}`);
-        const inDV = document.getElementById(`DV-${llave.de}`);
-        
-        if (!inL || !inV) return;
-
-        const gL = inL.value;
-        const gV = inV.value;
-        
-        // Buscamos el nombre original del equipo en partidosData por si hay que resetear
-        const partidoDestino = partidosData.find(pd => pd.id === llave.a);
-        let nombreDefault = (llave.pos === 'L') ? partidoDestino.local : partidoDestino.visita;
-
-        // Si los inputs están vacíos, reseteamos al nombre por defecto (ej: "Ganador 73")
-        if (gL === "" || gV === "") {
-            ponerNombreEnCard(llave.a, llave.pos, nombreDefault);
-            return;
-        }
-
-        const golesL = parseInt(gL);
-        const golesV = parseInt(gV);
-        const cardOrigen = inL.closest('.partido-card');
-        const nombreLocalOrigen = cardOrigen.querySelector('.local').innerText;
-        const nombreVisitaOrigen = cardOrigen.querySelector('.visita').innerText;
-
-        let equipoAvanza = nombreDefault;
-
-        if (golesL > golesV) {
-            equipoAvanza = (llave.tipo === 'ganador') ? nombreLocalOrigen : nombreVisitaOrigen;
-        } else if (golesV > golesL) {
-            equipoAvanza = (llave.tipo === 'ganador') ? nombreVisitaOrigen : nombreLocalOrigen;
-        } else {
-            // Empate: chequear desempate
-            if (inDL && inDV && inDL.value !== "" && inDV.value !== "") {
-                const dL = parseInt(inDL.value);
-                const dV = parseInt(inDV.value);
-                if (dL > dV) {
-                    equipoAvanza = (llave.tipo === 'ganador') ? nombreLocalOrigen : nombreVisitaOrigen;
-                } else if (dV > dL) {
-                    equipoAvanza = (llave.tipo === 'ganador') ? nombreVisitaOrigen : nombreLocalOrigen;
-                }
+    avances.forEach(llave => {
+        const gL = parseInt(document.getElementById(`L-${llave.de}`).value);
+        const gV = parseInt(document.getElementById(`V-${llave.de}`).value);
+        if (!isNaN(gL) && !isNaN(gV)) {
+            const card = document.getElementById(`L-${llave.de}`).closest('.partido-card');
+            const nL = card.querySelector('.local').innerText;
+            const nV = card.querySelector('.visita').innerText;
+            let avanza = "";
+            if (gL > gV) avanza = (llave.tipo === 'ganador') ? nL : nV;
+            else if (gV > gL) avanza = (llave.tipo === 'ganador') ? nV : nL;
+            else {
+                const dL = parseInt(document.getElementById(`DL-${llave.de}`).value);
+                const dV = parseInt(document.getElementById(`DV-${llave.de}`).value);
+                if (dL > dV) avanza = (llave.tipo === 'ganador') ? nL : nV;
+                else if (dV > dL) avanza = (llave.tipo === 'ganador') ? nV : nL;
+            }
+            if (avanza && !avanza.includes("G") && !avanza.includes("P")) {
+                ponerNombreEnCard(llave.a, llave.pos, avanza);
             }
         }
-        ponerNombreEnCard(llave.a, llave.pos, equipoAvanza);
     });
 }
 
 function ponerNombreEnCard(id, lado, nombre) {
     const el = document.getElementById(`${lado}-${id}`);
     if (el) {
-        const card = el.closest('.partido-card');
-        const span = lado === 'L' ? card.querySelector('.local') : card.querySelector('.visita');
-        if (span) span.innerText = nombre;
+        const span = el.closest('.partido-card').querySelector(lado === 'L' ? '.local' : '.visita');
+        span.innerText = nombre;
     }
 }
 
-// 9. REPORTES (Sin cambios necesarios aquí)
-async function generarReporteMaestro() {
-    try {
-        const response = await fetch(`${API_URL}/obtener-todas-predicciones`);
-        const datos = await response.json();
-        if (!datos || datos.length === 0) return alert("No hay datos.");
-        const agrupado = datos.reduce((acc, row) => {
-            if (!acc[row.nombre_usuario]) acc[row.nombre_usuario] = [];
-            acc[row.nombre_usuario].push(row);
-            return acc;
-        }, {});
-        let htmlReporte = `<html><head><title>Reporte Maestro</title><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script><style>body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }.header-actions { position: sticky; top: 0; background: white; padding: 15px; border-bottom: 2px solid #01215b; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }.btn-pdf { background: #d32f2f; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 5px; font-size: 14px; }.btn-pdf:hover { background: #b71c1c; }table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; }th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }th { background: #01215b; color: white; }.marcador { font-weight: bold; text-align: center; }h2 { color: #01215b; border-bottom: 1px solid #ccc; padding-bottom: 5px; }</style></head><body><div class="header-actions"><h1>Reporte Maestro de Quinielas</h1><button class="btn-pdf" onclick="ventanaImprimirPDF()">📥 Descargar en PDF</button></div>`;
-        for (const usuario in agrupado) {
-            htmlReporte += `<h2>Quiniela de: ${usuario}</h2><table id="tabla-${usuario}"><thead><tr><th>ID</th><th>Local</th><th>GL</th><th>GV</th><th>Visita</th><th>Des. L</th><th>Des. V</th></tr></thead><tbody>`;
-            agrupado[usuario].forEach(row => {
-                const p = partidosData.find(item => item.id === row.partido_id) || {};
-                htmlReporte += `<tr><td>${row.partido_id}</td><td>${p.local || '---'}</td><td class="marcador">${row.goles_local}</td><td class="marcador">${row.goles_visita}</td><td>${p.visita || '---'}</td><td>${row.goles_desempate_local || '-'}</td><td>${row.goles_desempate_visita || '-'}</td></tr>`;
-            });
-            htmlReporte += `</tbody></table>`;
-        }
-        htmlReporte += `<script>function ventanaImprimirPDF() { const { jsPDF } = window.jspdf; const doc = new jsPDF('p', 'mm', 'a4'); const tablas = document.querySelectorAll('table'); const titulos = document.querySelectorAll('h2'); let y = 20; let columna = 0; const anchoCol = 90; const xDerecha = 105; doc.setFontSize(16); doc.text("REPORTE MAESTRO", 105, 10, { align: "center" }); tablas.forEach((tabla, index) => { const nombreUsuario = titulos[index].innerText; const xPos = (columna === 0) ? 10 : xDerecha; doc.setFontSize(10); doc.text(nombreUsuario, xPos, y); doc.autoTable({ html: tabla, startY: y + 2, margin: { left: xPos }, tableWidth: anchoCol, theme: 'grid', styles: { fontSize: 7, cellPadding: 1 }, headStyles: { fillColor: [1, 33, 91] } }); if (columna === 0) { columna = 1; } else { columna = 0; y = doc.lastAutoTable.finalY + 15; } if (y > 270) { doc.addPage(); y = 20; columna = 0; } }); doc.save("Reporte_Quinielas.pdf"); }</script></body></html>`;
-        const v = window.open('', '_blank');
-        v.document.write(htmlReporte);
-        v.document.close();
-    } catch (e) { alert("Error al generar el reporte."); }
-}
-
-async function resetearBaseDeDatos() {
-    if (!confirm("⚠️ ¿Borrar todo?")) return;
-    try {
-        const res = await fetch(`${API_URL}/reset-db`, { method: 'DELETE' });
-        const data = await res.json();
-        alert(data.mensaje);
-        location.reload();
-    } catch (e) { alert("Error reset."); }
-}
-
-// 10. INICIO AL CARGAR (EL ORDEN IMPORTA)
+// ==========================================
+// 7. INICIO
+// ==========================================
 window.onload = async () => {
     await renderizarFixture();
     await actualizarListaLinks();
-    actualizarTorneo(); // Esto limpia los nombres fantasmas al inicio
+    actualizarTorneo();
 };
-
-
-
