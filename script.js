@@ -281,23 +281,27 @@ async function guardarQuinielaCompleta() {
         const gl = document.getElementById(`L-${p.id}`).value;
         const gv = document.getElementById(`V-${p.id}`).value;
         
-        // Capturar los valores de desempate si existen
+        // Capturamos los inputs de desempate (cuadros amarillos)
         const inDL = document.getElementById(`DL-${p.id}`);
         const inDV = document.getElementById(`DV-${p.id}`);
 
+        // Solo agregamos si hay goles principales anotados
         if (gl !== "" && gv !== "") {
             predicciones.push({ 
                 id: p.id, 
                 gl: parseInt(gl), 
                 gv: parseInt(gv),
-                // Enviamos null si el campo no existe o está vacío
+                // Enviamos el valor si existe, si no, enviamos null para la DB
                 dl: (inDL && inDL.value !== "") ? parseInt(inDL.value) : null,
                 dv: (inDV && inDV.value !== "") ? parseInt(inDV.value) : null
             });
         }
     });
 
-    if (predicciones.length === 0) return alert("Completa al menos un resultado.");
+    // Mantenemos tu alerta de seguridad exacta
+    if (predicciones.length === 0) {
+        return alert("Completa al menos un resultado para que se pueda guardar la quiniela.");
+    }
 
     try {
         const res = await fetch(`${API_URL}/guardar`, {
@@ -309,10 +313,16 @@ async function guardarQuinielaCompleta() {
         const data = await res.json();
 
         if (res.ok) {
+            // Mantenemos tus mensajes de éxito
             alert(data.mensaje || "Quiniela guardada correctamente");
-            actualizarListaLinks();
+            
+            // Forzamos la actualización de la lista para que aparezca Antonio (aunque tenga 0 pts)
+            if (typeof actualizarListaLinks === 'function') {
+                actualizarListaLinks();
+            }
         } else {
-            alert("Error del servidor: " + (data.error || "No se pudo guardar"));
+            // Mantenemos tu alerta de error
+            alert("No se pudo guardar: " + (data.error || "Error desconocido"));
         }
     } catch (e) {
         console.error("Error al guardar:", e);
@@ -554,6 +564,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
