@@ -212,7 +212,7 @@ async function renderizarFixture() {
     });
 }
 
-// 4. RANKING
+// 4. RANKING / LISTA (CORREGIDA para mostrar todos)
 async function actualizarListaLinks() {
     const container = document.getElementById('links-container');
     if (!container) return;
@@ -223,6 +223,7 @@ async function actualizarListaLinks() {
         ]);
         const usuarios = await resNombres.json();
         const resultadosOficiales = await resOficiales.json();
+        
         let listaRanking = [];
         for (const user of usuarios) {
             const resPred = await fetch(`${API_URL}/cargar/${user.nombre_usuario}`);
@@ -234,12 +235,16 @@ async function actualizarListaLinks() {
             });
             listaRanking.push({ nombre: user.nombre_usuario, puntos: ptsTotales });
         }
+
+        // Ordenar por puntos (descendente)
         listaRanking.sort((a, b) => b.puntos - a.puntos);
+
         container.innerHTML = "";
         listaRanking.forEach((u, index) => {
             const icono = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : "•"));
             const btn = document.createElement('button');
             btn.className = "btn-link";
+            btn.style.display = "flex"; // Asegura que sea visible
             btn.innerHTML = `<span>${icono} ${u.nombre}</span><span class="badge-puntos">${u.puntos} pts</span>`;
             btn.onclick = () => cargarDesdeDB(u.nombre);
             container.appendChild(btn);
@@ -315,49 +320,42 @@ async function guardarQuinielaCompleta() {
     }
 }
 
-// 7. CARGAR DESDE DB
+// 7. CARGAR DESDE DB (CORREGIDA para los cuadros amarillos)
 async function cargarDesdeDB(nombre) {
     try {
         const inputNombrePrincipal = document.getElementById('nombre-usuario');
         if (inputNombrePrincipal) inputNombrePrincipal.value = nombre;
+        
+        // Limpiar todo antes de cargar
         document.querySelectorAll('.marcador-col input').forEach(input => input.value = "");
         document.querySelectorAll('.in-desempate').forEach(input => input.value = "");
 
         const respuesta = await fetch(`${API_URL}/cargar/${nombre}`);
         const datos = await respuesta.json();
+
         datos.forEach(partido => {
+            // Cargar goles normales
             const inL = document.getElementById(`L-${partido.id}`);
             const inV = document.getElementById(`V-${partido.id}`);
             if (inL) inL.value = partido.gl;
             if (inV) inV.value = partido.gv;
             
+            // Cargar goles de desempate (CUADROS AMARILLOS)
             const inDL = document.getElementById(`DL-${partido.id}`);
             const inDV = document.getElementById(`DV-${partido.id}`);
-            if (inDL) inDL.value = partido.dl || "";
-            if (inDV) inDV.value = partido.dv || "";
+            if (inDL && partido.dl !== null) inDL.value = partido.dl;
+            if (inDV && partido.dv !== null) inDV.value = partido.dv;
         });
 
+        // Ejecutar la lógica de avance para que se vean los ganadores y los cuadros amarillos
         actualizarTorneo();
-        const botones = document.querySelectorAll('.btn-link');
-        botones.forEach(btn => {
-            if (btn.innerText.toLowerCase().includes(nombre.toLowerCase())) {
-                btn.style.setProperty('display', 'flex', 'important');
-                btn.classList.add('quiniela-activa');
-            } else {
-                btn.style.setProperty('display', 'none', 'important');
-            }
+        
+        // Feedback visual de quién está seleccionado
+        document.querySelectorAll('.btn-link').forEach(btn => {
+            btn.classList.remove('quiniela-activa');
+            if (btn.innerText.includes(nombre)) btn.classList.add('quiniela-activa');
         });
 
-        if (!document.getElementById('btn-volver-lista')) {
-            const btnReset = document.createElement('button');
-            btnReset.id = 'btn-volver-lista';
-            btnReset.innerText = "✕ Cambiar Usuario";
-            btnReset.className = "btn-link";
-            btnReset.style.backgroundColor = "#ff4444";
-            btnReset.style.color = "white";
-            btnReset.onclick = () => location.reload();
-            document.getElementById('links-container').appendChild(btnReset);
-        }
     } catch (error) { console.error("Error al cargar:", error); }
 }
 
@@ -543,4 +541,5 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
