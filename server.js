@@ -126,8 +126,8 @@ app.get('/cargar/:nombre', async (req, res) => {
         );
         res.json(result.rows);
     } catch (err) {
-        console.error("Error al cargar quiniela:", err);
-        res.status(500).json({ error: err.message });
+        console.error(err);
+        res.status(500).json({ error: "Error al obtener datos" });
     }
 });
 
@@ -183,6 +183,7 @@ app.listen(PORT, () => {
     console.log(`Servidor activo en: http://localhost:${PORT}`);
 
 });
+
 
 
 
