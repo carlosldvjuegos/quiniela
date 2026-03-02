@@ -217,39 +217,46 @@ async function actualizarListaLinks() {
     const container = document.getElementById('links-container');
     if (!container) return;
     try {
-        const [resNombres, resOficiales] = await Promise.all([
-            fetch(`${API_URL}/registros`),
-            fetch(`${API_URL}/obtener-resultados-db`)
-        ]);
+        const resNombres = await fetch(`${API_URL}/registros`);
+        const resOficiales = await fetch(`${API_URL}/obtener-resultados-db`);
         const usuarios = await resNombres.json();
         const resultadosOficiales = await resOficiales.json();
-        
+
         let listaRanking = [];
+
         for (const user of usuarios) {
-            const resPred = await fetch(`${API_URL}/cargar/${user.nombre_usuario}`);
-            const predicciones = await resPred.json();
-            let ptsTotales = 0;
-            predicciones.forEach(pred => {
-                const oficial = resultadosOficiales.find(r => r.id === pred.id);
-                if (oficial) ptsTotales += calcularLogicaPuntos(pred.gl, pred.gv, oficial.gl, oficial.gv);
-            });
-            listaRanking.push({ nombre: user.nombre_usuario, puntos: ptsTotales });
+            try {
+                const resPred = await fetch(`${API_URL}/cargar/${user.nombre_usuario}`);
+                const predicciones = await resPred.json();
+                
+                let ptsTotales = 0;
+                if (predicciones && predicciones.length > 0) {
+                    predicciones.forEach(pred => {
+                        const oficial = resultadosOficiales.find(r => r.id === pred.id);
+                        if (oficial) {
+                            ptsTotales += calcularLogicaPuntos(pred.gl, pred.gv, oficial.gl, oficial.gv);
+                        }
+                    });
+                }
+                listaRanking.push({ nombre: user.nombre_usuario, puntos: ptsTotales });
+            } catch (e) {
+                // Si falla un usuario (como Antonio), igual lo agregamos con 0 pts
+                listaRanking.push({ nombre: user.nombre_usuario, puntos: 0 });
+            }
         }
 
-        // Ordenar por puntos (descendente)
+        // Ordenar: primero los de más puntos
         listaRanking.sort((a, b) => b.puntos - a.puntos);
 
         container.innerHTML = "";
         listaRanking.forEach((u, index) => {
-            const icono = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : "•"));
             const btn = document.createElement('button');
             btn.className = "btn-link";
-            btn.style.display = "flex"; // Asegura que sea visible
-            btn.innerHTML = `<span>${icono} ${u.nombre}</span><span class="badge-puntos">${u.puntos} pts</span>`;
+            btn.innerHTML = `<span>• ${u.nombre}</span><span class="badge-puntos">${u.puntos} pts</span>`;
             btn.onclick = () => cargarDesdeDB(u.nombre);
             container.appendChild(btn);
         });
-    } catch (err) { console.error("Error ranking:", err); }
+    } catch (err) { console.error("Error en ranking:", err); }
 }
 
 // 5. CALCULAR PUNTOS MANUAL
@@ -336,7 +343,7 @@ async function cargarDesdeDB(nombre) {
         const inputNombrePrincipal = document.getElementById('nombre-usuario');
         if (inputNombrePrincipal) inputNombrePrincipal.value = nombre;
         
-        // Limpiamos goles normales y de desempate
+        // Limpiamos todo rastro anterior
         document.querySelectorAll('.marcador-col input').forEach(input => input.value = "");
         document.querySelectorAll('.in-desempate').forEach(input => input.value = "");
 
@@ -344,17 +351,16 @@ async function cargarDesdeDB(nombre) {
         const datos = await respuesta.json();
         
         datos.forEach(partido => {
-            // Cargar goles normales
             const inL = document.getElementById(`L-${partido.id}`);
             const inV = document.getElementById(`V-${partido.id}`);
             if (inL) inL.value = partido.gl;
             if (inV) inV.value = partido.gv;
-            
-            // --- MEJORA: Cargar goles de desempate (cuadros amarillos) ---
+
+            // CARGAR DESEMPATE
             const inDL = document.getElementById(`DL-${partido.id}`);
             const inDV = document.getElementById(`DV-${partido.id}`);
-            if (inDL && partido.dl !== undefined && partido.dl !== null) inDL.value = partido.dl;
-            if (inDV && partido.dv !== undefined && partido.dv !== null) inDV.value = partido.dv;
+            if (inDL && (partido.dl !== null && partido.dl !== undefined)) inDL.value = partido.dl;
+            if (inDV && (partido.dv !== null && partido.dv !== undefined)) inDV.value = partido.dv;
         });
 
         actualizarTorneo();
@@ -564,6 +570,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
