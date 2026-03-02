@@ -197,6 +197,26 @@ async function renderizarFixture() {
     });
 }
 
+
+
+
+// Dentro de renderizarFixture, al crear el HTML de la card:
+const esEliminatoria = p.fase !== "Grupos";
+const htmlDesempate = esEliminatoria ? `
+    <div id="wrapper-desempate-${p.id}" class="marcador-desempate" style="display: none;">
+        <span class="etiqueta-desempate">Marcador para pasar de fase:</span>
+        <div class="inputs-desempate">
+            <input type="number" id="DL-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="L">
+            <span class="sep">-</span>
+            <input type="number" id="DV-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="V">
+        </div>
+    </div>
+` : "";
+
+
+
+
+
 // 4. RANKING
 async function actualizarListaLinks() {
     const container = document.getElementById('links-container');
@@ -359,6 +379,37 @@ function actualizarTorneo() {
     mejoresTerceros.slice(0, 8).forEach((t, i) => clasificados[`3T${i+1}`] = t.nombre);
 
     actualizarFasesEliminatorias(clasificados);
+
+
+
+    
+    // Agrega esto al inicio de tu función actualizarTorneo()
+    partidosData.forEach(p => {
+        if (p.fase !== "Grupos") {
+            const inL = document.getElementById(`L-${p.id}`);
+            const inV = document.getElementById(`V-${p.id}`);
+            const wrapper = document.getElementById(`wrapper-desempate-${p.id}`);
+    
+            if (inL && inV && wrapper) {
+                const valL = inL.value;
+                const valV = inV.value;
+    
+                // Si ambos campos tienen números y son iguales (Empate)
+                if (valL !== "" && valV !== "" && parseInt(valL) === parseInt(valV)) {
+                    wrapper.style.display = "block"; // Mostrar marcador de desempate
+                } else {
+                    wrapper.style.display = "none";  // Ocultar si hay un ganador o está vacío
+                    // Limpiar los valores de desempate si se oculta
+                    document.getElementById(`DL-${p.id}`).value = "";
+                    document.getElementById(`DV-${p.id}`).value = "";
+                }
+            }
+        }
+    });
+
+
+
+    
 }
 
 function actualizarFasesEliminatorias(clasificados) {
@@ -401,22 +452,43 @@ function actualizarFasesEliminatorias(clasificados) {
 
 function procesarAvanceFutbol(llaves) {
     llaves.forEach(llave => {
-        const inputL = document.getElementById(`L-${llave.de}`);
-        const inputV = document.getElementById(`V-${llave.de}`);
-        if (!inputL || !inputV) return;
-        const gL = parseInt(inputL.value);
-        const gV = parseInt(inputV.value);
+        const inL = document.getElementById(`L-${llave.de}`);
+        const inV = document.getElementById(`V-${llave.de}`);
+        const inDL = document.getElementById(`DL-${llave.de}`);
+        const inDV = document.getElementById(`DV-${llave.de}`);
+
+        if (!inL || !inV) return;
+
+        const gL = parseInt(inL.value);
+        const gV = parseInt(inV.value);
+
         if (!isNaN(gL) && !isNaN(gV)) {
-            const card = inputL.closest('.partido-card');
+            const card = inL.closest('.partido-card');
             const nombreL = card.querySelector('.local').innerText;
             const nombreV = card.querySelector('.visita').innerText;
-            let equipo = "---";
-            if (llave.tipo === 'ganador') {
-                if (gL > gV) equipo = nombreL; else if (gV > gL) equipo = nombreV; else equipo = "Empate";
-            } else {
-                if (gL < gV) equipo = nombreL; else if (gV < gL) equipo = nombreV; else equipo = "Empate";
+            let equipoAvanza = "---";
+
+            // CASO 1: Hay un ganador claro en los 90 min
+            if (gL > gV) {
+                equipoAvanza = nombreL;
+            } else if (gV > gL) {
+                equipoAvanza = nombreV;
+            } 
+            // CASO 2: Hay empate, revisar el marcador de desempate (DL y DV)
+            else {
+                const dL = parseInt(inDL.value);
+                const dV = parseInt(inDV.value);
+                
+                if (!isNaN(dL) && !isNaN(dV)) {
+                    if (dL > dV) equipoAvanza = nombreL;
+                    else if (dV > dL) equipoAvanza = nombreV;
+                    else equipoAvanza = "Empate en Penales"; // Evitar bucle infinito de empates
+                } else {
+                    equipoAvanza = "Definir Ganador"; 
+                }
             }
-            ponerNombreEnCard(llave.a, llave.pos, equipo);
+
+            ponerNombreEnCard(llave.a, llave.pos, equipoAvanza);
         }
     });
 }
@@ -580,6 +652,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
