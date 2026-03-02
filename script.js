@@ -3,7 +3,7 @@ const API_URL = (window.location.hostname === "localhost" || window.location.hos
     ? window.location.origin 
     : "https://quiniela-pcas.onrender.com"; 
 
-// 1. LISTA DE PARTIDOS (Mundial 2026)
+// 1. LISTA DE PARTIDOS (Mundial 2026) - CORREGIDA
 const partidosData = [
     // GRUPO A
     { id: 1, fase: "Grupos", grupo: "A", fecha: "11/06/2026", local: "México", visita: "Sudáfrica" },
@@ -101,7 +101,7 @@ const partidosData = [
     { id: 71, fase: "Grupos", grupo: "L", fecha: "Sábado 27/06/2026", local: "Panamá", visita: "Inglaterra" },
     { id: 72, fase: "Grupos", grupo: "L", fecha: "Sábado 27/06/2026", local: "Croacia", visita: "Ghana" },
 
-    // --- DIECISEISAVOS (IDs 73-88) ---
+    // --- DIECISEISAVOS (Limpios de nombres fijos) ---
     { id: 73, fase: "16vos", grupo: "Eliminatoria", fecha: "Domingo 28/06/2026", local: "2A", visita: "2B" },
     { id: 74, fase: "16vos", grupo: "Eliminatoria", fecha: "Lunes 29/06/2026", local: "1C", visita: "2F" },
     { id: 75, fase: "16vos", grupo: "Eliminatoria", fecha: "Lunes 29/06/2026", local: "1E", visita: "3T1" },
@@ -120,28 +120,28 @@ const partidosData = [
     { id: 88, fase: "16vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "1K", visita: "3T8" },
 
     // --- OCTAVOS ---
-    { id: 89, fase: "8vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "W73", visita: "W75" },
-    { id: 90, fase: "8vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "W74", visita: "W77" },
-    { id: 91, fase: "8vos", grupo: "Eliminatoria", fecha: "Domingo 05/07/2026", local: "W76", visita: "W78" },
-    { id: 92, fase: "8vos", grupo: "Eliminatoria", fecha: "Lunes 06/07/2026", local: "W79", visita: "W80" },
-    { id: 93, fase: "8vos", grupo: "Eliminatoria", fecha: "Lunes 06/07/2026", local: "W83", visita: "W84" },
-    { id: 94, fase: "8vos", grupo: "Eliminatoria", fecha: "Martes 07/07/2026", local: "W81", visita: "W82" },
-    { id: 95, fase: "8vos", grupo: "Eliminatoria", fecha: "Martes 07/07/2026", local: "W86", visita: "W88" },
-    { id: 96, fase: "8vos", grupo: "Eliminatoria", fecha: "Martes 07/07/2026", local: "W85", visita: "W87" },
+    { id: 89, fase: "8vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "G73", visita: "G75" },
+    { id: 90, fase: "8vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "G74", visita: "G77" },
+    { id: 91, fase: "8vos", grupo: "Eliminatoria", fecha: "Domingo 05/07/2026", local: "G76", visita: "G78" },
+    { id: 92, fase: "8vos", grupo: "Eliminatoria", fecha: "Lunes 06/07/2026", local: "G79", visita: "G80" },
+    { id: 93, fase: "8vos", grupo: "Eliminatoria", fecha: "Lunes 06/07/2026", local: "G83", visita: "G84" },
+    { id: 94, fase: "8vos", grupo: "Eliminatoria", fecha: "Martes 07/07/2026", local: "G81", visita: "G82" },
+    { id: 95, fase: "8vos", grupo: "Eliminatoria", fecha: "Martes 07/07/2026", local: "G86", visita: "G88" },
+    { id: 96, fase: "8vos", grupo: "Eliminatoria", fecha: "Martes 07/07/2026", local: "G85", visita: "G87" },
 
     // --- CUARTOS ---
-    { id: 97, fase: "4tos", grupo: "Eliminatoria", fecha: "Jueves 09/07/2026", local: "W89", visita: "W90" },
-    { id: 98, fase: "4tos", grupo: "Eliminatoria", fecha: "Viernes 10/07/2026", local: "W93", visita: "W94" },
-    { id: 99, fase: "4tos", grupo: "Eliminatoria", fecha: "Sábado 11/07/2026", local: "W91", visita: "W92" },
-    { id: 100, fase: "4tos", grupo: "Eliminatoria", fecha: "Domingo 12/07/2026", local: "W95", visita: "W96" },
+    { id: 97, fase: "4tos", grupo: "Eliminatoria", fecha: "Jueves 09/07/2026", local: "G89", visita: "G90" },
+    { id: 98, fase: "4tos", grupo: "Eliminatoria", fecha: "Viernes 10/07/2026", local: "G93", visita: "G94" },
+    { id: 99, fase: "4tos", grupo: "Eliminatoria", fecha: "Sábado 11/07/2026", local: "G91", visita: "G92" },
+    { id: 100, fase: "4tos", grupo: "Eliminatoria", fecha: "Domingo 12/07/2026", local: "G95", visita: "G96" },
 
     // --- SEMIS ---
-    { id: 101, fase: "Semis", grupo: "Eliminatoria", fecha: "Martes 14/07/2026", local: "W97", visita: "W98" },
-    { id: 102, fase: "Semis", grupo: "Eliminatoria", fecha: "Miércoles 15/07/2026", local: "W99", visita: "W100" },
+    { id: 101, fase: "Semis", grupo: "Eliminatoria", fecha: "Martes 14/07/2026", local: "G97", visita: "G98" },
+    { id: 102, fase: "Semis", grupo: "Eliminatoria", fecha: "Miércoles 15/07/2026", local: "G99", visita: "G100" },
 
     // --- FINALES ---
-    { id: 103, fase: "3er Puesto", grupo: "Eliminatoria", fecha: "Sábado 18/07/2026", local: "L101", visita: "L102" },
-    { id: 104, fase: "Final", grupo: "Eliminatoria", fecha: "Domingo 19/07/2026", local: "W101", visita: "W102" }
+    { id: 103, fase: "3er Puesto", grupo: "Eliminatoria", fecha: "Sábado 18/07/2026", local: "P101", visita: "P102" },
+    { id: 104, fase: "Final", grupo: "Eliminatoria", fecha: "Domingo 19/07/2026", local: "G101", visita: "G102" }
 ];
 
 // 2. LÓGICA DE PUNTOS
@@ -155,7 +155,6 @@ function calcularLogicaPuntos(pL, pV, rL, rV) {
     if (pV === rV) puntos += 1;
     return puntos;
 }
-
 // 3. RENDERIZAR LA TABLA
 async function renderizarFixture() {
     const fixtureCont = document.getElementById("fixture-container");
@@ -212,7 +211,7 @@ async function renderizarFixture() {
     });
 }
 
-// 4. RANKING / LISTA (CORREGIDA para mostrar todos)
+// 4. RANKING / LISTA (CORREGIDA PARA QUE NADIE DESAPAREZCA)
 async function actualizarListaLinks() {
     const container = document.getElementById('links-container');
     if (!container) return;
@@ -240,12 +239,10 @@ async function actualizarListaLinks() {
                 }
                 listaRanking.push({ nombre: user.nombre_usuario, puntos: ptsTotales });
             } catch (e) {
-                // Si falla un usuario (como Antonio), igual lo agregamos con 0 pts
                 listaRanking.push({ nombre: user.nombre_usuario, puntos: 0 });
             }
         }
 
-        // Ordenar: primero los de más puntos
         listaRanking.sort((a, b) => b.puntos - a.puntos);
 
         container.innerHTML = "";
@@ -279,7 +276,7 @@ async function calcularPuntos() {
     } catch (e) { alert("Error al obtener resultados oficiales."); }
 }
 
-// 6. GUARDAR
+// 6. GUARDAR (CON DESEMPATE Y MENSAJES ORIGINALES)
 async function guardarQuinielaCompleta() {
     const nombre = document.getElementById('nombre-usuario').value;
     if (!nombre) return alert("Escribe tu nombre.");
@@ -288,25 +285,20 @@ async function guardarQuinielaCompleta() {
     partidosData.forEach(p => {
         const gl = document.getElementById(`L-${p.id}`).value;
         const gv = document.getElementById(`V-${p.id}`).value;
-        
-        // Capturamos los inputs de desempate (cuadros amarillos)
         const inDL = document.getElementById(`DL-${p.id}`);
         const inDV = document.getElementById(`DV-${p.id}`);
 
-        // Solo agregamos si hay goles principales anotados
         if (gl !== "" && gv !== "") {
             predicciones.push({ 
                 id: p.id, 
                 gl: parseInt(gl), 
                 gv: parseInt(gv),
-                // Enviamos el valor si existe, si no, enviamos null para la DB
                 dl: (inDL && inDL.value !== "") ? parseInt(inDL.value) : null,
                 dv: (inDV && inDV.value !== "") ? parseInt(inDV.value) : null
             });
         }
     });
 
-    // Mantenemos tu alerta de seguridad exacta
     if (predicciones.length === 0) {
         return alert("Completa al menos un resultado para que se pueda guardar la quiniela.");
     }
@@ -317,34 +309,24 @@ async function guardarQuinielaCompleta() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ nombre, predicciones })
         });
-
         const data = await res.json();
-
         if (res.ok) {
-            // Mantenemos tus mensajes de éxito
             alert(data.mensaje || "Quiniela guardada correctamente");
-            
-            // Forzamos la actualización de la lista para que aparezca Antonio (aunque tenga 0 pts)
-            if (typeof actualizarListaLinks === 'function') {
-                actualizarListaLinks();
-            }
+            actualizarListaLinks();
         } else {
-            // Mantenemos tu alerta de error
             alert("No se pudo guardar: " + (data.error || "Error desconocido"));
         }
     } catch (e) {
-        console.error("Error al guardar:", e);
         alert("Error de conexión con el servidor.");
     }
 }
 
-// 7. CARGAR DESDE DB (Tu versión original con soporte para desempate)
+// 7. CARGAR DESDE DB
 async function cargarDesdeDB(nombre) {
     try {
         const inputNombrePrincipal = document.getElementById('nombre-usuario');
         if (inputNombrePrincipal) inputNombrePrincipal.value = nombre;
         
-        // Limpiamos todo rastro anterior
         document.querySelectorAll('.marcador-col input').forEach(input => input.value = "");
         document.querySelectorAll('.in-desempate').forEach(input => input.value = "");
 
@@ -356,12 +338,10 @@ async function cargarDesdeDB(nombre) {
             const inV = document.getElementById(`V-${partido.id}`);
             if (inL) inL.value = partido.gl;
             if (inV) inV.value = partido.gv;
-
-            // CARGAR DESEMPATE
             const inDL = document.getElementById(`DL-${partido.id}`);
             const inDV = document.getElementById(`DV-${partido.id}`);
-            if (inDL && (partido.dl !== null && partido.dl !== undefined)) inDL.value = partido.dl;
-            if (inDV && (partido.dv !== null && partido.dv !== undefined)) inDV.value = partido.dv;
+            if (inDL && partido.dl !== null) inDL.value = partido.dl;
+            if (inDV && partido.dv !== null) inDV.value = partido.dv;
         });
 
         actualizarTorneo();
@@ -393,9 +373,8 @@ async function cargarDesdeDB(nombre) {
 function actualizarTorneo() {
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let clasificados = {}; 
-    let datosGrupos = {};
 
-    // Control visual de desempates
+    // Control de desempates
     partidosData.forEach(p => {
         if (p.fase !== "Grupos") {
             const inL = document.getElementById(`L-${p.id}`);
@@ -404,15 +383,12 @@ function actualizarTorneo() {
             if (inL && inV && wrapper) {
                 const valL = inL.value;
                 const valV = inV.value;
-                if (valL !== "" && valV !== "" && parseInt(valL) === parseInt(valV)) {
-                    wrapper.style.display = "block";
-                } else {
-                    wrapper.style.display = "none";
-                }
+                wrapper.style.display = (valL !== "" && valV !== "" && parseInt(valL) === parseInt(valV)) ? "block" : "none";
             }
         }
     });
 
+    let datosGrupos = {};
     grupos.forEach(letra => {
         let tabla = {};
         const partidosGrupo = partidosData.filter(p => p.grupo === letra);
@@ -499,19 +475,21 @@ function procesarAvanceFutbol(llaves) {
             const card = inL.closest('.partido-card');
             const nombreL = card.querySelector('.local').innerText;
             const nombreV = card.querySelector('.visita').innerText;
-            let equipoAvanza = "---";
+            
+            // Buscar el código original en partidosData para mantenerlo si no hay ganador
+            const pOrig = partidosData.find(p => p.id === llave.a);
+            let equipoAvanza = (llave.pos === 'L') ? pOrig.local : pOrig.visita;
+
             if (gL > gV) {
                 equipoAvanza = (llave.tipo === 'ganador') ? nombreL : nombreV;
             } else if (gV > gL) {
                 equipoAvanza = (llave.tipo === 'ganador') ? nombreV : nombreL;
             } else {
-                if (inDL && inDV) {
+                if (inDL && inDV && inDL.value !== "" && inDV.value !== "") {
                     const dL = parseInt(inDL.value);
                     const dV = parseInt(inDV.value);
-                    if (!isNaN(dL) && !isNaN(dV)) {
-                        if (llave.tipo === 'ganador') equipoAvanza = (dL > dV) ? nombreL : nombreV;
-                        else equipoAvanza = (dL < dV) ? nombreL : nombreV;
-                    }
+                    if (llave.tipo === 'ganador') equipoAvanza = (dL > dV) ? nombreL : nombreV;
+                    else equipoAvanza = (dL < dV) ? nombreL : nombreV;
                 }
             }
             ponerNombreEnCard(llave.a, llave.pos, equipoAvanza);
@@ -528,7 +506,7 @@ function ponerNombreEnCard(id, lado, nombre) {
     }
 }
 
-// 9. REPORTES
+// 9. REPORTES (Sin cambios necesarios aquí)
 async function generarReporteMaestro() {
     try {
         const response = await fetch(`${API_URL}/obtener-todas-predicciones`);
@@ -565,17 +543,9 @@ async function resetearBaseDeDatos() {
     } catch (e) { alert("Error reset."); }
 }
 
-// 10. INICIO AL CARGAR
+// 10. INICIO AL CARGAR (EL ORDEN IMPORTA)
 window.onload = async () => {
     await renderizarFixture();
     await actualizarListaLinks();
-    actualizarTorneo();
+    actualizarTorneo(); // Esto limpia los nombres fantasmas al inicio
 };
-
-
-
-
-
-
-
-
