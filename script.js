@@ -156,6 +156,42 @@ function calcularLogicaPuntos(pL, pV, rL, rV) {
     return puntos;
 }
 // 3. RENDERIZAR LA TABLA
+// Función para limpiar de raíz los nombres fantasma en TODAS las fases
+function obtenerCodigoInicial(id, lado) {
+    const mapeoCompleto = {
+        // 16AVOS DE FINAL
+        73: {L: "2A", V: "2B"}, 74: {L: "1C", V: "2F"}, 75: {L: "1E", V: "3T1"},
+        76: {L: "1F", V: "2C"}, 77: {L: "2E", V: "2I"}, 78: {L: "1I", V: "3T2"},
+        79: {L: "1A", V: "3T3"}, 80: {L: "1L", V: "3T4"}, 81: {L: "1G", V: "3T5"},
+        82: {L: "1D", V: "3T6"}, 83: {L: "1H", V: "2J"}, 84: {L: "2K", V: "2L"},
+        85: {L: "1B", V: "3T7"}, 86: {L: "2D", V: "2G"}, 87: {L: "1J", V: "2H"},
+        88: {L: "1K", V: "3T8"},
+
+        // 8AVOS DE FINAL (Ganadores de 16avos)
+        89: {L: "G73", V: "G74"}, 90: {L: "G75", V: "G76"}, 91: {L: "G77", V: "G78"},
+        92: {L: "G79", V: "G80"}, 93: {L: "G81", V: "G82"}, 94: {L: "G83", V: "G84"},
+        95: {L: "G85", V: "G86"}, 96: {L: "G87", V: "G88"},
+
+        // CUARTOS DE FINAL (Ganadores de 8avos)
+        97: {L: "G89", V: "G90"}, 98: {L: "G91", V: "G92"}, 
+        99: {L: "G93", V: "G94"}, 100: {L: "G95", V: "G96"},
+
+        // SEMIFINALES
+        101: {L: "G97", V: "G98"}, 102: {L: "G99", V: "G100"},
+
+        // TERCER PUESTO (Perdedores de Semis)
+        103: {L: "P101", V: "P102"},
+
+        // FINAL (Ganadores de Semis)
+        104: {L: "G101", V: "G102"}
+    };
+    
+    if (mapeoCompleto[id]) {
+        return mapeoCompleto[id][lado];
+    }
+    return "---"; // Por si algún ID se escapa
+}
+
 async function renderizarFixture() {
     const fixtureCont = document.getElementById("fixture-container");
     if (!fixtureCont) return;
@@ -171,17 +207,26 @@ async function renderizarFixture() {
         const r = resultadosDB.find(res => res.id === p.id);
         const textoReal = r ? `${r.gl} - ${r.gv}` : "-";
 
+        // Lógica de limpieza: Si no es grupos, buscamos el código (1A, G73, etc.)
+        let nombreLocalMostrar = p.local;
+        let nombreVisitaMostrar = p.visita;
+
+        if (p.fase !== "Grupos") {
+            nombreLocalMostrar = obtenerCodigoInicial(p.id, 'L');
+            nombreVisitaMostrar = obtenerCodigoInicial(p.id, 'V');
+        }
+
         const esEliminatoria = p.fase !== "Grupos";
         const htmlDesempate = esEliminatoria ? `
-        <div id="wrapper-desempate-${p.id}" class="marcador-desempate" style="display: none;">
-            <span class="etiqueta-desempate">Definición</span>
-            <div class="inputs-desempate">
-                <input type="number" id="DL-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="L">
-                <span class="sep">-</span>
-                <input type="number" id="DV-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="V">
+            <div id="wrapper-desempate-${p.id}" class="marcador-desempate" style="display: none;">
+                <span class="etiqueta-desempate">Definición</span>
+                <div class="inputs-desempate">
+                    <input type="number" id="DL-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="L">
+                    <span class="sep">-</span>
+                    <input type="number" id="DV-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="V">
+                </div>
             </div>
-        </div>
-    ` : "";
+        ` : "";
 
         const card = document.createElement("div");
         card.className = "partido-card";
@@ -191,7 +236,7 @@ async function renderizarFixture() {
                 <span class="txt-fecha">${p.fecha}</span>
             </div>
             <div class="card-body">
-                <div class="equipo-col local">${p.local}</div>
+                <div class="equipo-col local">${nombreLocalMostrar}</div>
                 <div class="marcador-col-container">
                     <div class="marcador-col">
                         <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
@@ -200,7 +245,7 @@ async function renderizarFixture() {
                     </div>
                     ${htmlDesempate}
                 </div>
-                <div class="equipo-col visita">${p.visita}</div>
+                <div class="equipo-col visita">${nombreVisitaMostrar}</div>
                 <div class="real-col">
                     <div class="etiqueta-real">Resultados Reales</div>
                     <div class="cuadro-real">${textoReal}</div>
@@ -572,5 +617,6 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo(); // Esto limpia los nombres fantasmas al inicio
 };
+
 
 
