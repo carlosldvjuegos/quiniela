@@ -1,4 +1,30 @@
 // 0. CONFIGURACIÓN DE URL
+
+
+// LIMPIADOR DE EMERGENCIA - Corre apenas carga el script
+partidosData.forEach(p => {
+    if (p.fase !== "Grupos") {
+        const iniciales = {
+            73: ["2A", "2B"], 74: ["1C", "2F"], 75: ["1E", "3T1"],
+            76: ["1F", "2C"], 77: ["2E", "2I"], 78: ["1I", "3T2"],
+            79: ["1A", "3T3"], 80: ["1L", "3T4"], 81: ["1G", "3T5"],
+            82: ["1D", "3T6"], 83: ["1H", "2J"], 84: ["2K", "2L"],
+            85: ["1B", "3T7"], 86: ["2D", "2G"], 87: ["1J", "2H"],
+            88: ["1K", "3T8"]
+        };
+        if (iniciales[p.id]) {
+            p.local = iniciales[p.id][0];
+            p.visita = iniciales[p.id][1];
+        } else if (p.id >= 89) {
+            p.local = "Local";
+            p.visita = "Visita";
+        }
+    }
+});
+
+
+
+
 const API_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
     ? window.location.origin 
     : "https://quiniela-pcas.onrender.com"; 
@@ -475,3 +501,4 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
