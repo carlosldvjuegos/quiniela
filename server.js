@@ -20,6 +20,56 @@ const pool = new Pool({
     }
 });
 
+
+// --- INICIALIZACIÓN AUTOMÁTICA DE TABLAS ---
+// Esto crea las tablas y columnas necesarias si no existen en Neon Tech
+const inicializarDB = async () => {
+    const client = await pool.connect();
+    try {
+        console.log("Verificando base de datos en Neon Tech...");
+        
+        // Crear tabla de predicciones si no existe
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS predicciones (
+                id_fila SERIAL PRIMARY KEY,
+                nombre_usuario TEXT NOT NULL,
+                partido_id INTEGER NOT NULL,
+                goles_local INTEGER NOT NULL,
+                goles_visita INTEGER NOT NULL,
+                goles_desempate_local INTEGER,
+                goles_desempate_visita INTEGER,
+                fecha_registro TIMESTAMP WITH TIME ZONE DEFAULT now()
+            );
+        `);
+
+        // Crear tabla de resultados oficiales si no existe
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS resultados_oficiales (
+                partido_id INTEGER PRIMARY KEY,
+                goles_local INTEGER NOT NULL,
+                goles_visita INTEGER NOT NULL,
+                fecha_registro TIMESTAMP WITH TIME ZONE DEFAULT now()
+            );
+        `);
+
+        // Asegurar que existan las columnas de desempate por si la tabla ya existía de antes
+        await client.query(`
+            ALTER TABLE predicciones ADD COLUMN IF NOT EXISTS goles_desempate_local INTEGER;
+            ALTER TABLE predicciones ADD COLUMN IF NOT EXISTS goles_desempate_visita INTEGER;
+        `);
+
+        console.log("Base de datos lista.");
+    } catch (err) {
+        console.error("Error inicializando DB:", err);
+    } finally {
+        client.release();
+    }
+};
+inicializarDB();
+
+
+
+
 // --- RUTA INICIAL ---
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));
@@ -130,6 +180,7 @@ app.listen(PORT, () => {
     console.log(`Servidor activo en: http://localhost:${PORT}`);
 
 });
+
 
 
 
