@@ -209,28 +209,71 @@ button {
 .btn-save { background: #27ae60; }
 .btn-report-master { background: #2980b9; }
 
+/* Contenedor principal del desempate */
 .marcador-desempate {
-    background: #fff9c4; /* Amarillo claro tipo marcador */
-    padding: 8px;
+    background-color: #fff9c4; /* Un amarillo muy suave, casi crema */
+    border: 1px dashed #fbc02d;
     border-radius: 8px;
-    border: 2px dashed #fbc02d;
-    margin-top: 10px;
-    transition: all 0.3s ease;
+    padding: 6px 10px;
+    margin-top: 8px;
+    text-align: center;
+    animation: fadeIn 0.3s ease-in-out;
 }
 
+/* Texto de la etiqueta */
 .etiqueta-desempate {
-    font-size: 0.7rem;
-    color: #856404;
-    font-weight: 900;
-    text-transform: uppercase;
     display: block;
-    margin-bottom: 5px;
+    font-size: 10px;
+    font-weight: bold;
+    color: #8d6e63;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
 }
 
+/* Contenedor de los dos cuadritos */
+.inputs-desempate {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+/* Los mini-inputs de desempate */
 .in-desempate {
-    background-color: white;
-    border: 1px solid #fbc02d !important;
-    color: #333;
+    width: 35px !important; /* Super compactos */
+    height: 25px !important;
+    padding: 2px !important;
+    font-size: 13px !important;
+    text-align: center;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    background: white;
+    outline: none;
+}
+
+.in-desempate:focus {
+    border-color: #01215b;
+    box-shadow: 0 0 3px rgba(1, 33, 91, 0.2);
+}
+
+/* Separador "-" */
+.sep {
+    font-weight: bold;
+    color: #666;
+    font-size: 12px;
+}
+
+/* Quitar las flechitas de los inputs para que se vean más limpios */
+.in-desempate::-webkit-inner-spin-button,
+.in-desempate::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 
@@ -305,4 +348,5 @@ input, button, select, textarea {
         height: 45px !important;
     }
 }
+
 
