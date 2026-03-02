@@ -28,21 +28,28 @@ app.get('/', (req, res) => {
 // --- GUARDAR PREDICCIONES DE USUARIO ---
 app.post('/guardar', async (req, res) => {
     const { nombre, predicciones } = req.body;
+    if (!nombre || !predicciones) return res.status(400).json({ error: "Faltan datos" });
+
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
+        // Limpiamos predicciones anteriores del usuario
         await client.query('DELETE FROM predicciones WHERE nombre_usuario = $1', [nombre]);
+
         for (let p of predicciones) {
             await client.query(
-                'INSERT INTO predicciones (nombre_usuario, partido_id, goles_local, goles_visita, goles_desempate_local, goles_desempate_visita) VALUES ($1, $2, $3, $4, $5, $6)',
-                [nombre, p.id, p.gl, p.gv, p.dl, p.dv] // p.dl y p.dv son los nuevos campos
+                `INSERT INTO predicciones 
+                (nombre_usuario, partido_id, goles_local, goles_visita, goles_desempate_local, goles_desempate_visita) 
+                VALUES ($1, $2, $3, $4, $5, $6)`,
+                [nombre, p.id, p.gl, p.gv, p.dl, p.dv] // Aquí usamos los valores dl y dv enviados
             );
         }
         await client.query('COMMIT');
-        res.json({ mensaje: "Quiniela guardada correctamente" });
+        res.json({ mensaje: "¡Quiniela guardada con éxito!" });
     } catch (e) {
         await client.query('ROLLBACK');
-        res.status(500).json({ error: e.message });
+        console.error(e);
+        res.status(500).json({ error: "Error en la base de datos: " + e.message });
     } finally {
         client.release();
     }
@@ -123,6 +130,7 @@ app.listen(PORT, () => {
     console.log(`Servidor activo en: http://localhost:${PORT}`);
 
 });
+
 
 
 
