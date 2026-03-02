@@ -173,15 +173,15 @@ async function renderizarFixture() {
 
         const esEliminatoria = p.fase !== "Grupos";
         const htmlDesempate = esEliminatoria ? `
-            <div id="wrapper-desempate-${p.id}" class="marcador-desempate" style="display: none;">
-                <span class="etiqueta-desempate">Marcador para pasar de fase:</span>
-                <div class="inputs-desempate">
-                    <input type="number" id="DL-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="L">
-                    <span class="sep">-</span>
-                    <input type="number" id="DV-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="V">
-                </div>
+        <div id="wrapper-desempate-${p.id}" class="marcador-desempate" style="display: none;">
+            <span class="etiqueta-desempate">Definición</span>
+            <div class="inputs-desempate">
+                <input type="number" id="DL-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="L">
+                <span class="sep">-</span>
+                <input type="number" id="DV-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="V">
             </div>
-        ` : "";
+        </div>
+    ` : "";
 
         const card = document.createElement("div");
         card.className = "partido-card";
@@ -572,4 +572,5 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo(); // Esto limpia los nombres fantasmas al inicio
 };
+
 
