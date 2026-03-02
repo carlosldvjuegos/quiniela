@@ -320,40 +320,31 @@ async function guardarQuinielaCompleta() {
     }
 }
 
-// 7. CARGAR DESDE DB (RESTAURADA CON BOTÓN ROJO Y FILTRO)
+// 7. CARGAR DESDE DB
 async function cargarDesdeDB(nombre) {
     try {
         const inputNombrePrincipal = document.getElementById('nombre-usuario');
         if (inputNombrePrincipal) inputNombrePrincipal.value = nombre;
-        
         document.querySelectorAll('.marcador-col input').forEach(input => input.value = "");
-        document.querySelectorAll('.in-desempate').forEach(input => input.value = "");
 
         const respuesta = await fetch(`${API_URL}/cargar/${nombre}`);
         const datos = await respuesta.json();
-        
         datos.forEach(partido => {
             const inL = document.getElementById(`L-${partido.id}`);
             const inV = document.getElementById(`V-${partido.id}`);
             if (inL) inL.value = partido.gl;
             if (inV) inV.value = partido.gv;
-            
-            const inDL = document.getElementById(`DL-${partido.id}`);
-            const inDV = document.getElementById(`DV-${partido.id}`);
-            if (inDL && partido.dl !== null) inDL.value = partido.dl;
-            if (inDV && partido.dv !== null) inDV.value = partido.dv;
         });
 
         actualizarTorneo();
-
-        // LÓGICA DE FILTRO: Ocultar otros y mostrar botón rojo
+        
         const botones = document.querySelectorAll('.btn-link');
         botones.forEach(btn => {
-            if (btn.innerText.includes(nombre)) {
-                btn.style.display = 'flex';
+            if (btn.innerText.toLowerCase().includes(nombre.toLowerCase())) {
+                btn.style.setProperty('display', 'flex', 'important');
                 btn.classList.add('quiniela-activa');
             } else {
-                btn.style.display = 'none';
+                btn.style.setProperty('display', 'none', 'important');
             }
         });
 
@@ -552,6 +543,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
