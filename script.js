@@ -156,21 +156,11 @@ function calcularLogicaPuntos(pL, pV, rL, rV) {
     return puntos;
 }
 
-// 3. RENDERIZAR LA TABLA (CON LIMPIEZA Y DESEMPATE)
+// 3. RENDERIZAR LA TABLA
 async function renderizarFixture() {
     const fixtureCont = document.getElementById("fixture-container");
     if (!fixtureCont) return;
     fixtureCont.innerHTML = "";
-
-    // Mapeo interno para forzar la limpieza de nombres fantasma en 16avos
-    const iniciales16vos = {
-        73: ["2A", "2B"], 74: ["1C", "2F"], 75: ["1E", "3T1"],
-        76: ["1F", "2C"], 77: ["2E", "2I"], 78: ["1I", "3T2"],
-        79: ["1A", "3T3"], 80: ["1L", "3T4"], 81: ["1G", "3T5"],
-        82: ["1D", "3T6"], 83: ["1H", "2J"], 84: ["2K", "2L"],
-        85: ["1B", "3T7"], 86: ["2D", "2G"], 87: ["1J", "2H"],
-        88: ["1K", "3T8"]
-    };
 
     let resultadosDB = [];
     try {
@@ -182,32 +172,6 @@ async function renderizarFixture() {
         const r = resultadosDB.find(res => res.id === p.id);
         const textoReal = r ? `${r.gl} - ${r.gv}` : "-";
 
-        // LIMPIEZA: Forzamos el nombre técnico si no es fase de grupos
-        let nomL = p.local;
-        let nomV = p.visita;
-        if (p.fase !== "Grupos") {
-            if (iniciales16vos[p.id]) {
-                nomL = iniciales16vos[p.id][0];
-                nomV = iniciales16vos[p.id][1];
-            } else if (p.id >= 89) {
-                nomL = "Local"; nomV = "Visita";
-            }
-        }
-
-        const esEliminatoria = p.fase !== "Grupos";
-        
-        // Mejora visual: Cuadros de desempate pequeños
-        const htmlDesempate = esEliminatoria ? `
-            <div id="wrapper-desempate-${p.id}" class="marcador-desempate" style="display: none;">
-                <span class="etiqueta-desempate">Penales</span>
-                <div class="inputs-desempate">
-                    <input type="number" id="DL-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="L">
-                    <span class="sep">-</span>
-                    <input type="number" id="DV-${p.id}" class="in-desempate" min="0" oninput="actualizarTorneo()" placeholder="V">
-                </div>
-            </div>
-        ` : "";
-
         const card = document.createElement("div");
         card.className = "partido-card";
         card.innerHTML = `
@@ -216,16 +180,13 @@ async function renderizarFixture() {
                 <span class="txt-fecha">${p.fecha}</span>
             </div>
             <div class="card-body">
-                <div class="equipo-col local">${nomL}</div>
-                <div class="marcador-col-container">
-                    <div class="marcador-col">
-                        <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
-                        <span class="separador">-</span>
-                        <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
-                    </div>
-                    ${htmlDesempate}
+                <div class="equipo-col local">${p.local}</div>
+                <div class="marcador-col">
+                    <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
+                    <span class="separador">-</span>
+                    <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
                 </div>
-                <div class="equipo-col visita">${nomV}</div>
+                <div class="equipo-col visita">${p.visita}</div>
                 <div class="real-col">
                     <div class="etiqueta-real">Resultados Reales</div>
                     <div class="cuadro-real">${textoReal}</div>
@@ -294,7 +255,7 @@ async function calcularPuntos() {
     } catch (e) { alert("Error al obtener resultados oficiales."); }
 }
 
-// 6. GUARDAR QUINIELA COMPLETA
+// 6. GUARDAR
 async function guardarQuinielaCompleta() {
     const nombre = document.getElementById('nombre-usuario').value;
     if (!nombre) return alert("Escribe tu nombre.");
@@ -302,18 +263,7 @@ async function guardarQuinielaCompleta() {
     partidosData.forEach(p => {
         const gl = document.getElementById(`L-${p.id}`).value;
         const gv = document.getElementById(`V-${p.id}`).value;
-        const inDL = document.getElementById(`DL-${p.id}`);
-        const inDV = document.getElementById(`DV-${p.id}`);
-
-        if (gl !== "" && gv !== "") {
-            predicciones.push({ 
-                id: p.id, 
-                gl: parseInt(gl), 
-                gv: parseInt(gv),
-                dl: (inDL && inDL.value !== "") ? parseInt(inDL.value) : null,
-                dv: (inDV && inDV.value !== "") ? parseInt(inDV.value) : null
-            });
-        }
+        if (gl !== "" && gv !== "") predicciones.push({ id: p.id, gl: parseInt(gl), gv: parseInt(gv) });
     });
     try {
         const res = await fetch(`${API_URL}/guardar`, {
@@ -327,12 +277,12 @@ async function guardarQuinielaCompleta() {
     } catch (e) { alert("Error al guardar."); }
 }
 
-// 7. CARGAR DESDE DB (CON BOTÓN ROJO)
+// 7. CARGAR DESDE DB
 async function cargarDesdeDB(nombre) {
     try {
         const inputNombrePrincipal = document.getElementById('nombre-usuario');
         if (inputNombrePrincipal) inputNombrePrincipal.value = nombre;
-        document.querySelectorAll('input[type="number"]').forEach(input => input.value = "");
+        document.querySelectorAll('.marcador-col input').forEach(input => input.value = "");
 
         const respuesta = await fetch(`${API_URL}/cargar/${nombre}`);
         const datos = await respuesta.json();
@@ -341,11 +291,6 @@ async function cargarDesdeDB(nombre) {
             const inV = document.getElementById(`V-${partido.id}`);
             if (inL) inL.value = partido.gl;
             if (inV) inV.value = partido.gv;
-            
-            const inDL = document.getElementById(`DL-${partido.id}`);
-            const inDV = document.getElementById(`DV-${partido.id}`);
-            if(inDL && partido.dl !== null) inDL.value = partido.dl;
-            if(inDV && partido.dv !== null) inDV.value = partido.dv;
         });
 
         actualizarTorneo();
@@ -355,15 +300,21 @@ async function cargarDesdeDB(nombre) {
             if (btn.innerText.toLowerCase().includes(nombre.toLowerCase())) {
                 btn.style.setProperty('display', 'flex', 'important');
                 btn.classList.add('quiniela-activa');
-                // Convertir en botón de cerrar (rojo)
-                btn.style.backgroundColor = "#ff4444";
-                btn.style.color = "white";
-                btn.innerHTML = `✕ Cerrar registro de ${nombre}`;
-                btn.onclick = () => location.reload();
             } else {
                 btn.style.setProperty('display', 'none', 'important');
             }
         });
+
+        if (!document.getElementById('btn-volver-lista')) {
+            const btnReset = document.createElement('button');
+            btnReset.id = 'btn-volver-lista';
+            btnReset.innerText = "✕ Cambiar Usuario";
+            btnReset.className = "btn-link";
+            btnReset.style.backgroundColor = "#ff4444";
+            btnReset.style.color = "white";
+            btnReset.onclick = () => location.reload();
+            document.getElementById('links-container').appendChild(btnReset);
+        }
     } catch (error) { console.error("Error al cargar:", error); }
 }
 
@@ -372,18 +323,6 @@ function actualizarTorneo() {
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let clasificados = {}; 
     let datosGrupos = {};
-
-    // Reset visual de eliminatorias antes de calcular
-    partidosData.forEach(p => {
-        if (p.fase !== "Grupos") {
-            const valL = document.getElementById(`L-${p.id}`).value;
-            const valV = document.getElementById(`V-${p.id}`).value;
-            const wrap = document.getElementById(`wrapper-desempate-${p.id}`);
-            if (wrap) {
-                wrap.style.display = (valL !== "" && valV !== "" && valL === valV) ? "block" : "none";
-            }
-        }
-    });
 
     grupos.forEach(letra => {
         let tabla = {};
@@ -472,17 +411,10 @@ function procesarAvanceFutbol(llaves) {
             const nombreL = card.querySelector('.local').innerText;
             const nombreV = card.querySelector('.visita').innerText;
             let equipo = "---";
-            
-            if (gL > gV) {
-                equipo = (llave.tipo === 'ganador') ? nombreL : nombreV;
-            } else if (gV > gL) {
-                equipo = (llave.tipo === 'ganador') ? nombreV : nombreL;
+            if (llave.tipo === 'ganador') {
+                if (gL > gV) equipo = nombreL; else if (gV > gL) equipo = nombreV; else equipo = "Empate";
             } else {
-                // Caso empate: Miramos Penales
-                const dL = parseInt(document.getElementById(`DL-${llave.de}`).value);
-                const dV = parseInt(document.getElementById(`DV-${llave.de}`).value);
-                if (dL > dV) equipo = (llave.tipo === 'ganador') ? nombreL : nombreV;
-                else if (dV > dL) equipo = (llave.tipo === 'ganador') ? nombreV : nombreL;
+                if (gL < gV) equipo = nombreL; else if (gV < gL) equipo = nombreV; else equipo = "Empate";
             }
             ponerNombreEnCard(llave.a, llave.pos, equipo);
         }
@@ -498,6 +430,11 @@ function ponerNombreEnCard(id, lado, nombre) {
     }
 }
 
+
+
+
+
+
 // 9. REPORTES Y ADMIN
 async function generarReporteMaestro() {
     try {
@@ -511,20 +448,31 @@ async function generarReporteMaestro() {
             return acc;
         }, {});
 
+        // --- INICIO DEL HTML PARA LA NUEVA VENTANA ---
         let htmlReporte = `<html><head>
             <title>Reporte Maestro</title>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+            
             <style>
                 body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-                .header-actions { position: sticky; top: 0; background: white; padding: 15px; border-bottom: 2px solid #01215b; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-                .btn-pdf { background: #d32f2f; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 5px; }
+                .header-actions { 
+                    position: sticky; top: 0; background: white; padding: 15px; 
+                    border-bottom: 2px solid #01215b; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
+                }
+                .btn-pdf { 
+                    background: #d32f2f; color: white; border: none; padding: 10px 20px; 
+                    cursor: pointer; font-weight: bold; border-radius: 5px; font-size: 14px;
+                }
+                .btn-pdf:hover { background: #b71c1c; }
                 table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; }
                 th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
                 th { background: #01215b; color: white; }
-                h2 { color: #01215b; border-bottom: 1px solid #ccc; }
+                .marcador { font-weight: bold; text-align: center; }
+                h2 { color: #01215b; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
             </style>
         </head><body>
+            
             <div class="header-actions">
                 <h1>Reporte Maestro de Quinielas</h1>
                 <button class="btn-pdf" onclick="ventanaImprimirPDF()">📥 Descargar en PDF</button>
@@ -535,19 +483,21 @@ async function generarReporteMaestro() {
                 <table id="tabla-${usuario}">
                     <thead><tr><th>ID</th><th>Local</th><th>GL</th><th>GV</th><th>Visita</th></tr></thead>
                     <tbody>`;
+            
             agrupado[usuario].forEach(row => {
                 const p = partidosData.find(item => item.id === row.partido_id) || {};
                 htmlReporte += `<tr>
                     <td>${row.partido_id}</td>
                     <td>${p.local || '---'}</td>
-                    <td>${row.goles_local}</td>
-                    <td>${row.goles_visita}</td>
+                    <td class="marcador">${row.goles_local}</td>
+                    <td class="marcador">${row.goles_visita}</td>
                     <td>${p.visita || '---'}</td>
                 </tr>`;
             });
             htmlReporte += `</tbody></table>`;
         }
 
+        // --- INYECTAMOS LA LÓGICA DEL PDF DENTRO DE LA VENTANA NUEVA ---
         htmlReporte += `
         <script>
             function ventanaImprimirPDF() {
@@ -555,18 +505,42 @@ async function generarReporteMaestro() {
                 const doc = new jsPDF('p', 'mm', 'a4');
                 const tablas = document.querySelectorAll('table');
                 const titulos = document.querySelectorAll('h2');
-                let y = 20; let columna = 0; const anchoCol = 90; const xDerecha = 105;
+                
+                let y = 20;
+                let columna = 0;
+                const anchoCol = 90;
+                const xDerecha = 105;
+
                 doc.setFontSize(16);
-                doc.text("REPORTE MAESTRO", 105, 10, { align: "center" });
+                doc.text("REPORTE MAESTRO - 2 COLUMNAS", 105, 10, { align: "center" });
+
                 tablas.forEach((tabla, index) => {
                     const nombreUsuario = titulos[index].innerText;
                     const xPos = (columna === 0) ? 10 : xDerecha;
+
                     doc.setFontSize(10);
                     doc.text(nombreUsuario, xPos, y);
-                    doc.autoTable({ html: tabla, startY: y + 2, margin: { left: xPos }, tableWidth: anchoCol, theme: 'grid', styles: { fontSize: 7 } });
-                    if (columna === 0) { columna = 1; } else { columna = 0; y = doc.lastAutoTable.finalY + 15; }
+
+                    doc.autoTable({
+                        html: tabla,
+                        startY: y + 2,
+                        margin: { left: xPos },
+                        tableWidth: anchoCol,
+                        theme: 'grid',
+                        styles: { fontSize: 7, cellPadding: 1 },
+                        headStyles: { fillColor: [1, 33, 91] }
+                    });
+
+                    if (columna === 0) {
+                        columna = 1;
+                    } else {
+                        columna = 0;
+                        y = doc.lastAutoTable.finalY + 15;
+                    }
+
                     if (y > 270) { doc.addPage(); y = 20; columna = 0; }
                 });
+
                 doc.save("Reporte_Quinielas.pdf");
             }
         </script>
@@ -575,8 +549,20 @@ async function generarReporteMaestro() {
         const v = window.open('', '_blank');
         v.document.write(htmlReporte);
         v.document.close();
-    } catch (e) { alert("Error al generar el reporte."); }
+        
+    } catch (e) { 
+        console.error(e);
+        alert("Error al generar el reporte."); 
+    }
 }
+
+        
+
+
+
+
+
+
 
 async function resetearBaseDeDatos() {
     if (!confirm("⚠️ ¿Borrar todo?")) return;
@@ -594,6 +580,4 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
-
-
 
