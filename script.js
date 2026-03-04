@@ -505,27 +505,80 @@ async function generarReporteMaestro() {
         const response = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await response.json();
         if (!datos || datos.length === 0) return alert("No hay datos.");
+
         const agrupado = datos.reduce((acc, row) => {
             if (!acc[row.nombre_usuario]) acc[row.nombre_usuario] = [];
             acc[row.nombre_usuario].push(row);
             return acc;
         }, {});
-        let htmlReporte = `<html><head><title>Reporte Maestro</title><style>body { font-family: sans-serif; padding: 20px; } table { width: 100%; border-collapse: collapse; margin-bottom: 20px; } th, td { border: 1px solid #ddd; padding: 8px; } th { background: #01215b; color: white; }</style></head><body><h1>Reporte Maestro</h1>`;
+
+        let htmlReporte = `<html><head>
+            <title>Reporte Maestro</title>
+            <style>
+                body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+                .header-actions { background: white; padding: 15px; border-bottom: 2px solid #01215b; margin-bottom: 20px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+                th { background: #01215b; color: white; }
+                .equipo-txt { text-align: left; }
+                .marcador-principal { font-weight: bold; width: 40px; }
+                .col-desempate { background-color: #fffde7; color: #7f8c8d; font-size: 0.9em; width: 35px; border-left: 1px dashed #ccc; border-right: 1px dashed #ccc; }
+                h2 { color: #01215b; border-bottom: 1px solid #ccc; }
+            </style>
+        </head><body>
+            <div class="header-actions">
+                <h1>Reporte Maestro de Quinielas</h1>
+            </div>`;
+
         for (const usuario in agrupado) {
-            htmlReporte += `<h2>Quiniela de: ${usuario}</h2><table><tr><th>ID</th><th>Local</th><th>GL</th><th>GV</th><th>Visita</th></tr>`;
+            htmlReporte += `<h2>Quiniela de: ${usuario}</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Local</th>
+                            <th>GL</th>
+                            <th title="Desempate Local">DL</th>
+                            <th title="Desempate Visita">DV</th>
+                            <th>GV</th>
+                            <th>Visita</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+            
             agrupado[usuario].forEach(row => {
                 const p = partidosData.find(item => item.id === row.partido_id) || {};
-                htmlReporte += `<tr><td>${row.partido_id}</td><td>${p.local}</td><td>${row.goles_local}</td><td>${row.goles_visita}</td><td>${p.visita}</td></tr>`;
+                
+                // Usamos los nombres de las columnas que vienen de tu base de datos (gl, gv, dl, dv)
+                const gl = row.goles_local ?? row.gl ?? "-";
+                const gv = row.goles_visita ?? row.gv ?? "-";
+                const dl = row.dl ?? "-";
+                const dv = row.dv ?? "-";
+
+                htmlReporte += `<tr>
+                    <td>${row.partido_id}</td>
+                    <td class="equipo-txt">${p.local || '---'}</td>
+                    <td class="marcador-principal">${gl}</td>
+                    <td class="col-desempate">${dl}</td>
+                    <td class="col-desempate">${dv}</td>
+                    <td class="marcador-principal">${gv}</td>
+                    <td class="equipo-txt">${p.visita || '---'}</td>
+                </tr>`;
             });
-            htmlReporte += `</table>`;
+            htmlReporte += `</tbody></table>`;
         }
+
         htmlReporte += `</body></html>`;
+
         const v = window.open('', '_blank');
         v.document.write(htmlReporte);
         v.document.close();
-    } catch (e) { alert("Error reporte."); }
+        
+    } catch (e) { 
+        console.error("Error en reporte:", e);
+        alert("Error al generar el reporte maestro."); 
+    }
 }
-
 async function resetearBaseDeDatos() {
     if (!confirm("⚠️ ¿Borrar todo?")) return;
     try {
@@ -542,5 +595,6 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
