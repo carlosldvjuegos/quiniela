@@ -366,47 +366,80 @@ async function cargarDesdeDB(nombre) {
     } catch (error) { console.error("Error al cargar:", error); }
 }
 
-// 8. LÓGICA DE TORNEO (Adaptada para usar desempate en avance)
+// 8. LÓGICA DE TORNEO (PROTEGIDA CONTRA DATOS FANTASMAS)
 function actualizarTorneo() {
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let clasificados = {}; 
     let datosGrupos = {};
+    
+    // Bandera de seguridad: verificamos si el usuario ha escrito algo
+    let hayDatosEfectivos = false;
 
     grupos.forEach(letra => {
         let tabla = {};
         const partidosGrupo = partidosData.filter(p => p.grupo === letra);
+        
         partidosGrupo.forEach(p => {
             const inputL = document.getElementById(`L-${p.id}`);
             const inputV = document.getElementById(`V-${p.id}`);
-            if (inputL && inputV) {
+            
+            // Solo procesamos si AMBOS campos tienen números (no vacíos)
+            if (inputL && inputV && inputL.value !== "" && inputV.value !== "") {
+                hayDatosEfectivos = true; 
                 const gL = parseInt(inputL.value);
                 const gV = parseInt(inputV.value);
+                
                 if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0 };
                 if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0 };
-                if (!isNaN(gL) && !isNaN(gV)) {
-                    tabla[p.local].gf += gL; tabla[p.visita].gf += gV;
-                    tabla[p.local].dg += (gL - gV); tabla[p.visita].dg += (gV - gL);
-                    if (gL > gV) tabla[p.local].pts += 3;
-                    else if (gV > gL) tabla[p.visita].pts += 3;
-                    else { tabla[p.local].pts += 1; tabla[p.visita].pts += 1; }
-                }
+                
+                tabla[p.local].gf += gL; tabla[p.visita].gf += gV;
+                tabla[p.local].dg += (gL - gV); tabla[p.visita].dg += (gV - gL);
+                
+                if (gL > gV) tabla[p.local].pts += 3;
+                else if (gV > gL) tabla[p.visita].pts += 3;
+                else { tabla[p.local].pts += 1; tabla[p.visita].pts += 1; }
             }
         });
+
+        // Si hay datos, generamos el ranking del grupo
         let ranking = Object.values(tabla).sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
         datosGrupos[letra] = { ranking };
+        
         if (ranking.length >= 1) clasificados[`1${letra}`] = ranking[0].nombre;
         if (ranking.length >= 2) clasificados[`2${letra}`] = ranking[1].nombre;
         if (ranking.length >= 3) clasificados[`3${letra}`] = ranking[2].nombre;
     });
 
+    // --- ESCUDO DE SEGURIDAD ---
+    // Si no hay ningún gol escrito en toda la fase de grupos, limpiamos todo y salimos
+    if (!hayDatosEfectivos) {
+        limpiarLlavesDinamicas();
+        return; 
+    }
+
+    // Lógica de mejores terceros (solo si hay datos)
     const mejoresTerceros = [];
     Object.keys(datosGrupos).forEach(l => {
-        if (datosGrupos[l].ranking[2]) mejoresTerceros.push(datosGrupos[l].ranking[2]);
+        if (datosGrupos[l].ranking && datosGrupos[l].ranking[2]) {
+            mejoresTerceros.push(datosGrupos[l].ranking[2]);
+        }
     });
     mejoresTerceros.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
     mejoresTerceros.slice(0, 8).forEach((t, i) => clasificados[`3T${i+1}`] = t.nombre);
 
     actualizarFasesEliminatorias(clasificados);
+}
+
+// NUEVA FUNCIÓN: Limpiar nombres de países cuando la quiniela está vacía
+function limpiarLlavesDinamicas() {
+    partidosData.forEach(p => {
+        // Solo actuamos sobre los partidos que NO son de grupos
+        if (p.fase !== "Grupos") {
+            // Reestablecemos el texto original del equipo local y visitante (ej: "1A", "2B", "G73")
+            ponerNombreEnCard(p.id, 'L', p.local);
+            ponerNombreEnCard(p.id, 'V', p.visita);
+        }
+    });
 }
 
 function actualizarFasesEliminatorias(clasificados) {
@@ -652,6 +685,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
