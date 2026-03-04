@@ -520,23 +520,22 @@ async function generarReporteMaestro() {
             <style>
                 body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
                 table { border-collapse: collapse; margin-bottom: 40px; background: white; width: auto; }
-                th, td { border: 1px solid #ddd; padding: 4px 8px; text-align: center; white-space: nowrap; }
-                th { background: #01215b; color: white; font-size: 13px; }
-                /* Ajuste exacto de columnas */
-                .col-id { width: 1%; white-space: nowrap; font-size: 11px; color: #666; }
-                .equipo-txt { text-align: left; font-weight: bold; min-width: 100px; }
-                .marcador-col { width: 30px; font-weight: bold; background-color: #f9f9f9; }
-                .col-desempate { background-color: #fffde7; color: #d35400; font-weight: bold; width: 25px; }
-                h2 { color: #01215b; border-bottom: 3px solid #01215b; margin-top: 40px; font-size: 18px; }
+                th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: center; white-space: nowrap; }
+                th { background: #01215b; color: white; font-size: 12px; }
+                .col-id { width: 1%; font-size: 11px; color: #666; }
+                .equipo-txt { text-align: left; font-weight: bold; min-width: 120px; }
+                .marcador-col { width: 35px; font-weight: bold; background-color: #f9f9f9; }
+                /* Estilo para las nuevas columnas a la derecha */
+                .col-clasificacion { background-color: #fffde7; color: #d35400; font-weight: bold; width: 40px; border-left: 2px solid #01215b; }
+                h2 { color: #01215b; border-bottom: 3px solid #01215b; margin-top: 40px; }
             </style>
-        </head><body><h1>Reporte de Quinielas</h1>`;
+        </head><body><h1>Reporte Detallado de Quinielas</h1>`;
 
         for (const usuario in agrupado) {
             const prediccionesUser = agrupado[usuario];
             let nombresDinamicos = {}; 
 
-            // --- SIMULADOR DE AVANCE MEJORADO ---
-            // 1. Resolver Grupos
+            // --- SIMULADOR DE AVANCE (Mantiene la lógica para nombres de equipos) ---
             const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
             grupos.forEach(letra => {
                 let tabla = {};
@@ -558,7 +557,6 @@ async function generarReporteMaestro() {
                 if (ranking[1]) nombresDinamicos[`2${letra}`] = ranking[1].nombre;
             });
 
-            // 2. Mapeo de llaves para traducir G/P e IDs
             const llavesAvance = [
                 { de: 73, a: 89, pos: 'L' }, { de: 74, a: 89, pos: 'V' }, { de: 75, a: 90, pos: 'L' }, { de: 76, a: 90, pos: 'V' },
                 { de: 77, a: 91, pos: 'L' }, { de: 78, a: 91, pos: 'V' }, { de: 79, a: 92, pos: 'L' }, { de: 80, a: 92, pos: 'V' },
@@ -579,18 +577,17 @@ async function generarReporteMaestro() {
                     let nV = nombresDinamicos[pInfo.visita] || pInfo.visita;
                     let gL = pred.goles_local, gV = pred.goles_visita;
                     let dL = pred.goles_desempate_local || 0, dV = pred.goles_desempate_visita || 0;
-
                     let ganador, perdedor;
                     if (gL > gV) { ganador = nL; perdedor = nV; }
                     else if (gV > gL) { ganador = nV; perdedor = nL; }
                     else { ganador = (dL > dV) ? nL : nV; perdedor = (dL > dV) ? nV : nL; }
-
                     nombresDinamicos[`G${llave.de}`] = ganador;
                     nombresDinamicos[`P${llave.de}`] = perdedor;
                     nombresDinamicos[`GANADOR-${llave.de}`] = ganador;
                 }
             });
 
+            // --- TABLA CON DL Y DV A LA DERECHA ---
             htmlReporte += `<h2>Quiniela de: ${usuario}</h2>
                 <table>
                     <thead>
@@ -598,10 +595,10 @@ async function generarReporteMaestro() {
                             <th class="col-id">ID</th>
                             <th>Local</th>
                             <th>GL</th>
-                            <th title="Desempate">DL</th>
-                            <th title="Desempate">DV</th>
                             <th>GV</th>
                             <th>Visita</th>
+                            <th class="col-clasificacion">Goles Clasif. DL</th>
+                            <th class="col-clasificacion">Goles Clasif. DV</th>
                         </tr>
                     </thead>
                     <tbody>`;
@@ -611,7 +608,6 @@ async function generarReporteMaestro() {
                 let nombreL = nombresDinamicos[p.local] || p.local;
                 let nombreV = nombresDinamicos[p.visita] || p.visita;
 
-                // CORRECCIÓN DE CAMPOS DE DESEMPATE
                 const dL = (row.goles_desempate_local !== null && row.goles_desempate_local !== undefined) ? row.goles_desempate_local : "-";
                 const dV = (row.goles_desempate_visita !== null && row.goles_desempate_visita !== undefined) ? row.goles_desempate_visita : "-";
 
@@ -619,10 +615,10 @@ async function generarReporteMaestro() {
                     <td class="col-id">${row.partido_id}</td>
                     <td class="equipo-txt">${nombreL}</td>
                     <td class="marcador-col">${row.goles_local}</td>
-                    <td class="col-desempate">${dL}</td>
-                    <td class="col-desempate">${dV}</td>
                     <td class="marcador-col">${row.goles_visita}</td>
                     <td class="equipo-txt">${nombreV}</td>
+                    <td class="col-clasificacion">${dL}</td>
+                    <td class="col-clasificacion">${dV}</td>
                 </tr>`;
             });
             htmlReporte += `</tbody></table>`;
@@ -655,6 +651,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
