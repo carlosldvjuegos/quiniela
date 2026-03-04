@@ -516,21 +516,47 @@ async function generarReporteMaestro() {
             <title>Reporte Maestro</title>
             <style>
                 body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-                .header-actions { background: white; padding: 15px; border-bottom: 2px solid #01215b; margin-bottom: 20px; }
                 table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; }
                 th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
                 th { background: #01215b; color: white; }
-                .equipo-txt { text-align: left; }
+                .equipo-txt { text-align: left; min-width: 120px; }
                 .marcador-principal { font-weight: bold; width: 40px; }
-                .col-desempate { background-color: #fffde7; color: #7f8c8d; font-size: 0.9em; width: 35px; border-left: 1px dashed #ccc; border-right: 1px dashed #ccc; }
-                h2 { color: #01215b; border-bottom: 1px solid #ccc; }
+                .col-desempate { background-color: #fffde7; color: #d35400; font-weight: bold; width: 35px; }
+                h2 { color: #01215b; border-bottom: 2px solid #01215b; padding-bottom: 5px; }
             </style>
-        </head><body>
-            <div class="header-actions">
-                <h1>Reporte Maestro de Quinielas</h1>
-            </div>`;
+        </head><body><h1>Reporte Maestro de Quinielas</h1>`;
 
         for (const usuario in agrupado) {
+            // --- LÓGICA DE AVANCE PARA ESTE USUARIO ESPECÍFICO ---
+            // Creamos un mapeo temporal para traducir 2A, 1C, etc., a nombres reales
+            let clasificadosTemp = {};
+            const prediccionesUser = agrupado[usuario];
+
+            // 1. Procesar fase de grupos para obtener clasificados
+            const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
+            grupos.forEach(letra => {
+                let tabla = {};
+                const partidosGrupo = partidosData.filter(p => p.grupo === letra);
+                partidosGrupo.forEach(p => {
+                    const pred = prediccionesUser.find(pr => pr.partido_id === p.id);
+                    if (pred) {
+                        const gL = pred.goles_local;
+                        const gV = pred.goles_visita;
+                        if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0 };
+                        if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0 };
+                        tabla[p.local].gf += gL; tabla[p.visita].gf += gV;
+                        tabla[p.local].dg += (gL - gV); tabla[p.visita].dg += (gV - gL);
+                        if (gL > gV) tabla[p.local].pts += 3;
+                        else if (gV > gL) tabla[p.visita].pts += 3;
+                        else { tabla[p.local].pts += 1; tabla[p.visita].pts += 1; }
+                    }
+                });
+                let ranking = Object.values(tabla).sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
+                if (ranking[0]) clasificadosTemp[`1${letra}`] = ranking[0].nombre;
+                if (ranking[1]) clasificadosTemp[`2${letra}`] = ranking[1].nombre;
+            });
+
+            // 2. Generar la tabla de este usuario
             htmlReporte += `<h2>Quiniela de: ${usuario}</h2>
                 <table>
                     <thead>
@@ -546,30 +572,32 @@ async function generarReporteMaestro() {
                     </thead>
                     <tbody>`;
             
-            agrupado[usuario].forEach(row => {
+            prediccionesUser.forEach(row => {
                 const p = partidosData.find(item => item.id === row.partido_id) || {};
                 
-                // Usamos los nombres de las columnas que vienen de tu base de datos (gl, gv, dl, dv)
-                const gl = row.goles_local ?? row.gl ?? "-";
-                const gv = row.goles_visita ?? row.gv ?? "-";
-                const dl = row.dl ?? "-";
-                const dv = row.dv ?? "-";
+                // Traducir nombres si son marcadores de posición (2A, 1C, etc)
+                let nombreLocal = p.local;
+                let nombreVisita = p.visita;
+                if (clasificadosTemp[p.local]) nombreLocal = clasificadosTemp[p.local];
+                if (clasificadosTemp[p.visita]) nombreVisita = clasificadosTemp[p.visita];
+
+                const dl = (row.dl !== null && row.dl !== undefined) ? row.dl : "-";
+                const dv = (row.dv !== null && row.dv !== undefined) ? row.dv : "-";
 
                 htmlReporte += `<tr>
                     <td>${row.partido_id}</td>
-                    <td class="equipo-txt">${p.local || '---'}</td>
-                    <td class="marcador-principal">${gl}</td>
+                    <td class="equipo-txt">${nombreLocal}</td>
+                    <td class="marcador-principal">${row.goles_local}</td>
                     <td class="col-desempate">${dl}</td>
                     <td class="col-desempate">${dv}</td>
-                    <td class="marcador-principal">${gv}</td>
-                    <td class="equipo-txt">${p.visita || '---'}</td>
+                    <td class="marcador-principal">${row.goles_visita}</td>
+                    <td class="equipo-txt">${nombreVisita}</td>
                 </tr>`;
             });
             htmlReporte += `</tbody></table>`;
         }
 
         htmlReporte += `</body></html>`;
-
         const v = window.open('', '_blank');
         v.document.write(htmlReporte);
         v.document.close();
@@ -595,6 +623,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
