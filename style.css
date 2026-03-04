@@ -112,307 +112,6 @@ header {
     padding-bottom: 5px;
 }
 
-/* BOTONES DE USUARIO CORREGIDOS */
-.btn-link {
-    background-color: #27ae60; 
-    color: #000000 !important;
-    border: 1px solid #ddd;
-    padding: 10px 15px;
-    margin-bottom: 8px;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    font-weight: 700; 
-    text-transform: uppercase;
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
-    text-decoration: none;
-}
-
-.btn-link span {
-    color: white !important;
-}
-
-.btn-link .badge-puntos {
-    background-color: #01215b !important;
-    color: #ffffff !important;
-    padding: 4px 10px;
-    border-radius: 5px;
-    font-weight: bold;
-    min-width: 50px;
-    text-align: center;
-    display: inline-block;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-}
-
-.badge-puntos span, 
-.btn-link .badge-puntos {
-    color: #ffffff !important;
-}
-
-.btn-link:hover { 
-    background: #0066B2; 
-    border-color: red;
-}
-
-.quiniela-activa {
-    background: var(--primary) !important;
-    color: black !important;
-    border-color: var(--gold) !important;
-    pointer-events: none !important;
-    cursor: default !important;
-}
-
-#btn-volver-lista {
-    pointer-events: auto !important;
-    cursor: pointer !important;
-}
-
-/* FIXTURE */
-.content-fixture { flex: 1; }
-
-.partido-card {
-    background: white;
-    margin-bottom: 15px;
-    border-radius: 10px;
-    border-left: 6px solid var(--primary);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    overflow: hidden;
-}
-
-.card-header {
-    background: #fcfcfc;
-    padding: 8px 15px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    color: #777;
-    border-bottom: 1px solid #eee;
-}
-
-.card-body {
-    display: flex;
-    align-items: center;
-    padding: 15px;
-    gap: 10px;
-}
-
-.equipo-col {
-    flex: 2;
-    font-weight: bold;
-    font-size: 1rem;
-}
-
-.local { text-align: right; }
-.visita { text-align: left; }
-
-.marcador-col {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-}
-
-.marcador-col input {
-    width: 40px;
-    height: 40px;
-    text-align: center;
-    font-size: 1.2rem;
-    font-weight: 900;
-    border: 2px solid #eee;
-    border-radius: 5px;
-}
-
-/* RESULTADOS REALES */
-.real-col {
-    flex: 1;
-    text-align: center;
-    background: #fffdf0;
-    padding: 5px;
-    border-radius: 5px;
-    border: 1px dashed var(--gold);
-    margin-left: 10px;
-}
-
-.etiqueta-real { font-size: 0.6rem; text-transform: uppercase; display: block; }
-.cuadro-real { font-weight: 900; color: #27ae60; font-size: 1.1rem; }
-
-/* PANEL DE CONTROL */
-.user-panel {
-    background: white;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 10px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.user-panel input { padding: 10px; border: 1px solid #ddd; border-radius: 5px; flex: 1; }
-
-button {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    color: black;
-    /* Mejora tacto iPhone */
-    touch-action: manipulation;
-}
-
-.btn-save { background: #27ae60; }
-.btn-report-master { background: #2980b9; }
-
-/* Contenedor principal del desempate */
-.marcador-desempate {
-    background-color: #fff9c4; /* Un amarillo muy suave, casi crema */
-    border: 1px dashed #fbc02d;
-    border-radius: 8px;
-    padding: 6px 10px;
-    margin-top: 8px;
-    text-align: center;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-/* Texto de la etiqueta */
-.etiqueta-desempate {
-    display: block;
-    font-size: 10px;
-    font-weight: bold;
-    color: #8d6e63;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-    letter-spacing: 0.5px;
-}
-
-/* Contenedor de los dos cuadritos */
-.inputs-desempate {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-}
-
-/* Los mini-inputs de desempate */
-.in-desempate {
-    width: 35px !important; /* Super compactos */
-    height: 25px !important;
-    padding: 2px !important;
-    font-size: 13px !important;
-    text-align: center;
-    border: 1px solid #d1d1d1;
-    border-radius: 4px;
-    background: white;
-    outline: none;
-}
-
-.in-desempate:focus {
-    border-color: #01215b;
-    box-shadow: 0 0 3px rgba(1, 33, 91, 0.2);
-}
-
-/* Separador "-" */
-.sep {
-    font-weight: bold;
-    color: #666;
-    font-size: 12px;
-}
-
-/* Quitar las flechitas de los inputs para que se vean más limpios */
-.in-desempate::-webkit-inner-spin-button,
-.in-desempate::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-
-/* --- SECCIÓN NUEVA: COMPATIBILIDAD TOTAL IPHONE / iOS --- */
-
-/* 1. Evitar zoom automático en campos de texto al tocar en iPhone */
-input[type="number"], 
-input[type="text"],
-.user-panel input {
-    font-size: 16px !important; /* Mínimo requerido por iOS para no hacer zoom */
-}
-
-/* 2. Quitar estilos nativos de Safari que redondean botones de más */
-input, button, select, textarea {
-    -webkit-appearance: none;
-    border-radius: 5px;
-}
-
-/* 3. Asegurar scroll suave en la lista de partidos */
-.content-fixture {
-    -webkit-overflow-scrolling: touch;
-}
-
-/* 4. Estilo para el botón de imprimir en el modal (si lo usas) */
-.btn-pdf-print {
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* --- CIERRE SECCIÓN IPHONE --- */
-
-
-/* AJUSTE PARA MÓVILES: EVITAR QUE SE DESORDENEN LOS PARTIDOS */
-@media (max-width: 768px) {
-    .layout-principal {
-        display: flex;
-        flex-direction: column;
-        overflow-x: auto; 
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .content-fixture {
-        min-width: 600px; 
-        padding-bottom: 20px;
-    }
-
-    .card-body {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        justify-content: space-between;
-        align-items: center;
-        min-width: 580px; 
-    }
-
-    .sidebar {
-        width: 100%;
-        position: sticky; 
-        top: 0;
-        z-index: 100;
-        background: white;
-        margin-bottom: 10px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    .equipo-col {
-        min-width: 150px;
-        font-size: 0.9rem;
-    }
-
-    .marcador-col input {
-        width: 45px !important;
-        height: 45px !important;
-    }
-}
-
-
-
-
-
-
-
 
 /* BOTONES DE USUARIO CORREGIDOS */
 .btn-link {
@@ -708,6 +407,309 @@ input, button, select, textarea {
         height: 45px !important;
     }
 }
+
+
+
+
+
+
+
+
+/* BOTONES DE USUARIO CORREGIDOS */
+.btn-link {
+    background-color: #27ae60; 
+    color: #000000 !important;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-weight: 700; 
+    text-transform: uppercase;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    text-decoration: none;
+}
+
+.btn-link span {
+    color: white !important;
+}
+
+.btn-link .badge-puntos {
+    background-color: #01215b !important;
+    color: #ffffff !important;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    min-width: 50px;
+    text-align: center;
+    display: inline-block;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+.badge-puntos span, 
+.btn-link .badge-puntos {
+    color: #ffffff !important;
+}
+
+.btn-link:hover { 
+    background: #0066B2; 
+    border-color: red;
+}
+
+.quiniela-activa {
+    background: var(--primary) !important;
+    color: black !important;
+    border-color: var(--gold) !important;
+    pointer-events: none !important;
+    cursor: default !important;
+}
+
+#btn-volver-lista {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+/* FIXTURE */
+.content-fixture { flex: 1; }
+
+.partido-card {
+    background: white;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border-left: 6px solid var(--primary);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.card-header {
+    background: #fcfcfc;
+    padding: 8px 15px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #777;
+    border-bottom: 1px solid #eee;
+}
+
+.card-body {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    gap: 10px;
+}
+
+.equipo-col {
+    flex: 2;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.local { text-align: right; }
+.visita { text-align: left; }
+
+.marcador-col {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.marcador-col input {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 900;
+    border: 2px solid #eee;
+    border-radius: 5px;
+}
+
+/* RESULTADOS REALES */
+.real-col {
+    flex: 1;
+    text-align: center;
+    background: #fffdf0;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px dashed var(--gold);
+    margin-left: 10px;
+}
+
+.etiqueta-real { font-size: 0.6rem; text-transform: uppercase; display: block; }
+.cuadro-real { font-weight: 900; color: #27ae60; font-size: 1.1rem; }
+
+/* PANEL DE CONTROL */
+.user-panel {
+    background: white;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.user-panel input { padding: 10px; border: 1px solid #ddd; border-radius: 5px; flex: 1; }
+
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    color: black;
+    /* Mejora tacto iPhone */
+    touch-action: manipulation;
+}
+
+.btn-save { background: #27ae60; }
+.btn-report-master { background: #2980b9; }
+
+/* Contenedor principal del desempate */
+.marcador-desempate {
+    background-color: #fff9c4; /* Un amarillo muy suave, casi crema */
+    border: 1px dashed #fbc02d;
+    border-radius: 8px;
+    padding: 6px 10px;
+    margin-top: 8px;
+    text-align: center;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Texto de la etiqueta */
+.etiqueta-desempate {
+    display: block;
+    font-size: 10px;
+    font-weight: bold;
+    color: #8d6e63;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+}
+
+/* Contenedor de los dos cuadritos */
+.inputs-desempate {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+/* Los mini-inputs de desempate */
+.in-desempate {
+    width: 35px !important; /* Super compactos */
+    height: 25px !important;
+    padding: 2px !important;
+    font-size: 13px !important;
+    text-align: center;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    background: white;
+    outline: none;
+}
+
+.in-desempate:focus {
+    border-color: #01215b;
+    box-shadow: 0 0 3px rgba(1, 33, 91, 0.2);
+}
+
+/* Separador "-" */
+.sep {
+    font-weight: bold;
+    color: #666;
+    font-size: 12px;
+}
+
+/* Quitar las flechitas de los inputs para que se vean más limpios */
+.in-desempate::-webkit-inner-spin-button,
+.in-desempate::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* --- SECCIÓN NUEVA: COMPATIBILIDAD TOTAL IPHONE / iOS --- */
+
+/* 1. Evitar zoom automático en campos de texto al tocar en iPhone */
+input[type="number"], 
+input[type="text"],
+.user-panel input {
+    font-size: 16px !important; /* Mínimo requerido por iOS para no hacer zoom */
+}
+
+/* 2. Quitar estilos nativos de Safari que redondean botones de más */
+input, button, select, textarea {
+    -webkit-appearance: none;
+    border-radius: 5px;
+}
+
+/* 3. Asegurar scroll suave en la lista de partidos */
+.content-fixture {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 4. Estilo para el botón de imprimir en el modal (si lo usas) */
+.btn-pdf-print {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* --- CIERRE SECCIÓN IPHONE --- */
+
+
+/* AJUSTE PARA MÓVILES: EVITAR QUE SE DESORDENEN LOS PARTIDOS */
+@media (max-width: 768px) {
+    .layout-principal {
+        display: flex;
+        flex-direction: column;
+        overflow-x: auto; 
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .content-fixture {
+        min-width: 600px; 
+        padding-bottom: 20px;
+    }
+
+    .card-body {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: space-between;
+        align-items: center;
+        min-width: 580px; 
+    }
+
+    .sidebar {
+        width: 100%;
+        position: sticky; 
+        top: 0;
+        z-index: 100;
+        background: white;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .equipo-col {
+        min-width: 150px;
+        font-size: 0.9rem;
+    }
+
+    .marcador-col input {
+        width: 45px !important;
+        height: 45px !important;
+    }
+}
+
 
 
 
