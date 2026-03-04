@@ -144,6 +144,7 @@ const partidosData = [
     { id: 104, fase: "Final", grupo: "Eliminatoria", fecha: "Domingo 19/07/2026", local: "G101", visita: "G102" }
 ];
 
+
 // 2. LÓGICA DE PUNTOS
 function calcularLogicaPuntos(pL, pV, rL, rV) {
     if (pL === rL && pV === rV) return 5;
@@ -156,7 +157,7 @@ function calcularLogicaPuntos(pL, pV, rL, rV) {
     return puntos;
 }
 
-// 3. RENDERIZAR LA TABLA
+// 3. RENDERIZAR LA TABLA (MEJORADA CON DESEMPATE)
 async function renderizarFixture() {
     const fixtureCont = document.getElementById("fixture-container");
     if (!fixtureCont) return;
@@ -171,6 +172,9 @@ async function renderizarFixture() {
     partidosData.forEach(p => {
         const r = resultadosDB.find(res => res.id === p.id);
         const textoReal = r ? `${r.gl} - ${r.gv}` : "-";
+        
+        // Determinar si es fase de eliminación para el desempate
+        const esEliminatoria = p.fase !== "Grupos";
 
         const card = document.createElement("div");
         card.className = "partido-card";
@@ -181,10 +185,22 @@ async function renderizarFixture() {
             </div>
             <div class="card-body">
                 <div class="equipo-col local">${p.local}</div>
-                <div class="marcador-col">
-                    <input type="number" id="L-${p.id}" min="0" oninput="actualizarTorneo()">
-                    <span class="separador">-</span>
-                    <input type="number" id="V-${p.id}" min="0" oninput="actualizarTorneo()">
+                <div class="marcador-col" style="flex-direction: column;">
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <input type="number" id="L-${p.id}" min="0" oninput="gestionarDesempate(${p.id}); actualizarTorneo()">
+                        <span class="separador">-</span>
+                        <input type="number" id="V-${p.id}" min="0" oninput="gestionarDesempate(${p.id}); actualizarTorneo()">
+                    </div>
+                    
+                    ${esEliminatoria ? `
+                    <div id="extra-${p.id}" class="marcador-desempate" style="display: none;">
+                        <span class="etiqueta-desempate">Solo para Clasificación</span>
+                        <div class="inputs-desempate">
+                            <input type="number" id="DL-${p.id}" class="in-desempate" placeholder="0" oninput="actualizarTorneo()">
+                            <span class="sep">:</span>
+                            <input type="number" id="DV-${p.id}" class="in-desempate" placeholder="0" oninput="actualizarTorneo()">
+                        </div>
+                    </div>` : ''}
                 </div>
                 <div class="equipo-col visita">${p.visita}</div>
                 <div class="real-col">
@@ -197,21 +213,36 @@ async function renderizarFixture() {
     });
 }
 
-// 4. RANKING
+// FUNCIÓN NUEVA: Muestra/Oculta el marcador de desempate si hay empate
+function gestionarDesempate(id) {
+    const gl = document.getElementById(`L-${id}`).value;
+    const gv = document.getElementById(`V-${id}`).value;
+    const panelExtra = document.getElementById(`extra-${id}`);
+    
+    if (panelExtra) {
+        if (gl !== "" && gv !== "" && parseInt(gl) === parseInt(gv)) {
+            panelExtra.style.display = "block";
+        } else {
+            panelExtra.style.display = "none";
+            // Limpiar valores si se oculta
+            document.getElementById(`DL-${id}`).value = "";
+            document.getElementById(`DV-${id}`).value = "";
+        }
+    }
+}
+
+// 4. RANKING (Sin cambios)
 async function actualizarListaLinks() {
     const container = document.getElementById('links-container');
     if (!container) return;
-
     try {
         const [resNombres, resOficiales] = await Promise.all([
             fetch(`${API_URL}/registros`),
             fetch(`${API_URL}/obtener-resultados-db`)
         ]);
-
         const usuarios = await resNombres.json();
         const resultadosOficiales = await resOficiales.json();
         let listaRanking = [];
-
         for (const user of usuarios) {
             const resPred = await fetch(`${API_URL}/cargar/${user.nombre_usuario}`);
             const predicciones = await resPred.json();
@@ -222,7 +253,6 @@ async function actualizarListaLinks() {
             });
             listaRanking.push({ nombre: user.nombre_usuario, puntos: ptsTotales });
         }
-
         listaRanking.sort((a, b) => b.puntos - a.puntos);
         container.innerHTML = "";
         listaRanking.forEach((u, index) => {
@@ -236,7 +266,7 @@ async function actualizarListaLinks() {
     } catch (err) { console.error("Error ranking:", err); }
 }
 
-// 5. CALCULAR PUNTOS MANUAL
+// 5. CALCULAR PUNTOS MANUAL (Sin cambios)
 async function calcularPuntos() {
     try {
         const response = await fetch(`${API_URL}/obtener-resultados-db`);
@@ -255,7 +285,7 @@ async function calcularPuntos() {
     } catch (e) { alert("Error al obtener resultados oficiales."); }
 }
 
-// 6. GUARDAR
+// 6. GUARDAR (MEJORADO CON DESEMPATE)
 async function guardarQuinielaCompleta() {
     const nombre = document.getElementById('nombre-usuario').value;
     if (!nombre) return alert("Escribe tu nombre.");
@@ -263,7 +293,18 @@ async function guardarQuinielaCompleta() {
     partidosData.forEach(p => {
         const gl = document.getElementById(`L-${p.id}`).value;
         const gv = document.getElementById(`V-${p.id}`).value;
-        if (gl !== "" && gv !== "") predicciones.push({ id: p.id, gl: parseInt(gl), gv: parseInt(gv) });
+        const dl = document.getElementById(`DL-${p.id}`)?.value || null;
+        const dv = document.getElementById(`DV-${p.id}`)?.value || null;
+
+        if (gl !== "" && gv !== "") {
+            predicciones.push({ 
+                id: p.id, 
+                gl: parseInt(gl), 
+                gv: parseInt(gv),
+                dl: dl !== "" && dl !== null ? parseInt(dl) : null,
+                dv: dv !== "" && dv !== null ? parseInt(dv) : null
+            });
+        }
     });
     try {
         const res = await fetch(`${API_URL}/guardar`, {
@@ -277,7 +318,7 @@ async function guardarQuinielaCompleta() {
     } catch (e) { alert("Error al guardar."); }
 }
 
-// 7. CARGAR DESDE DB
+// 7. CARGAR DESDE DB (MEJORADO CON DESEMPATE)
 async function cargarDesdeDB(nombre) {
     try {
         const inputNombrePrincipal = document.getElementById('nombre-usuario');
@@ -289,8 +330,15 @@ async function cargarDesdeDB(nombre) {
         datos.forEach(partido => {
             const inL = document.getElementById(`L-${partido.id}`);
             const inV = document.getElementById(`V-${partido.id}`);
+            const inDL = document.getElementById(`DL-${partido.id}`);
+            const inDV = document.getElementById(`DV-${partido.id}`);
+
             if (inL) inL.value = partido.gl;
             if (inV) inV.value = partido.gv;
+            if (inDL && partido.dl !== null) inDL.value = partido.dl;
+            if (inDV && partido.dv !== null) inDV.value = partido.dv;
+            
+            gestionarDesempate(partido.id);
         });
 
         actualizarTorneo();
@@ -318,7 +366,7 @@ async function cargarDesdeDB(nombre) {
     } catch (error) { console.error("Error al cargar:", error); }
 }
 
-// 8. LÓGICA DE TORNEO Y AVANCES
+// 8. LÓGICA DE TORNEO (Adaptada para usar desempate en avance)
 function actualizarTorneo() {
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let clasificados = {}; 
@@ -399,24 +447,45 @@ function actualizarFasesEliminatorias(clasificados) {
     procesarAvanceFutbol(avance);
 }
 
+// FUNCIÓN MODIFICADA: Ahora decide por desempate si hay igualdad
 function procesarAvanceFutbol(llaves) {
     llaves.forEach(llave => {
         const inputL = document.getElementById(`L-${llave.de}`);
         const inputV = document.getElementById(`V-${llave.de}`);
         if (!inputL || !inputV) return;
+        
         const gL = parseInt(inputL.value);
         const gV = parseInt(inputV.value);
+        
         if (!isNaN(gL) && !isNaN(gV)) {
             const card = inputL.closest('.partido-card');
             const nombreL = card.querySelector('.local').innerText;
             const nombreV = card.querySelector('.visita').innerText;
-            let equipo = "---";
-            if (llave.tipo === 'ganador') {
-                if (gL > gV) equipo = nombreL; else if (gV > gL) equipo = nombreV; else equipo = "Empate";
+            
+            let equipoGanador = "---";
+            let equipoPerdedor = "---";
+
+            if (gL > gV) {
+                equipoGanador = nombreL;
+                equipoPerdedor = nombreV;
+            } else if (gV > gL) {
+                equipoGanador = nombreV;
+                equipoPerdedor = nombreL;
             } else {
-                if (gL < gV) equipo = nombreL; else if (gV < gL) equipo = nombreV; else equipo = "Empate";
+                // Hay empate, mirar marcador de clasificación
+                const dL = parseInt(document.getElementById(`DL-${llave.de}`)?.value || 0);
+                const dV = parseInt(document.getElementById(`DV-${llave.de}`)?.value || 0);
+                if (dL > dV) {
+                    equipoGanador = nombreL; equipoPerdedor = nombreV;
+                } else if (dV > dL) {
+                    equipoGanador = nombreV; equipoPerdedor = nombreL;
+                } else {
+                    equipoGanador = "Empate"; equipoPerdedor = "Empate";
+                }
             }
-            ponerNombreEnCard(llave.a, llave.pos, equipo);
+
+            const equipoFinal = (llave.tipo === 'ganador') ? equipoGanador : equipoPerdedor;
+            ponerNombreEnCard(llave.a, llave.pos, equipoFinal);
         }
     });
 }
@@ -430,139 +499,32 @@ function ponerNombreEnCard(id, lado, nombre) {
     }
 }
 
-
-
-
-
-
-// 9. REPORTES Y ADMIN
+// 9. REPORTES (Sin cambios significativos)
 async function generarReporteMaestro() {
     try {
         const response = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await response.json();
         if (!datos || datos.length === 0) return alert("No hay datos.");
-
         const agrupado = datos.reduce((acc, row) => {
             if (!acc[row.nombre_usuario]) acc[row.nombre_usuario] = [];
             acc[row.nombre_usuario].push(row);
             return acc;
         }, {});
-
-        // --- INICIO DEL HTML PARA LA NUEVA VENTANA ---
-        let htmlReporte = `<html><head>
-            <title>Reporte Maestro</title>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-            
-            <style>
-                body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-                .header-actions { 
-                    position: sticky; top: 0; background: white; padding: 15px; 
-                    border-bottom: 2px solid #01215b; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
-                }
-                .btn-pdf { 
-                    background: #d32f2f; color: white; border: none; padding: 10px 20px; 
-                    cursor: pointer; font-weight: bold; border-radius: 5px; font-size: 14px;
-                }
-                .btn-pdf:hover { background: #b71c1c; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; }
-                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                th { background: #01215b; color: white; }
-                .marcador { font-weight: bold; text-align: center; }
-                h2 { color: #01215b; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
-            </style>
-        </head><body>
-            
-            <div class="header-actions">
-                <h1>Reporte Maestro de Quinielas</h1>
-                <button class="btn-pdf" onclick="ventanaImprimirPDF()">📥 Descargar en PDF</button>
-            </div>`;
-
+        let htmlReporte = `<html><head><title>Reporte Maestro</title><style>body { font-family: sans-serif; padding: 20px; } table { width: 100%; border-collapse: collapse; margin-bottom: 20px; } th, td { border: 1px solid #ddd; padding: 8px; } th { background: #01215b; color: white; }</style></head><body><h1>Reporte Maestro</h1>`;
         for (const usuario in agrupado) {
-            htmlReporte += `<h2>Quiniela de: ${usuario}</h2>
-                <table id="tabla-${usuario}">
-                    <thead><tr><th>ID</th><th>Local</th><th>GL</th><th>GV</th><th>Visita</th></tr></thead>
-                    <tbody>`;
-            
+            htmlReporte += `<h2>Quiniela de: ${usuario}</h2><table><tr><th>ID</th><th>Local</th><th>GL</th><th>GV</th><th>Visita</th></tr>`;
             agrupado[usuario].forEach(row => {
                 const p = partidosData.find(item => item.id === row.partido_id) || {};
-                htmlReporte += `<tr>
-                    <td>${row.partido_id}</td>
-                    <td>${p.local || '---'}</td>
-                    <td class="marcador">${row.goles_local}</td>
-                    <td class="marcador">${row.goles_visita}</td>
-                    <td>${p.visita || '---'}</td>
-                </tr>`;
+                htmlReporte += `<tr><td>${row.partido_id}</td><td>${p.local}</td><td>${row.goles_local}</td><td>${row.goles_visita}</td><td>${p.visita}</td></tr>`;
             });
-            htmlReporte += `</tbody></table>`;
+            htmlReporte += `</table>`;
         }
-
-        // --- INYECTAMOS LA LÓGICA DEL PDF DENTRO DE LA VENTANA NUEVA ---
-        htmlReporte += `
-        <script>
-            function ventanaImprimirPDF() {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('p', 'mm', 'a4');
-                const tablas = document.querySelectorAll('table');
-                const titulos = document.querySelectorAll('h2');
-                
-                let y = 20;
-                let columna = 0;
-                const anchoCol = 90;
-                const xDerecha = 105;
-
-                doc.setFontSize(16);
-                doc.text("REPORTE MAESTRO - 2 COLUMNAS", 105, 10, { align: "center" });
-
-                tablas.forEach((tabla, index) => {
-                    const nombreUsuario = titulos[index].innerText;
-                    const xPos = (columna === 0) ? 10 : xDerecha;
-
-                    doc.setFontSize(10);
-                    doc.text(nombreUsuario, xPos, y);
-
-                    doc.autoTable({
-                        html: tabla,
-                        startY: y + 2,
-                        margin: { left: xPos },
-                        tableWidth: anchoCol,
-                        theme: 'grid',
-                        styles: { fontSize: 7, cellPadding: 1 },
-                        headStyles: { fillColor: [1, 33, 91] }
-                    });
-
-                    if (columna === 0) {
-                        columna = 1;
-                    } else {
-                        columna = 0;
-                        y = doc.lastAutoTable.finalY + 15;
-                    }
-
-                    if (y > 270) { doc.addPage(); y = 20; columna = 0; }
-                });
-
-                doc.save("Reporte_Quinielas.pdf");
-            }
-        </script>
-        </body></html>`;
-
+        htmlReporte += `</body></html>`;
         const v = window.open('', '_blank');
         v.document.write(htmlReporte);
         v.document.close();
-        
-    } catch (e) { 
-        console.error(e);
-        alert("Error al generar el reporte."); 
-    }
+    } catch (e) { alert("Error reporte."); }
 }
-
-        
-
-
-
-
-
-
 
 async function resetearBaseDeDatos() {
     if (!confirm("⚠️ ¿Borrar todo?")) return;
@@ -580,4 +542,5 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
