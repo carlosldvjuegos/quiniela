@@ -706,12 +706,36 @@ async function resetearBaseDeDatos() {
     } catch (e) { alert("Error reset."); }
 }
 
+
+
+// Esta función cierra el modal y te deja ver el index
+function cerrarMiModal() {
+    const modal = document.getElementById('modal-informativo');
+    if (modal) {
+        modal.style.display = 'none';
+        console.log("Modal cerrado por el usuario");
+    }
+}
+
+// Por si acaso el usuario hace clic en el fondo oscuro también se cierre
+window.onclick = function(event) {
+    const modal = document.getElementById('modal-informativo');
+    if (event.target == modal) {
+        cerrarMiModal();
+    }
+}
+
+
+
+
+
 // 10. INICIO AL CARGAR
 window.onload = async () => {
     await renderizarFixture();
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
