@@ -513,36 +513,33 @@ async function generarReporteMaestro() {
         }, {});
 
         let htmlReporte = `<html><head>
-            <title>Reporte Maestro</title>
+            <title>Reporte Maestro Completo</title>
             <style>
                 body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-                th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-                th { background: #01215b; color: white; text-transform: uppercase; font-size: 0.8em; }
-                .equipo-txt { text-align: left; width: 35%; font-weight: 500; }
-                .marcador-principal { font-weight: bold; width: 40px; font-size: 1.1em; background: #f9f9f9; }
-                .col-desempate { background-color: #fff9c4; color: #d35400; font-weight: bold; width: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; }
-                h2 { color: #01215b; border-left: 5px solid #01215b; padding-left: 10px; margin-top: 40px; }
-                h1 { text-align: center; color: #01215b; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; font-size: 12px; }
+                th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
+                th { background: #01215b; color: white; }
+                .equipo-txt { text-align: left; font-weight: bold; width: 150px; }
+                .fase-header { background: #e8f0fe; font-weight: bold; text-align: left; padding: 10px; border: 1px solid #01215b; }
+                .col-desempate { background-color: #fffde7; color: #d35400; font-weight: bold; width: 30px; }
+                h2 { color: #01215b; border-bottom: 3px solid #01215b; margin-top: 40px; }
             </style>
-        </head><body><h1>REPORTE MAESTRO DE QUINIELAS</h1>`;
+        </head><body><h1>REPORTE MAESTRO - FLUJO COMPLETO DEL TORNEO</h1>`;
 
         for (const usuario in agrupado) {
             const prediccionesUser = agrupado[usuario];
-            let clasificadosTemp = {};
+            let nombresDinamicos = {}; 
 
-            // --- PROCESAMIENTO DE LÓGICA DE AVANCE PARA ESTE USUARIO ---
+            // --- SIMULADOR INTERNO PARA CADA USUARIO ---
             
-            // 1. Grupos
+            // 1. Grupos -> 16vos
             const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
             grupos.forEach(letra => {
                 let tabla = {};
-                const partidosGrupo = partidosData.filter(p => p.grupo === letra);
-                partidosGrupo.forEach(p => {
+                partidosData.filter(p => p.grupo === letra).forEach(p => {
                     const pred = prediccionesUser.find(pr => pr.partido_id === p.id);
                     if (pred) {
-                        const gL = pred.goles_local ?? pred.gl ?? 0;
-                        const gV = pred.goles_visita ?? pred.gv ?? 0;
+                        const gL = pred.goles_local, gV = pred.goles_visita;
                         if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0 };
                         if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0 };
                         tabla[p.local].gf += gL; tabla[p.visita].gf += gV;
@@ -553,56 +550,55 @@ async function generarReporteMaestro() {
                     }
                 });
                 let ranking = Object.values(tabla).sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
-                if (ranking[0]) clasificadosTemp[`1${letra}`] = ranking[0].nombre;
-                if (ranking[1]) clasificadosTemp[`2${letra}`] = ranking[1].nombre;
+                if (ranking[0]) nombresDinamicos[`1${letra}`] = ranking[0].nombre;
+                if (ranking[1]) nombresDinamicos[`2${letra}`] = ranking[1].nombre;
             });
 
-            // 2. Función auxiliar para decidir quién avanza en eliminatorias (usa desempate si hay empate)
-            const obtenerGanador = (idPart) => {
-                const pred = prediccionesUser.find(pr => pr.partido_id === idPart);
-                if (!pred) return "---";
-                const gL = pred.goles_local ?? pred.gl ?? 0;
-                const gV = pred.goles_visita ?? pred.gv ?? 0;
-                const dL = pred.dl ?? 0;
-                const dV = pred.dv ?? 0;
-
-                const pData = partidosData.find(pd => pd.id === idPart);
-                let loc = pData.local; let vis = pData.visita;
-                if (clasificadosTemp[loc]) loc = clasificadosTemp[loc];
-                if (clasificadosTemp[vis]) vis = clasificadosTemp[vis];
-
-                if (gL > gV) return loc;
-                if (gV > gL) return vis;
-                return dL > dV ? loc : vis;
-            };
-
-            // Mapeo manual de llaves (16vos a Octavos, etc.)
-            // Esto asegura que los nombres fluyan hasta la final en el reporte
-            const llaves = [
-                { de: [73, 74], a: 89 }, { de: [75, 76], a: 90 }, { de: [77, 78], a: 91 }, { de: [79, 80], a: 92 },
-                { de: [81, 82], a: 93 }, { de: [83, 84], a: 94 }, { de: [85, 86], a: 95 }, { de: [87, 88], a: 96 },
-                { de: [89, 90], a: 97 }, { de: [91, 92], a: 98 }, { de: [93, 94], a: 99 }, { de: [95, 96], a: 100 },
-                { de: [97, 98], a: 101 }, { de: [99, 100], a: 102 }, { de: [101, 102], a: 104 }
+            // 2. Lógica de Avance (16vos a Final)
+            // Esta lista debe coincidir con el orden de tu 'mapeo16vos' y 'avance' en script.js
+            const llavesAvance = [
+                { de: 73, a: 89, pos: 'L' }, { de: 74, a: 89, pos: 'V' },
+                { de: 75, a: 90, pos: 'L' }, { de: 76, a: 90, pos: 'V' },
+                { de: 77, a: 91, pos: 'L' }, { de: 78, a: 91, pos: 'V' },
+                { de: 79, a: 92, pos: 'L' }, { de: 80, a: 92, pos: 'V' },
+                { de: 81, a: 93, pos: 'L' }, { de: 82, a: 93, pos: 'V' },
+                { de: 83, a: 94, pos: 'L' }, { de: 84, a: 94, pos: 'V' },
+                { de: 85, a: 95, pos: 'L' }, { de: 86, a: 95, pos: 'V' },
+                { de: 87, a: 96, pos: 'L' }, { de: 88, a: 96, pos: 'V' },
+                { de: 89, a: 97, pos: 'L' }, { de: 90, a: 97, pos: 'V' },
+                { de: 91, a: 98, pos: 'L' }, { de: 92, a: 98, pos: 'V' },
+                { de: 93, a: 99, pos: 'L' }, { de: 94, a: 99, pos: 'V' },
+                { de: 95, a: 100, pos: 'L' }, { de: 96, a: 100, pos: 'V' },
+                { de: 97, a: 101, pos: 'L' }, { de: 98, a: 101, pos: 'V' },
+                { de: 99, a: 102, pos: 'L' }, { de: 100, a: 102, pos: 'V' },
+                { de: 101, a: 104, pos: 'L' }, { de: 102, a: 104, pos: 'V' }
             ];
-            llaves.forEach(ll => {
-                const ganadorL = obtenerGanador(ll.de[0]);
-                const ganadorV = obtenerGanador(ll.de[1]);
-                clasificadosTemp[`G${ll.de[0]}`] = ganadorL; // Guardamos por ID de partido
-                clasificadosTemp[`G${ll.de[1]}`] = ganadorV;
+
+            // Simular ganadores para llenar los nombres de las fases siguientes
+            llavesAvance.forEach(llave => {
+                const pred = prediccionesUser.find(pr => pr.partido_id === llave.de);
+                if (pred) {
+                    const pInfo = partidosData.find(p => p.id === llave.de);
+                    let nL = nombresDinamicos[pInfo.local] || pInfo.local;
+                    let nV = nombresDinamicos[pInfo.visita] || pInfo.visita;
+                    
+                    let ganador = "---";
+                    if (pred.goles_local > pred.goles_visita) ganador = nL;
+                    else if (pred.goles_visita > pred.goles_local) ganador = nV;
+                    else {
+                        // Empate: Usar goles de desempate
+                        ganador = (pred.dl > pred.dv) ? nL : nV;
+                    }
+                    nombresDinamicos[`GANADOR-${llave.de}`] = ganador;
+                }
             });
 
-            // --- RENDERIZADO DE LA TABLA ---
-            htmlReporte += `<h2>Quiniela de: ${usuario}</h2>
+            // --- RENDERIZADO DE LA TABLA DEL USUARIO ---
+            htmlReporte += `<h2>USUARIO: ${usuario}</h2>
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Local</th>
-                            <th>GL</th>
-                            <th title="Desempate Local">DL</th>
-                            <th title="Desempate Visita">DV</th>
-                            <th>GV</th>
-                            <th>Visita</th>
+                            <th>ID</th><th>Fase</th><th>Local</th><th>GL</th><th>DL</th><th>DV</th><th>GV</th><th>Visita</th>
                         </tr>
                     </thead>
                     <tbody>`;
@@ -610,29 +606,29 @@ async function generarReporteMaestro() {
             prediccionesUser.forEach(row => {
                 const p = partidosData.find(item => item.id === row.partido_id) || {};
                 
-                // Intentar obtener nombres reales desde el mapeo
-                let nombreLocal = clasificadosTemp[p.local] || p.local;
-                let nombreVisita = clasificadosTemp[p.visita] || p.visita;
-                
-                // Si es un partido avanzado, buscar por el ID del partido anterior
-                // (Para que funcione con tu lógica de avance por IDs)
-                if (nombreLocal.startsWith('G')) nombreLocal = clasificadosTemp[nombreLocal] || nombreLocal;
-                if (nombreVisita.startsWith('G')) nombreVisita = clasificadosTemp[nombreVisita] || nombreVisita;
+                // Buscar nombre real: 1. De grupos, 2. De ganadores previos, 3. El texto original
+                let nombreL = nombresDinamicos[p.local] || p.local;
+                let nombreV = nombresDinamicos[p.visita] || p.visita;
 
-                // Corregir lectura de goles (soporta goles_local y gl)
-                const gl = row.goles_local ?? row.gl ?? "0";
-                const gv = row.goles_visita ?? row.gv ?? "0";
-                const dl = row.dl ?? "0";
-                const dv = row.dv ?? "0";
+                // Si la fase es mayor a 16vos, el nombre local/visita depende del ganador del ID anterior
+                const origenL = llavesAvance.find(l => l.a === p.id && l.pos === 'L');
+                const origenV = llavesAvance.find(l => l.a === p.id && l.pos === 'V');
+                
+                if (origenL) nombreL = nombresDinamicos[`GANADOR-${origenL.de}`] || nombreL;
+                if (origenV) nombreV = nombresDinamicos[`GANADOR-${origenV.de}`] || nombreV;
+
+                const dl = (row.dl !== null && row.dl !== undefined) ? row.dl : "-";
+                const dv = (row.dv !== null && row.dv !== undefined) ? row.dv : "-";
 
                 htmlReporte += `<tr>
                     <td>${row.partido_id}</td>
-                    <td class="equipo-txt">${nombreLocal}</td>
-                    <td class="marcador-principal">${gl}</td>
+                    <td>${p.fase}</td>
+                    <td class="equipo-txt">${nombreL}</td>
+                    <td><strong>${row.goles_local}</strong></td>
                     <td class="col-desempate">${dl}</td>
                     <td class="col-desempate">${dv}</td>
-                    <td class="marcador-principal">${gv}</td>
-                    <td class="equipo-txt">${nombreVisita}</td>
+                    <td><strong>${row.goles_visita}</strong></td>
+                    <td class="equipo-txt">${nombreV}</td>
                 </tr>`;
             });
             htmlReporte += `</tbody></table>`;
@@ -644,8 +640,8 @@ async function generarReporteMaestro() {
         v.document.close();
         
     } catch (e) { 
-        console.error("Error en reporte:", e);
-        alert("Error al generar el reporte maestro."); 
+        console.error(e);
+        alert("Error en reporte maestro complejo."); 
     }
 }
 
@@ -668,6 +664,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
