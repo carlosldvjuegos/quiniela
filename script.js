@@ -145,6 +145,31 @@ const partidosData = [
 ];
 
 
+
+// Lógica para cerrar el modal informativo
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('modal-informativo');
+    const btnCerrar = document.getElementById('btn-cerrar-modal');
+
+    if (btnCerrar) {
+        btnCerrar.onclick = () => {
+            modal.style.display = 'none';
+        };
+    }
+    
+    // Opcional: Cerrar si hacen clic fuera del cuadro blanco
+    window.onclick = (event) => {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    };
+});
+
+
+
+
+
+
 // 2. LÓGICA DE PUNTOS
 function calcularLogicaPuntos(pL, pV, rL, rV) {
     if (pL === rL && pV === rV) return 5;
@@ -685,6 +710,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
