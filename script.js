@@ -516,23 +516,24 @@ async function generarReporteMaestro() {
             <title>Reporte Maestro</title>
             <style>
                 body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; }
-                th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-                th { background: #01215b; color: white; }
-                .equipo-txt { text-align: left; min-width: 120px; }
-                .marcador-principal { font-weight: bold; width: 40px; }
-                .col-desempate { background-color: #fffde7; color: #d35400; font-weight: bold; width: 35px; }
-                h2 { color: #01215b; border-bottom: 2px solid #01215b; padding-bottom: 5px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+                th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+                th { background: #01215b; color: white; text-transform: uppercase; font-size: 0.8em; }
+                .equipo-txt { text-align: left; width: 35%; font-weight: 500; }
+                .marcador-principal { font-weight: bold; width: 40px; font-size: 1.1em; background: #f9f9f9; }
+                .col-desempate { background-color: #fff9c4; color: #d35400; font-weight: bold; width: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; }
+                h2 { color: #01215b; border-left: 5px solid #01215b; padding-left: 10px; margin-top: 40px; }
+                h1 { text-align: center; color: #01215b; }
             </style>
-        </head><body><h1>Reporte Maestro de Quinielas</h1>`;
+        </head><body><h1>REPORTE MAESTRO DE QUINIELAS</h1>`;
 
         for (const usuario in agrupado) {
-            // --- LÓGICA DE AVANCE PARA ESTE USUARIO ESPECÍFICO ---
-            // Creamos un mapeo temporal para traducir 2A, 1C, etc., a nombres reales
-            let clasificadosTemp = {};
             const prediccionesUser = agrupado[usuario];
+            let clasificadosTemp = {};
 
-            // 1. Procesar fase de grupos para obtener clasificados
+            // --- PROCESAMIENTO DE LÓGICA DE AVANCE PARA ESTE USUARIO ---
+            
+            // 1. Grupos
             const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
             grupos.forEach(letra => {
                 let tabla = {};
@@ -540,8 +541,8 @@ async function generarReporteMaestro() {
                 partidosGrupo.forEach(p => {
                     const pred = prediccionesUser.find(pr => pr.partido_id === p.id);
                     if (pred) {
-                        const gL = pred.goles_local;
-                        const gV = pred.goles_visita;
+                        const gL = pred.goles_local ?? pred.gl ?? 0;
+                        const gV = pred.goles_visita ?? pred.gv ?? 0;
                         if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0 };
                         if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0 };
                         tabla[p.local].gf += gL; tabla[p.visita].gf += gV;
@@ -556,7 +557,41 @@ async function generarReporteMaestro() {
                 if (ranking[1]) clasificadosTemp[`2${letra}`] = ranking[1].nombre;
             });
 
-            // 2. Generar la tabla de este usuario
+            // 2. Función auxiliar para decidir quién avanza en eliminatorias (usa desempate si hay empate)
+            const obtenerGanador = (idPart) => {
+                const pred = prediccionesUser.find(pr => pr.partido_id === idPart);
+                if (!pred) return "---";
+                const gL = pred.goles_local ?? pred.gl ?? 0;
+                const gV = pred.goles_visita ?? pred.gv ?? 0;
+                const dL = pred.dl ?? 0;
+                const dV = pred.dv ?? 0;
+
+                const pData = partidosData.find(pd => pd.id === idPart);
+                let loc = pData.local; let vis = pData.visita;
+                if (clasificadosTemp[loc]) loc = clasificadosTemp[loc];
+                if (clasificadosTemp[vis]) vis = clasificadosTemp[vis];
+
+                if (gL > gV) return loc;
+                if (gV > gL) return vis;
+                return dL > dV ? loc : vis;
+            };
+
+            // Mapeo manual de llaves (16vos a Octavos, etc.)
+            // Esto asegura que los nombres fluyan hasta la final en el reporte
+            const llaves = [
+                { de: [73, 74], a: 89 }, { de: [75, 76], a: 90 }, { de: [77, 78], a: 91 }, { de: [79, 80], a: 92 },
+                { de: [81, 82], a: 93 }, { de: [83, 84], a: 94 }, { de: [85, 86], a: 95 }, { de: [87, 88], a: 96 },
+                { de: [89, 90], a: 97 }, { de: [91, 92], a: 98 }, { de: [93, 94], a: 99 }, { de: [95, 96], a: 100 },
+                { de: [97, 98], a: 101 }, { de: [99, 100], a: 102 }, { de: [101, 102], a: 104 }
+            ];
+            llaves.forEach(ll => {
+                const ganadorL = obtenerGanador(ll.de[0]);
+                const ganadorV = obtenerGanador(ll.de[1]);
+                clasificadosTemp[`G${ll.de[0]}`] = ganadorL; // Guardamos por ID de partido
+                clasificadosTemp[`G${ll.de[1]}`] = ganadorV;
+            });
+
+            // --- RENDERIZADO DE LA TABLA ---
             htmlReporte += `<h2>Quiniela de: ${usuario}</h2>
                 <table>
                     <thead>
@@ -575,22 +610,28 @@ async function generarReporteMaestro() {
             prediccionesUser.forEach(row => {
                 const p = partidosData.find(item => item.id === row.partido_id) || {};
                 
-                // Traducir nombres si son marcadores de posición (2A, 1C, etc)
-                let nombreLocal = p.local;
-                let nombreVisita = p.visita;
-                if (clasificadosTemp[p.local]) nombreLocal = clasificadosTemp[p.local];
-                if (clasificadosTemp[p.visita]) nombreVisita = clasificadosTemp[p.visita];
+                // Intentar obtener nombres reales desde el mapeo
+                let nombreLocal = clasificadosTemp[p.local] || p.local;
+                let nombreVisita = clasificadosTemp[p.visita] || p.visita;
+                
+                // Si es un partido avanzado, buscar por el ID del partido anterior
+                // (Para que funcione con tu lógica de avance por IDs)
+                if (nombreLocal.startsWith('G')) nombreLocal = clasificadosTemp[nombreLocal] || nombreLocal;
+                if (nombreVisita.startsWith('G')) nombreVisita = clasificadosTemp[nombreVisita] || nombreVisita;
 
-                const dl = (row.dl !== null && row.dl !== undefined) ? row.dl : "-";
-                const dv = (row.dv !== null && row.dv !== undefined) ? row.dv : "-";
+                // Corregir lectura de goles (soporta goles_local y gl)
+                const gl = row.goles_local ?? row.gl ?? "0";
+                const gv = row.goles_visita ?? row.gv ?? "0";
+                const dl = row.dl ?? "0";
+                const dv = row.dv ?? "0";
 
                 htmlReporte += `<tr>
                     <td>${row.partido_id}</td>
                     <td class="equipo-txt">${nombreLocal}</td>
-                    <td class="marcador-principal">${row.goles_local}</td>
+                    <td class="marcador-principal">${gl}</td>
                     <td class="col-desempate">${dl}</td>
                     <td class="col-desempate">${dv}</td>
-                    <td class="marcador-principal">${row.goles_visita}</td>
+                    <td class="marcador-principal">${gv}</td>
                     <td class="equipo-txt">${nombreVisita}</td>
                 </tr>`;
             });
@@ -607,6 +648,10 @@ async function generarReporteMaestro() {
         alert("Error al generar el reporte maestro."); 
     }
 }
+
+
+
+
 async function resetearBaseDeDatos() {
     if (!confirm("⚠️ ¿Borrar todo?")) return;
     try {
@@ -623,6 +668,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
