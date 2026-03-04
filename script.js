@@ -526,7 +526,7 @@ async function generarReporteMaestro() {
                 .equipo-txt { text-align: left; font-weight: bold; min-width: 120px; }
                 .marcador-col { width: 35px; font-weight: bold; background-color: #f9f9f9; }
                 /* Estilo para las nuevas columnas a la derecha */
-                .col-clasificacion { background-color: #f9f9f9; color: white; font-weight: bold; width: 40px; border-left: 2px solid #01215b; }
+                .col-clasificacion { background-color: #01215b; color: white; font-weight: bold; width: 40px; border-left: 2px solid #01215b; }
                 h2 { color: #01215b; border-bottom: 3px solid #01215b; margin-top: 40px; }
             </style>
         </head><body><h1>Reporte Detallado de Quinielas</h1>`;
@@ -651,6 +651,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
