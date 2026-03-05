@@ -762,7 +762,14 @@ window.onload = async () => {
     await renderizarFixture();
     await actualizarListaLinks();
     actualizarTorneo();
+
+    // Solo mostrar si no se ha pedido omitirlo
+    if (!sessionStorage.getItem('omitirModal')) {
+        const miModal = document.getElementById('modal-informativo');
+        if (miModal) miModal.style.display = 'block';
+    }
 };
+
 
 
 
