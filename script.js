@@ -412,7 +412,10 @@ async function cargarDesdeDB(nombre) {
             btnReset.className = "btn-link";
             btnReset.style.backgroundColor = "#ff4444";
             btnReset.style.color = "white";
-            btnReset.onclick = () => location.reload();
+            btnReset.onclick = () => {
+                sessionStorage.setItem('omitirModal', 'true');
+                location.reload();
+            };
             document.getElementById('links-container').appendChild(btnReset);
         }
     } catch (error) { console.error("Error al cargar:", error); }
@@ -754,12 +757,28 @@ window.onclick = function(event) {
 
 
 
-// 10. INICIO AL CARGAR
+
+// 10. INICIO AL CARGAR (CONTROL DE MODAL)
 window.onload = async () => {
     await renderizarFixture();
     await actualizarListaLinks();
-    actualizarTorneo();
+    if (typeof actualizarTorneo === "function") actualizarTorneo();
+
+    // Verificamos si venimos de darle al botón "Cambiar Usuario"
+    const omitir = sessionStorage.getItem('omitirModal');
+    
+    if (omitir === 'true') {
+        // Si existe la marca, NO abrimos el modal y la borramos para la próxima vez
+        sessionStorage.removeItem('omitirModal');
+    } else {
+        // Si NO hay marca (entrada normal), mostramos el modal
+        const modal = document.getElementById('modal-informativo');
+        if (modal) {
+            modal.style.display = 'block';
+        }
+    }
 };
+
 
 
 
