@@ -181,7 +181,7 @@ function calcularLogicaPuntos(pL, pV, rL, rV) {
 
     // 2. Lógica para Empates Reales
     if (rL === rV) {
-        if (pL === pV) return 3; // Acertó empate pero no marcador
+        if (pL === pV) return 2; // Acertó empate pero no marcador
         // Si no puso empate, verificamos si al menos acertó la cantidad de goles (ej. 1-1 vs 2-1)
         if (pL === rL || pV === rV) return 1; 
         return 0;
@@ -194,9 +194,9 @@ function calcularLogicaPuntos(pL, pV, rL, rV) {
     // 3. Lógica si ACERTÓ la tendencia (Ganador/Perdedor)
     if (tendenciaPredicha === tendenciaReal) {
         if (pL === rL || pV === rV) {
-            return 4; // Tendencia + Goles de uno
+            return 3; // Tendencia + Goles de uno
         }
-        return 3; // Solo tendencia
+        return 2; // Solo tendencia
     }
 
     // 4. Lógica si NO ACERTÓ la tendencia
@@ -760,6 +760,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
