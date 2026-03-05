@@ -763,12 +763,22 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 
-    // Solo mostrar si no se ha pedido omitirlo
-    if (!sessionStorage.getItem('omitirModal')) {
-        const miModal = document.getElementById('modal-informativo');
-        if (miModal) miModal.style.display = 'block';
+    // REVISAMOS LA MARCA
+    const debeOmitir = localStorage.getItem('detenerModal');
+
+    if (debeOmitir === 'true') {
+        // Si la marca existe, NO abrimos el modal y la borramos para la próxima vez
+        localStorage.removeItem('detenerModal');
+        console.log("Modal omitido por cambio de usuario");
+    } else {
+        // Si NO existe la marca, abrimos el modal normalmente
+        const modal = document.getElementById('modal-informativo');
+        if (modal) {
+            modal.style.display = 'block';
+        }
     }
 };
+
 
 
 
