@@ -412,7 +412,10 @@ async function cargarDesdeDB(nombre) {
             btnReset.className = "btn-link";
             btnReset.style.backgroundColor = "#ff4444";
             btnReset.style.color = "white";
-            btnReset.onclick = () => window.location.href = window.location.pathname + "?nomodal=true";
+            btnReset.onclick = () => {
+                // Esto recarga la página añadiendo "?nomodal=true" a la dirección
+                window.location.href = window.location.pathname + "?nomodal=true";
+            };
             document.getElementById('links-container').appendChild(btnReset);
         }
     } catch (error) { console.error("Error al cargar:", error); }
@@ -760,6 +763,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
