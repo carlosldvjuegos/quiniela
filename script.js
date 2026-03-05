@@ -412,10 +412,7 @@ async function cargarDesdeDB(nombre) {
             btnReset.className = "btn-link";
             btnReset.style.backgroundColor = "#ff4444";
             btnReset.style.color = "white";
-            btnReset.onclick = () => {
-                sessionStorage.setItem('omitirModal', 'true');
-                location.reload();
-            };
+            btnReset.onclick = () => location.reload();
             document.getElementById('links-container').appendChild(btnReset);
         }
     } catch (error) { console.error("Error al cargar:", error); }
@@ -762,22 +759,8 @@ window.onload = async () => {
     await renderizarFixture();
     await actualizarListaLinks();
     actualizarTorneo();
-
-    // REVISAMOS LA MARCA
-    const debeOmitir = localStorage.getItem('detenerModal');
-
-    if (debeOmitir === 'true') {
-        // Si la marca existe, NO abrimos el modal y la borramos para la próxima vez
-        localStorage.removeItem('detenerModal');
-        console.log("Modal omitido por cambio de usuario");
-    } else {
-        // Si NO existe la marca, abrimos el modal normalmente
-        const modal = document.getElementById('modal-informativo');
-        if (modal) {
-            modal.style.display = 'block';
-        }
-    }
 };
+
 
 
 
