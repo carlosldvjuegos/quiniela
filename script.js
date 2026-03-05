@@ -174,14 +174,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 2. LÓGICA DE PUNTOS
 function calcularLogicaPuntos(pL, pV, rL, rV) {
-    if (pL === rL && pV === rV) return 5;
-    let puntos = 0;
+    // 1. Marcador Exacto (5 Puntos)
+    if (pL === rL && pV === rV) {
+        return 5;
+    }
+
+    // 2. Lógica para Empates Reales
+    if (rL === rV) {
+        if (pL === pV) return 3; // Acertó empate pero no marcador
+        // Si no puso empate, verificamos si al menos acertó la cantidad de goles (ej. 1-1 vs 2-1)
+        if (pL === rL || pV === rV) return 1; 
+        return 0;
+    }
+
+    // Determinamos tendencia
     const tendenciaPredicha = Math.sign(pL - pV);
     const tendenciaReal = Math.sign(rL - rV);
-    if (tendenciaPredicha === tendenciaReal) puntos = 2;
-    if (pL === rL) puntos += 1;
-    if (pV === rV) puntos += 1;
-    return puntos;
+
+    // 3. Lógica si ACERTÓ la tendencia (Ganador/Perdedor)
+    if (tendenciaPredicha === tendenciaReal) {
+        if (pL === rL || pV === rV) {
+            return 4; // Tendencia + Goles de uno
+        }
+        return 3; // Solo tendencia
+    }
+
+    // 4. Lógica si NO ACERTÓ la tendencia
+    // Solo damos 1 punto si al menos acertó los goles de uno (ej. 1-1 vs 2-1 del ejemplo)
+    if (pL === rL || pV === rV) {
+        return 1;
+    }
+
+    // 5. No acertó nada
+    return 0;
 }
 
 // 3. RENDERIZAR LA TABLA (MEJORADA CON DESEMPATE)
@@ -735,6 +760,7 @@ window.onload = async () => {
     await actualizarListaLinks();
     actualizarTorneo();
 };
+
 
 
 
