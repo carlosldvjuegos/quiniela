@@ -413,8 +413,8 @@ async function cargarDesdeDB(nombre) {
             btnReset.style.backgroundColor = "#ff4444";
             btnReset.style.color = "white";
             btnReset.onclick = () => {
-                // Esto recarga la página añadiendo "?nomodal=true" a la dirección
-                window.location.href = window.location.pathname + "?nomodal=true";
+                sessionStorage.setItem('omitirModal', 'true');
+                location.reload();
             };
             document.getElementById('links-container').appendChild(btnReset);
         }
@@ -769,6 +769,7 @@ window.onload = async () => {
         if (miModal) miModal.style.display = 'block';
     }
 };
+
 
 
 
