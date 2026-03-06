@@ -1,7 +1,44 @@
 // 0. CONFIGURACIÓN DE URL
 const API_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-    ? window.location.origin 
-    : "https://quiniela-pcas.onrender.com"; 
+    ? window.location.origin
+    : "https://quiniela-pcas.onrender.com";
+
+const traducciones = {
+    "es": {
+        "titulo": "Quiniela Mundial 2026",
+        "cerrar": "✕ Cerrar",
+        "ejemplo": ">> Ejemplo:",
+        "instrucciones": "Instrucciones de la Quiniela",
+        "regla1": "5 puntos: Marcador exacto.",
+        "regla2": "4 puntos: Acertar ganador y goles de un equipo.",
+        "regla3": "2 puntos: Acertar ganador o empate.",
+        "regla4": "1 punto: Solo acertar goles de un equipo."
+    },
+    "en": {
+        "titulo": "2026 World Cup Sweepstakes",
+        "cerrar": "✕ Close",
+        "ejemplo": ">> Example:",
+        "instrucciones": "Sweepstakes Instructions",
+        "regla1": "5 points: Exact score.",
+        "regla2": "4 points: Correct winner and goals for one team.",
+        "regla3": "2 points: Correct winner or draw.",
+        "regla4": "1 point: Correct goals for only one team."
+    },
+    "fr": {
+        "titulo": "Concours Coupe du Monde 2026",
+        "cerrar": "✕ Fermer",
+        "ejemplo": ">> Exemple:",
+        "instrucciones": "Instructions du Concours",
+        "regla1": "5 points: Score exact.",
+        "regla2": "4 points: Bon vainqueur et buts d'une équipe.",
+        "regla3": "2 points: Bon vainqueur ou match nul.",
+        "regla4": "1 point: Seulement les buts d'une équipe."
+    }
+};
+
+// Esta línea detecta el idioma del teléfono o PC automáticamente
+const lang = (navigator.language || navigator.userLanguage).split('-')[0];
+const textosActuales = traducciones[lang] || traducciones["es"];
 
 // 1. LISTA DE PARTIDOS (Mundial 2026) - CORREGIDA
 const partidosData = [
@@ -778,4 +815,5 @@ window.onload = async () => {
         }
     }
 };
+
 
