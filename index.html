@@ -15,37 +15,47 @@
         top: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0,0,0,0.7);
+        background-color: rgba(0,0,0,0.8);
     }
 
     #modal-informativo .modal-content {
         background-color: white;
-        margin: 2% auto; /* Subimos el modal un poco más (de 5% a 2%) */
-        padding: 20px;
+        margin: 2% auto;
         width: 90%;
         max-width: 850px;
-        
-        /* --- ESTO ARREGLA TU PROBLEMA --- */
-        max-height: 90vh; /* No deja que el modal sea más alto que la pantalla */
-        overflow-y: auto; /* Si el texto es mucho, aparece una barrita para bajar */
-        
+        max-height: 90vh; /* No permite que se salga de la pantalla */
         border-radius: 12px;
+        display: flex;
+        flex-direction: column; /* Organiza el contenido de arriba a abajo */
+        overflow: hidden; /* Evita que el cuadro blanco se estire */
         position: relative;
-        box-shadow: 0 4px 25px rgba(0,0,0,0.5);
     }
 
-    /* Estilo para el botón de cerrar (ahora arriba a la derecha) */
+    /* Zona del texto con scroll */
+    .modal-body {
+        padding: 20px;
+        overflow-y: auto; /* Aquí aparece la barrita para bajar */
+        flex-grow: 1;
+    }
+
+    /* Zona del botón (Fija abajo) */
+    .modal-footer {
+        padding: 15px;
+        text-align: center;
+        border-top: 1px solid #eee;
+        background: #f9f9f9;
+    }
+
+    /* Tu botón negro con la X */
     #btn-cerrar-modal {
-        position: sticky; /* Se queda fijo arriba mientras bajas */
-        top: 0;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
+        background-color: #000;
+        color: #fff;
+        padding: 10px 25px;
+        border: none;
+        border-radius: 5px;
         cursor: pointer;
-        color: #ff4444;
-        background: white;
-        padding: 0 10px;
-        border-radius: 50%;
+        font-weight: bold;
+        font-size: 16px;
     }
 
     .linea-ejemplo {
@@ -108,7 +118,9 @@
             </ul>
             <p class="fecha-limite">Esta página estará disponible para registrar quinielas hasta el <strong>5 de junio de 2026</strong>.</p>
         </div>
-		<button id="btn-cerrar-modal" class="close-modal-btn" onclick="cerrarMiModal()">✕ Cerrar</button>
+		<div class="modal-footer">
+            <button id="btn-cerrar-modal">✕ Cerrar</button>
+        </div>
     </div>
 </div>
 
@@ -170,6 +182,7 @@
 </body>
 
 </html>
+
 
 
 
