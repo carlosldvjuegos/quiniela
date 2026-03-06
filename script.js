@@ -605,6 +605,11 @@ async function generarReporteMaestro() {
 
         let htmlReporte = `<html><head>
             <title>Reporte Maestro</title>
+            <div style="text-align: right; margin-bottom: 20px;" class="no-print">
+                <button onclick="window.print()" style="background-color: #2c3e50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                📥 Descargar / Imprimir Reporte
+                </button>
+            </div>
             <style>
                 body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
                 table { border-collapse: collapse; margin-bottom: 40px; background: white; width: auto; }
@@ -778,6 +783,7 @@ window.onload = async () => {
         }
     }
 };
+
 
 
 
