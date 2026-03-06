@@ -755,43 +755,27 @@ window.onclick = function(event) {
 
 
 
-
-
-
 // 10. INICIO AL CARGAR (CONTROL DE MODAL)
-// 10. INICIO AL CARGAR (Idiomas + Control de Modal)
 window.onload = async () => {
-    // --- 1. PRIMERO: TRADUCIR LOS TEXTOS ---
-    // Buscamos los elementos y les ponemos el idioma del sistema
-    const instruccionesH2 = document.querySelector('#modal-informativo h2');
-    if (instruccionesH2) instruccionesH2.innerText = textosActuales.instrucciones;
-    
-    const ejFuerte = document.getElementById('txt-ejemplo');
-    if (ejFuerte) ejFuerte.innerText = textosActuales.ejemplo;
-    
-    const btnCerrar = document.getElementById('btn-cerrar-modal');
-    if (btnCerrar) btnCerrar.innerText = textosActuales.cerrar;
-
-    // --- 2. SEGUNDO: CARGAR TU QUINIELA ---
+    // 1. Cargamos los datos primero
     await renderizarFixture();
     await actualizarListaLinks();
     if (typeof actualizarTorneo === "function") actualizarTorneo();
 
-    // --- 3. TERCERO: TU "IF" (EL QUE YA TENÍAS) ---
+    // 2. Control del modal
     const urlParams = new URLSearchParams(window.location.search);
     const modal = document.getElementById('modal-informativo');
 
+    // Si la URL NO tiene "nomodal", entonces lo mostramos
     if (!urlParams.has('nomodal')) {
-        // Si NO tiene 'nomodal', lo mostramos
         if (modal) {
             modal.style.setProperty('display', 'block', 'important');
         }
     } else {
-        // Si tiene 'nomodal', nos aseguramos de que esté oculto
+        // Si tiene "nomodal", nos aseguramos de que esté escondido
         if (modal) {
             modal.style.setProperty('display', 'none', 'important');
         }
     }
 };
-
 
