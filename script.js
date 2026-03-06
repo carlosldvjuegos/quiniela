@@ -413,7 +413,8 @@ async function cargarDesdeDB(nombre) {
             btnReset.style.backgroundColor = "#ff4444";
             btnReset.style.color = "white";
             btnReset.onclick = () => {
-                window.location.href = window.location.pathname + "?nomodal=1";
+                // Esto recarga la página con la instrucción de NO mostrar el modal
+                window.location.href = window.location.origin + window.location.pathname + "?nomodal=1";
             };
             document.getElementById('links-container').appendChild(btnReset);
         }
@@ -759,20 +760,25 @@ window.onclick = function(event) {
 
 // 10. INICIO AL CARGAR (CONTROL DE MODAL)
 window.onload = async () => {
+    // 1. Cargamos los datos primero
     await renderizarFixture();
     await actualizarListaLinks();
     if (typeof actualizarTorneo === "function") actualizarTorneo();
 
-    // LEER LA URL: Buscamos si dice "?nomodal=1"
+    // 2. Control del modal
     const urlParams = new URLSearchParams(window.location.search);
     const modal = document.getElementById('modal-informativo');
 
-    if (urlParams.has('nomodal')) {
-        // Si la URL dice nomodal, nos aseguramos de que esté oculto
-        if (modal) modal.style.display = 'none';
-        console.log("Modal bloqueado por URL");
+    // Si la URL NO tiene "nomodal", entonces lo mostramos
+    if (!urlParams.has('nomodal')) {
+        if (modal) {
+            modal.style.setProperty('display', 'block', 'important');
+        }
     } else {
-        // Si entras normal (sin el botón de cambiar usuario), se abre
-        if (modal) modal.style.display = 'block';
+        // Si tiene "nomodal", nos aseguramos de que esté escondido
+        if (modal) {
+            modal.style.setProperty('display', 'none', 'important');
+        }
     }
 };
+
