@@ -413,8 +413,7 @@ async function cargarDesdeDB(nombre) {
             btnReset.style.backgroundColor = "#ff4444";
             btnReset.style.color = "white";
             btnReset.onclick = () => {
-                sessionStorage.setItem('omitirModal', 'true');
-                location.reload();
+                window.location.href = window.location.pathname + "?nomodal=1";
             };
             document.getElementById('links-container').appendChild(btnReset);
         }
@@ -764,43 +763,16 @@ window.onload = async () => {
     await actualizarListaLinks();
     if (typeof actualizarTorneo === "function") actualizarTorneo();
 
-    // Verificamos si venimos de darle al botón "Cambiar Usuario"
-    const omitir = sessionStorage.getItem('omitirModal');
-    
-    if (omitir === 'true') {
-        // Si existe la marca, NO abrimos el modal y la borramos para la próxima vez
-        sessionStorage.removeItem('omitirModal');
+    // LEER LA URL: Buscamos si dice "?nomodal=1"
+    const urlParams = new URLSearchParams(window.location.search);
+    const modal = document.getElementById('modal-informativo');
+
+    if (urlParams.has('nomodal')) {
+        // Si la URL dice nomodal, nos aseguramos de que esté oculto
+        if (modal) modal.style.display = 'none';
+        console.log("Modal bloqueado por URL");
     } else {
-        // Si NO hay marca (entrada normal), mostramos el modal
-        const modal = document.getElementById('modal-informativo');
-        if (modal) {
-            modal.style.display = 'block';
-        }
+        // Si entras normal (sin el botón de cambiar usuario), se abre
+        if (modal) modal.style.display = 'block';
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
