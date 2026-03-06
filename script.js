@@ -794,26 +794,33 @@ window.onclick = function(event) {
 
 // 10. INICIO AL CARGAR (CONTROL DE MODAL)
 window.onload = async () => {
-    // 1. Cargamos los datos primero
+    // --- PARTE NUEVA: TRADUCCIÓN ---
+    // Esto busca los IDs del HTML y les pone el texto del idioma detectado
+    const t = textosActuales; // Para escribir menos
+    if(document.getElementById('txt-instrucciones')) document.getElementById('txt-instrucciones').innerText = t.instrucciones;
+    if(document.getElementById('regla-1')) document.getElementById('regla-1').innerText = t.regla1;
+    if(document.getElementById('regla-2')) document.getElementById('regla-2').innerText = t.regla2;
+    if(document.getElementById('regla-3')) document.getElementById('regla-3').innerText = t.regla3;
+    if(document.getElementById('regla-4')) document.getElementById('regla-4').innerText = t.regla4;
+    if(document.getElementById('txt-ejemplo')) document.getElementById('txt-ejemplo').innerText = t.ejemplo;
+    if(document.getElementById('btn-cerrar-modal')) document.getElementById('btn-cerrar-modal').innerText = t.cerrar;
+    // -------------------------------
+
+    // Tu lógica de cargar partidos (No tocar)
     await renderizarFixture();
     await actualizarListaLinks();
     if (typeof actualizarTorneo === "function") actualizarTorneo();
 
-    // 2. Control del modal
+    // Tu lógica del modal (La que ya tienes)
     const urlParams = new URLSearchParams(window.location.search);
     const modal = document.getElementById('modal-informativo');
 
-    // Si la URL NO tiene "nomodal", entonces lo mostramos
     if (!urlParams.has('nomodal')) {
-        if (modal) {
-            modal.style.setProperty('display', 'block', 'important');
-        }
+        if (modal) modal.style.setProperty('display', 'block', 'important');
     } else {
-        // Si tiene "nomodal", nos aseguramos de que esté escondido
-        if (modal) {
-            modal.style.setProperty('display', 'none', 'important');
-        }
+        if (modal) modal.style.setProperty('display', 'none', 'important');
     }
 };
+
 
 
