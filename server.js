@@ -72,7 +72,7 @@ inicializarDB();
 
 // --- RUTA INICIAL ---
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin.html'));
+    res.sendFile(path.join(__dirname, '*658709*admin.html'));
 });
 
 // --- GUARDAR PREDICCIONES DE USUARIO ---
@@ -183,6 +183,7 @@ app.listen(PORT, () => {
     console.log(`Servidor activo en: http://localhost:${PORT}`);
 
 });
+
 
 
 
