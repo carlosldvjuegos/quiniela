@@ -111,6 +111,29 @@ header {
     cursor: pointer !important;
 }
 
+<style>
+    /* Esto evita que el botón salga en la impresión o en el PDF */
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        
+        body {
+            background-color: white !important;
+            padding: 0 !important;
+        }
+
+        .modal-content {
+            box-shadow: none !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+    }
+</style>
+
+
 /* FIXTURE */
 .content-fixture { flex: 1; }
 
@@ -413,5 +436,6 @@ input, button, select, textarea {
 .close-modal-btn:hover {
     background: #003a8c;
 }
+
 
 
