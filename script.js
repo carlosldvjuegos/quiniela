@@ -146,7 +146,6 @@ const partidosData = [
 
 
 
-
 // Lógica para cerrar el modal informativo
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('modal-informativo');
@@ -157,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.style.display = 'none';
         };
     }
-    
+
     // Opcional: Cerrar si hacen clic fuera del cuadro blanco
     window.onclick = (event) => {
         if (event.target == modal) {
@@ -783,6 +782,7 @@ window.onload = async () => {
         }
     }
 };
+
 
 
 
