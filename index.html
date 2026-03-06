@@ -6,18 +6,37 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Quiniela Mundial 2026 | Pro</title>
 	
-	<style>
-    /* Hace el modal más ancho */
-    #modal-informativo .modal-content {
-        width: 95% !important; 
-        max-width: 1000px !important; 
+<style>
+    /* Esto centra el modal y lo hace ancho */
+    #modal-informativo {
+        display: none; /* Empieza oculto */
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.6); /* Fondo oscuro */
     }
-    /* Pone color naranja a la línea */
+
+    #modal-informativo .modal-content {
+        background-color: white;
+        margin: 5% auto; /* 5% de arriba y AUTO lo centra horizontalmente */
+        padding: 25px;
+        width: 90%;
+        max-width: 900px;
+        border-radius: 12px;
+        position: relative;
+        text-align: left; /* El texto adentro a la izquierda, pero el cuadro al centro */
+        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
     .linea-ejemplo {
-        color: #ff6600 !important; 
+        color: #ff6600 !important;
         font-weight: bold;
     }
 </style>
+
 	
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
@@ -132,6 +151,7 @@
 </body>
 
 </html>
+
 
 
 
