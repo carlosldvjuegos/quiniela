@@ -429,8 +429,8 @@ async function guardarQuinielaCompleta() {
     
         if (primerVacio) {
             alert("Todavía hay campos vacíos en la quiniela. Por favor, completa todos los resultados.");
-            primerVacio.focus(); // Posiciona el cursor en el primer campo vacío
             primerVacio.style.borderColor = "red"; // Opcional: marcarlo en rojo para que resalte
+            primerVacio.focus(); // Posiciona el cursor en el primer campo vacío
             return; // Detiene el guardado
         }
         // -------------------------------------------------------
