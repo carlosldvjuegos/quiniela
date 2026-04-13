@@ -423,12 +423,12 @@ async function guardarQuinielaCompleta() {
         for (let input of inputsGoles) {
             if (input.value.trim() === "") {
                 primerVacio = input; // Guardamos el primero que encontremos
-                primerVacio.style.borderColor = "red"; // Opcional: marcarlo en rojo para que resalte
                 break; 
             }
         }
     
         if (primerVacio) {
+            primerVacio.style.borderColor = "red"; // Opcional: marcarlo en rojo para que resalte
             alert("Todavía hay campos vacíos en la quiniela. Por favor, completa todos los resultados.");
             primerVacio.style.borderColor = "red"; // Opcional: marcarlo en rojo para que resalte
             primerVacio.focus(); // Posiciona el cursor en el primer campo vacío
