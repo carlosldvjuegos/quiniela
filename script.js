@@ -286,35 +286,60 @@ function gestionarDesempate(id) {
 async function actualizarListaLinks() {
     const container = document.getElementById('links-container');
     if (!container) return;
+
     try {
-        const [resNombres, resOficiales] = await Promise.all([
+        const [resNombres, resOficiales, resTodasPred] = await Promise.all([
             fetch(`${API_URL}/registros`),
-            fetch(`${API_URL}/obtener-resultados-db`)
+            fetch(`${API_URL}/obtener-resultados-db`),
+            fetch(`${API_URL}/obtener-todas-predicciones`)
         ]);
+
         const usuarios = await resNombres.json();
-        const resultadosOficiales = await resOficiales.json();
-        let listaRanking = [];
-        for (const user of usuarios) {
-            const resPred = await fetch(`${API_URL}/cargar/${user.nombre_usuario}`);
-            const predicciones = await resPred.json();
+        const oficiales = await resOficiales.json();
+        const todasLasPredicciones = await resTodasPred.json();
+
+        const predPorUsuario = todasLasPredicciones.reduce((acc, p) => {
+            if (!acc[p.nombre_usuario]) acc[p.nombre_usuario] = [];
+            acc[p.nombre_usuario].push(p);
+            return acc;
+        }, {});
+
+        let listaRanking = usuarios.map(user => {
             let ptsTotales = 0;
-            predicciones.forEach(pred => {
-                const oficial = resultadosOficiales.find(r => r.id === pred.id);
-                if (oficial) ptsTotales += calcularLogicaPuntos(pred.gl, pred.gv, oficial.gl, oficial.gv);
+            const susPredicciones = predPorUsuario[user.nombre_usuario] || [];
+            susPredicciones.forEach(pred => {
+                const oficial = oficiales.find(o => o.id === pred.partido_id);
+                if (oficial) {
+                    ptsTotales += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, oficial.gl, oficial.gv);
+                }
             });
-            listaRanking.push({ nombre: user.nombre_usuario, puntos: ptsTotales });
-        }
+            return { nombre: user.nombre_usuario, puntos: ptsTotales };
+        });
+
         listaRanking.sort((a, b) => b.puntos - a.puntos);
+
         container.innerHTML = "";
         listaRanking.forEach((u, index) => {
-            const icono = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : "•"));
+            const medallita = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : "•"));
             const btn = document.createElement('button');
             btn.className = "btn-link";
-            btn.innerHTML = `<span>${icono} ${u.nombre}</span><span class="badge-puntos">${u.puntos} pts</span>`;
+
+            // --- LÍNEA AGREGADA: Etiqueta invisible con el nombre real ---
+            btn.setAttribute('data-nombre-real', u.nombre.toLowerCase().trim());
+
+            btn.innerHTML = `
+                <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                    <span>${medallita} <b>${u.nombre}</b></span>
+                    <span class="badge-puntos">${u.puntos} pts</span>
+                </div>
+            `;
             btn.onclick = () => cargarDesdeDB(u.nombre);
             container.appendChild(btn);
         });
-    } catch (err) { console.error("Error ranking:", err); }
+
+    } catch (err) {
+        console.error("Error al actualizar ranking:", err);
+    }
 }
 
 // 5. CALCULAR PUNTOS MANUAL (Sin cambios)
@@ -426,6 +451,8 @@ async function cargarDesdeDB(nombre) {
 
         const respuesta = await fetch(`${API_URL}/cargar/${nombre}`);
         const datos = await respuesta.json();
+        
+        // Mantenemos tu lógica de carga de goles y desempates intacta
         datos.forEach(partido => {
             const inL = document.getElementById(`L-${partido.id}`);
             const inV = document.getElementById(`V-${partido.id}`);
@@ -442,38 +469,33 @@ async function cargarDesdeDB(nombre) {
 
         actualizarTorneo();
 
-        // --- Lógica de filtrado de botones por esta ---
-// --- Reemplaza la lógica de los botones en cargarDesdeDB con esto ---
-const botones = document.querySelectorAll('.btn-link');
+        // --- LÓGICA DE FILTRADO CORREGIDA ---
+        const botones = document.querySelectorAll('.btn-link');
+        const nombreBuscado = nombre.toLowerCase().trim();
 
-botones.forEach(btn => {
-    // 1. Obtenemos el texto total del botón
-    const textoBoton = btn.innerText.toLowerCase();
-    const nombreBuscado = nombre.toLowerCase();
+        botones.forEach(btn => {
+            // Leemos la etiqueta invisible que creamos en la otra función
+            const nombreEnBoton = btn.getAttribute('data-nombre-real');
 
-    // 2. Verificamos si el nombre está en el botón, 
-    // pero nos aseguramos de que sea el nombre completo y no un pedazo.
-    // Usamos una expresión regular para buscar el nombre exacto "aislado"
-    const regex = new RegExp("\\b" + nombreBuscado + "\\b", "i");
-    const esCoincidenciaExacta = regex.test(textoBoton);
+            // Solo mostramos si el nombre es EXACTAMENTE igual (sin mirar los puntos)
+            if (nombreEnBoton === nombreBuscado) {
+                btn.style.setProperty('display', 'flex', 'important');
+                btn.classList.add('quiniela-activa');
+            } else {
+                // No ocultamos el botón rojo de volver
+                if (btn.id !== 'btn-volver-lista') {
+                    btn.style.setProperty('display', 'none', 'important');
+                }
+            }
+        });
 
-    if (esCoincidenciaExacta) {
-        btn.style.setProperty('display', 'flex', 'important');
-        btn.classList.add('quiniela-activa');
-    } else {
-        // Si es el botón de "Cambiar Usuario" no lo ocultamos
-        if (btn.id !== 'btn-volver-lista') {
-            btn.style.setProperty('display', 'none', 'important');
+        // Ocultar el botón de guardar (como pediste)
+        const btnSave = document.querySelector('.btn-save');
+        if (btnSave) {
+            btnSave.style.display = 'none';
         }
-    }
-});
 
-// 3. Ocultar el botón de guardar (por clase)
-const btnGuardar = document.querySelector('.btn-save');
-if (btnGuardar) {
-    btnGuardar.style.display = 'none';
-}
-
+        // Mantenemos tu botón de volver intacto
         if (!document.getElementById('btn-volver-lista')) {
             const btnReset = document.createElement('button');
             btnReset.id = 'btn-volver-lista';
@@ -482,13 +504,16 @@ if (btnGuardar) {
             btnReset.style.backgroundColor = "#ff4444";
             btnReset.style.color = "white";
             btnReset.onclick = () => {
-                // Esto recarga la página con la instrucción de NO mostrar el modal
                 window.location.href = window.location.origin + window.location.pathname + "?nomodal=1";
             };
             document.getElementById('links-container').appendChild(btnReset);
         }
-    } catch (error) { console.error("Error al cargar:", error); }
+    } catch (error) { 
+        console.error("Error al cargar:", error); 
+    }
 }
+
+
 
 // 8. LÓGICA DE TORNEO (PROTEGIDA CONTRA DATOS FANTASMAS)
 function actualizarTorneo() {
