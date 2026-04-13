@@ -612,16 +612,13 @@ function ponerNombreEnCard(id, lado, nombre) {
 
 
 // 9. REPORTE MAESTRO CORREGIDO (Incluye Mejores Terceros y 2 Columnas A4)
+// 9. REPORTE MAESTRO CORREGIDO (Incluye Mejores Terceros y 2 Columnas A4)
 async function generarReporteMaestro() {
     try {
         const response = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await response.json();
-        
-        if (!datos || datos.length === 0) {
-            return alert("No hay datos disponibles para generar el reporte.");
-        }
+        if (!datos || datos.length === 0) return alert("No hay datos.");
 
-        // Agrupamos las predicciones por usuario
         const agrupado = datos.reduce((acc, row) => {
             if (!acc[row.nombre_usuario]) acc[row.nombre_usuario] = [];
             acc[row.nombre_usuario].push(row);
@@ -629,111 +626,125 @@ async function generarReporteMaestro() {
         }, {});
 
         let htmlReporte = `<html><head>
-            <title>Reporte Maestro - 2 Columnas</title>
+            <title>Reporte Maestro A4</title>
             <style>
-                @page { size: A4; margin: 10mm; }
-                body { font-family: Arial, sans-serif; font-size: 10px; background: #f4f4f4; padding: 20px; }
-                .report-container { 
-                    background: white; padding: 10mm; width: 190mm; margin: 0 auto 20px auto; 
-                    box-shadow: 0 0 10px rgba(0,0,0,0.1); page-break-after: always;
-                }
-                h2 { color: #01215b; text-align: center; border-bottom: 2px solid #01215b; margin-bottom: 15px; }
-                .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-                th { background: #01215b; color: white; padding: 4px; border: 1px solid #01215b; font-size: 9px; }
-                td { border: 1px solid #ddd; padding: 3px; text-align: center; }
-                .col-id { background: #f9f9f9; width: 25px; font-weight: bold; }
-                .equipo-txt { text-align: left; width: 85px; font-weight: bold; overflow: hidden; white-space: nowrap; }
-                .marcador { background: #fffde7; width: 20px; font-weight: bold; border: 1px solid #ffe57f; }
-                .no-print { display: block; width: 200px; margin: 0 auto 20px; padding: 10px; cursor: pointer; }
-                @media print { .no-print { display: none; } }
+                @page { size: A4; margin: 8mm; }
+                @media print { .no-print { display: none; } .page-break { page-break-after: always; } }
+                body { font-family: 'Segoe UI', Arial, sans-serif; padding: 10px; background: #f4f4f4; }
+                .report-container { background: white; padding: 5mm; width: 194mm; margin: 0 auto 15px auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+                h2 { color: #01215b; text-align: center; border-bottom: 2px solid #01215b; margin: 0 0 10px 0; font-size: 18px; }
+                .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+                table { width: 100%; border-collapse: collapse; font-size: 8.5px; }
+                th { background: #01215b; color: white; padding: 3px; border: 1px solid #01215b; }
+                td { border: 1px solid #eee; padding: 2px; text-align: center; }
+                .col-id { background: #f8f8f8; font-weight: bold; width: 20px; }
+                .equipo-txt { text-align: left; font-weight: 600; width: 35%; overflow: hidden; white-space: nowrap; }
+                .marcador-col { width: 20px; font-weight: bold; background-color: #fffde7; }
+                .col-desempate { color: #d32f2f; font-size: 7.5px; width: 25px; }
+                .btn-print { display: block; width: 300px; margin: 20px auto; padding: 15px; background: #2c3e50; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
             </style>
         </head><body>
-            <button class="no-print" onclick="window.print()">IMPRIMIR TODO EL REPORTE</button>`;
+            <button class="btn-print no-print" onclick="window.print()">📥 IMPRIMIR REPORTE (A4 - 2 COLUMNAS)</button>`;
 
         for (const usuario in agrupado) {
             const prediccionesUser = agrupado[usuario];
-            
-            // IMPORTANTE: Ordenamos por ID para que no salgan mezclados
-            prediccionesUser.sort((a, b) => a.id - b.id);
+            let nombresDinamicos = {}; 
+            let datosGrupos = {};
 
-            // Diccionario para guardar quién va ganando y pasarlo a la siguiente fase
-            let nombresFaseSiguiente = {};
-
-            // --- LÓGICA DE NOMBRES (PROCESAMIENTO) ---
-            prediccionesUser.forEach(p => {
-                // Buscamos la info del partido original (equipos base o referencias tipo 1A, 2B)
-                const infoOriginal = partidosData.find(m => m.id === p.id);
-                if (!infoOriginal) return;
-
-                // Si el nombre es una referencia (ej: "1A"), buscamos el nombre real que guardamos antes
-                let localFinal = nombresFaseSiguiente[infoOriginal.local] || infoOriginal.local;
-                let visitaFinal = nombresFaseSiguiente[infoOriginal.visita] || infoOriginal.visita;
-
-                // Guardamos los nombres finales en el objeto de la predicción para usarlos al dibujar
-                p.nombreLocalReal = localFinal;
-                p.nombreVisitaReal = visitaFinal;
-
-                // Si es eliminatoria, calculamos quién avanza para los siguientes partidos
-                if (p.id >= 73) {
-                    let ganador;
-                    if (p.gl > p.gv) ganador = localFinal;
-                    else if (p.gv > p.gl) ganador = visitaFinal;
-                    else {
-                        // Si hay empate, usamos los penales (dl y dv)
-                        ganador = (p.dl > p.dv) ? localFinal : visitaFinal;
+            // --- 1. LÓGICA DE GRUPOS (1A, 2A, 3A...) ---
+            const letrasGrupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
+            letrasGrupos.forEach(letra => {
+                let tabla = {};
+                partidosData.filter(p => p.grupo === letra).forEach(p => {
+                    const pred = prediccionesUser.find(pr => pr.id === p.id);
+                    if (pred) {
+                        const gL = pred.gl, gV = pred.gv;
+                        if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0 };
+                        if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0 };
+                        tabla[p.local].gf += gL; tabla[p.visita].gf += gV;
+                        tabla[p.local].dg += (gL - gV); tabla[p.visita].dg += (gV - gL);
+                        if (gL > gV) tabla[p.local].pts += 3;
+                        else if (gV > gL) tabla[p.visita].pts += 3;
+                        else { tabla[p.local].pts += 1; tabla[p.visita].pts += 1; }
                     }
-                    nombresFaseSiguiente[`G${p.id}`] = ganador;
-                }
-                // Aquí podrías añadir la lógica de los mejores terceros (3T1, etc.) si la necesitas
+                });
+                let ranking = Object.values(tabla).sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
+                datosGrupos[letra] = { ranking };
+                if (ranking[0]) nombresDinamicos[`1${letra}`] = ranking[0].nombre;
+                if (ranking[1]) nombresDinamicos[`2${letra}`] = ranking[1].nombre;
+                if (ranking[2]) nombresDinamicos[`3${letra}`] = ranking[2].nombre;
             });
 
-            // --- DIBUJAR LAS 2 COLUMNAS ---
-            htmlReporte += `<div class="report-container">
+            // --- 2. LÓGICA DE MEJORES TERCEROS (3T1, 3T2...) ---
+            const mejoresTerceros = [];
+            Object.keys(datosGrupos).forEach(l => {
+                if (datosGrupos[l].ranking && datosGrupos[l].ranking[2]) {
+                    mejoresTerceros.push(datosGrupos[l].ranking[2]);
+                }
+            });
+            mejoresTerceros.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
+            mejoresTerceros.slice(0, 8).forEach((t, i) => {
+                nombresDinamicos[`3T${i+1}`] = t.nombre;
+            });
+
+            // --- 3. LÓGICA DE AVANCE ELIMINATORIO (G73, G74, P101...) ---
+            // Ordenar por ID para procesar los ganadores en orden cronológico
+            const predOrdenadas = [...prediccionesUser].sort((a, b) => a.id - b.id);
+            
+            predOrdenadas.forEach(row => {
+                if (row.id >= 73) {
+                    const pInfo = partidosData.find(p => p.id === row.id);
+                    if(!pInfo) return;
+
+                    let nL = nombresDinamicos[pInfo.local] || pInfo.local;
+                    let nV = nombresDinamicos[pInfo.visita] || pInfo.visita;
+                    
+                    let ganador, perdedor;
+                    if (row.gl > row.gv) { ganador = nL; perdedor = nV; }
+                    else if (row.gv > row.gl) { ganador = nV; perdedor = nL; }
+                    else {
+                        ganador = (row.dl > row.dv) ? nL : nV;
+                        perdedor = (row.dl > row.dv) ? nV : nL;
+                    }
+                    nombresDinamicos[`G${row.id}`] = ganador;
+                    nombresDinamicos[`P${row.id}`] = perdedor;
+                }
+            });
+
+            // --- 4. RENDERIZADO FINAL EN 2 COLUMNAS ---
+            htmlReporte += `<div class="report-container page-break">
                 <h2>Quiniela de: ${usuario}</h2>
                 <div class="grid-container">`;
 
             const mitad = Math.ceil(prediccionesUser.length / 2);
             for (let i = 0; i < 2; i++) {
-                const columna = prediccionesUser.slice(i * mitad, (i + 1) * mitad);
                 htmlReporte += `<div><table>
-                    <thead>
-                        <tr>
-                            <th class="col-id">#</th>
-                            <th>Local</th>
-                            <th>L</th>
-                            <th>V</th>
-                            <th>Visita</th>
-                            <th>P</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th class="col-id">#</th><th>Local</th><th>L</th><th>V</th><th>Visita</th><th>P</th></tr></thead>
                     <tbody>`;
-
-                columna.forEach(p => {
-                    let penales = (p.dl !== null && p.id >= 73) ? `${p.dl}-${p.dv}` : "-";
+                const chunk = prediccionesUser.slice(i * mitad, (i + 1) * mitad);
+                chunk.forEach(row => {
+                    const p = partidosData.find(item => item.id === row.id) || {};
+                    let nomL = nombresDinamicos[p.local] || p.local;
+                    let nomV = nombresDinamicos[p.visita] || p.visita;
+                    let penales = (row.dl !== null) ? `${row.dl}-${row.dv}` : "-";
                     htmlReporte += `<tr>
-                        <td class="col-id">${p.id}</td>
-                        <td class="equipo-txt">${p.nombreLocalReal || '---'}</td>
-                        <td class="marcador">${p.gl}</td>
-                        <td class="marcador">${p.gv}</td>
-                        <td class="equipo-txt">${p.nombreVisitaReal || '---'}</td>
-                        <td style="font-size:8px; color:red;">${penales}</td>
+                        <td class="col-id">${row.id}</td>
+                        <td class="equipo-txt">${nomL}</td>
+                        <td class="marcador-col">${row.gl}</td>
+                        <td class="marcador-col">${row.gv}</td>
+                        <td class="equipo-txt">${nomV}</td>
+                        <td class="col-desempate">${penales}</td>
                     </tr>`;
                 });
                 htmlReporte += `</tbody></table></div>`;
             }
             htmlReporte += `</div></div>`;
         }
-
         htmlReporte += `</body></html>`;
-        const ventana = window.open('', '_blank');
-        ventana.document.write(htmlReporte);
-        ventana.document.close();
-
-    } catch (error) {
-        console.error("Error detallado:", error);
-        alert("Hubo un error al procesar los nombres. Revisa la consola.");
-    }
+        const v = window.open('', '_blank');
+        v.document.write(htmlReporte);
+        v.document.close();
+    } catch (e) { console.error(e); alert("Error al generar el reporte."); }
 }
 
 
