@@ -294,20 +294,22 @@ async function actualizarListaLinks() {
         const usuarios = await resNombres.json();
         const resultadosOficiales = await resOficiales.json();
         let listaRanking = [];
-
-        // ... (el resto de tu lógica de puntos igual) ...
-        // Supongamos que ya tienes listaRanking llena:
-
+        for (const user of usuarios) {
+            const resPred = await fetch(`${API_URL}/cargar/${user.nombre_usuario}`);
+            const predicciones = await resPred.json();
+            let ptsTotales = 0;
+            predicciones.forEach(pred => {
+                const oficial = resultadosOficiales.find(r => r.id === pred.id);
+                if (oficial) ptsTotales += calcularLogicaPuntos(pred.gl, pred.gv, oficial.gl, oficial.gv);
+            });
+            listaRanking.push({ nombre: user.nombre_usuario, puntos: ptsTotales });
+        }
+        listaRanking.sort((a, b) => b.puntos - a.puntos);
         container.innerHTML = "";
         listaRanking.forEach((u, index) => {
             const icono = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : "•"));
             const btn = document.createElement('button');
             btn.className = "btn-link";
-
-            // --- LA CLAVE ESTÁ AQUÍ ---
-            // Guardamos el nombre real en minúsculas en un atributo oculto
-            btn.setAttribute('data-nombre', u.nombre.trim().toLowerCase());
-
             btn.innerHTML = `<span>${icono} ${u.nombre}</span><span class="badge-puntos">${u.puntos} pts</span>`;
             btn.onclick = () => cargarDesdeDB(u.nombre);
             container.appendChild(btn);
