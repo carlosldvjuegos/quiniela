@@ -361,11 +361,12 @@ async function calcularPuntos() {
     } catch (e) { alert("Error al obtener resultados oficiales."); }
 }
 
-// 6. GUARDAR (CORREGIDO PARA EVITAR DUPLICADOS)
+
+
+// 6. GUARDAR (CORREGIDO CON CONFIRMACIÓN Y FILTROS)
 async function guardarQuinielaCompleta() {
     const inputNombre = document.getElementById('nombre-usuario');
     const nombre = inputNombre.value.trim();
-    // Seleccionamos el botón por su clase (ya que no tiene ID)
     const btnGuardar = document.querySelector('.btn-save');
 
     // 1. CONDICIÓN: Nombre obligatorio
@@ -374,6 +375,14 @@ async function guardarQuinielaCompleta() {
         inputNombre.focus();
         return;
     }
+
+    // --- NUEVA ADICIÓN: VENTANA DE CONFIRMACIÓN ---
+    const mensajeConfirmacion = "¿Estás seguro que los datos están correctos? Una vez los datos se han guardado, no se pueden modificar.";
+    if (!confirm(mensajeConfirmacion)) {
+        // Si el usuario presiona "Cancelar", salimos de la función
+        return;
+    }
+    // ----------------------------------------------
 
     // 2. RECOPILAR PREDICCIONES Y VALIDAR QUE HAYA AL MENOS UNA
     const predicciones = [];
@@ -394,7 +403,6 @@ async function guardarQuinielaCompleta() {
         }
     });
 
-    // CONDICIÓN: Al menos una predicción
     if (predicciones.length === 0) {
         alert("La quiniela está vacía. Debes anotar al menos un resultado antes de guardar.");
         return;
@@ -428,10 +436,8 @@ async function guardarQuinielaCompleta() {
             btnGuardar.style.display = 'none';
         }
         
-        // Bloqueamos el nombre para que no lo cambien
         inputNombre.readOnly = true;
 
-        // Actualizamos el ranking/lista de links
         if (typeof actualizarListaLinks === 'function') {
             actualizarListaLinks();
         }
@@ -441,6 +447,8 @@ async function guardarQuinielaCompleta() {
         alert("Hubo un error al guardar. Revisa tu conexión."); 
     }
 }
+
+
 
 // 7. CARGAR DESDE DB (MEJORADO CON DESEMPATE)
 async function cargarDesdeDB(nombre) {
