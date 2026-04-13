@@ -35,7 +35,7 @@ header {
     align-items: flex-start;
 }
 
-/* SIDEBAR */
+/* SIDEBAR CON SCROLL INDEPENDIENTE */
 .sidebar {
     width: 280px;
     min-width: 280px;
@@ -45,6 +45,32 @@ header {
     padding: 15px;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+
+    /* --- NUEVAS REGLAS PARA EL SCROLL --- */
+    max-height: 85vh;          /* Altura máxima: 85% de la pantalla */
+    display: flex;             /* Usamos flex para organizar el título y la lista */
+    flex-direction: column;
+}
+
+/* Contenedor interno para los botones (donde ocurre la magia) */
+#links-container {
+    overflow-y: auto;          /* Activa el scroll vertical */
+    overflow-x: hidden;        /* Evita scroll horizontal innecesario */
+    flex-grow: 1;              /* Ocupa el espacio restante */
+    padding-right: 5px;        /* Espacio para la barra de scroll */
+    -webkit-overflow-scrolling: touch; /* Scroll suave en iPhone */
+}
+
+/* Diseño de la barra de scroll para que se vea elegante */
+#links-container::-webkit-scrollbar {
+    width: 6px;
+}
+#links-container::-webkit-scrollbar-thumb {
+    background: #d4af37;       /* Color oro como tu marca */
+    border-radius: 10px;
+}
+#links-container::-webkit-scrollbar-track {
+    background: #f0f2f5;
 }
 
 .sidebar h3 {
@@ -340,12 +366,14 @@ input, button, select, textarea {
 
     .sidebar {
         width: 100%;
-        position: sticky; 
-        top: 0;
+        position: relative; /* En móvil es mejor que no sea sticky si vas a scrollear */
+        max-height: 400px;  /* Altura fija en móviles para que no tape todo */
         z-index: 100;
         background: white;
-        margin-bottom: 10px;
+        margin-bottom: 20px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
     }
 
     .equipo-col {
