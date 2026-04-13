@@ -176,13 +176,11 @@ function renderizarPartidosAdmin() {
                 <div class="marcador-col">
                     <input type="number" 
                            id="R-L-${p.id}" 
-                           class="input-gol" 
-                           placeholder="0">
+                           class="input-gol">
                     <span class="separador">-</span>
                     <input type="number" 
                            id="R-V-${p.id}" 
-                           class="input-gol" 
-                           placeholder="0">
+                           class="input-gol">
                 </div>
 
                 <div class="equipo-col right">
