@@ -338,19 +338,19 @@ async function calcularPuntos() {
 
 // 6. GUARDAR (CORREGIDO PARA EVITAR DUPLICADOS)
 async function guardarQuinielaCompleta() {
-    const nombre = document.getElementById('nombre-usuario').value;
-    const btnGuardar = document.querySelector("button[onclick='guardarQuinielaCompleta()']");
+    const inputNombre = document.getElementById('nombre-usuario');
+    const nombre = inputNombre.value.trim();
+    // Seleccionamos el botón por su clase (ya que no tiene ID)
+    const btnGuardar = document.querySelector('.btn-save');
 
-    if (!nombre) return alert("Escribe tu nombre.");
-
-    // --- PASO 1: DESACTIVAR EL BOTÓN ---
-    if (btnGuardar) {
-        btnGuardar.disabled = true;
-        btnGuardar.innerText = "⏳ Guardando...";
-        btnGuardar.style.opacity = "0.6";
-        btnGuardar.style.cursor = "not-allowed";
+    // 1. CONDICIÓN: Nombre obligatorio
+    if (!nombre) {
+        alert("¡Atención! Debes escribir un nombre para tu quiniela.");
+        inputNombre.focus();
+        return;
     }
 
+    // 2. RECOPILAR PREDICCIONES Y VALIDAR QUE HAYA AL MENOS UNA
     const predicciones = [];
     partidosData.forEach(p => {
         const gl = document.getElementById(`L-${p.id}`).value;
@@ -369,26 +369,51 @@ async function guardarQuinielaCompleta() {
         }
     });
 
+    // CONDICIÓN: Al menos una predicción
+    if (predicciones.length === 0) {
+        alert("La quiniela está vacía. Debes anotar al menos un resultado antes de guardar.");
+        return;
+    }
+
     try {
+        // 3. CONDICIÓN: Revisar si el nombre ya existe en la base de datos
+        const resCheck = await fetch(`${API_URL}/registros`);
+        const usuariosExistentes = await resCheck.json();
+        const existe = usuariosExistentes.some(u => u.nombre_usuario.toLowerCase() === nombre.toLowerCase());
+
+        if (existe) {
+            alert(`Ya existe una quiniela con el nombre "${nombre}". Por favor, elija otro nombre.`);
+            inputNombre.focus();
+            inputNombre.select();
+            return;
+        }
+
+        // 4. SI TODO ESTÁ BIEN, GUARDAMOS
         const res = await fetch(`${API_URL}/guardar`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ nombre, predicciones })
         });
+        
         const data = await res.json();
-        alert(data.mensaje);
-        actualizarListaLinks();
-    } catch (e) { 
-        alert("Error al guardar."); 
-    } finally {
-        // --- PASO 2: REACTIVAR EL BOTÓN ---
-        // Se ejecuta tanto si sale bien como si sale mal (error de red)
+        alert("¡Quiniela guardada con éxito!");
+
+        // 5. HACER DESAPARECER EL BOTÓN
         if (btnGuardar) {
-            btnGuardar.disabled = false;
-            btnGuardar.innerText = "Guardar Quiniela"; // Pon aquí el texto original de tu botón
-            btnGuardar.style.opacity = "1";
-            btnGuardar.style.cursor = "pointer";
+            btnGuardar.style.display = 'none';
         }
+        
+        // Bloqueamos el nombre para que no lo cambien
+        inputNombre.readOnly = true;
+
+        // Actualizamos el ranking/lista de links
+        if (typeof actualizarListaLinks === 'function') {
+            actualizarListaLinks();
+        }
+
+    } catch (e) { 
+        console.error(e);
+        alert("Hubo un error al guardar. Revisa tu conexión."); 
     }
 }
 
