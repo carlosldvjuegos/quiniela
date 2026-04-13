@@ -423,6 +423,7 @@ async function guardarQuinielaCompleta() {
         for (let input of inputsGoles) {
             if (input.value.trim() === "") {
                 primerVacio = input; // Guardamos el primero que encontremos
+                primerVacio.style.borderColor = "red"; // Opcional: marcarlo en rojo para que resalte
                 break; 
             }
         }
