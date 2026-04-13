@@ -294,22 +294,20 @@ async function actualizarListaLinks() {
         const usuarios = await resNombres.json();
         const resultadosOficiales = await resOficiales.json();
         let listaRanking = [];
-        for (const user of usuarios) {
-            const resPred = await fetch(`${API_URL}/cargar/${user.nombre_usuario}`);
-            const predicciones = await resPred.json();
-            let ptsTotales = 0;
-            predicciones.forEach(pred => {
-                const oficial = resultadosOficiales.find(r => r.id === pred.id);
-                if (oficial) ptsTotales += calcularLogicaPuntos(pred.gl, pred.gv, oficial.gl, oficial.gv);
-            });
-            listaRanking.push({ nombre: user.nombre_usuario, puntos: ptsTotales });
-        }
-        listaRanking.sort((a, b) => b.puntos - a.puntos);
+
+        // ... (el resto de tu lógica de puntos igual) ...
+        // Supongamos que ya tienes listaRanking llena:
+
         container.innerHTML = "";
         listaRanking.forEach((u, index) => {
             const icono = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : "•"));
             const btn = document.createElement('button');
             btn.className = "btn-link";
+
+            // --- LA CLAVE ESTÁ AQUÍ ---
+            // Guardamos el nombre real en minúsculas en un atributo oculto
+            btn.setAttribute('data-nombre', u.nombre.trim().toLowerCase());
+
             btn.innerHTML = `<span>${icono} ${u.nombre}</span><span class="badge-puntos">${u.puntos} pts</span>`;
             btn.onclick = () => cargarDesdeDB(u.nombre);
             container.appendChild(btn);
@@ -442,38 +440,33 @@ async function cargarDesdeDB(nombre) {
 
         actualizarTorneo();
 
-        // --- Lógica de filtrado de botones por esta ---
-// --- Reemplaza la lógica de los botones en cargarDesdeDB con esto ---
-const botones = document.querySelectorAll('.btn-link');
+        // --- NUEVA LÓGICA DE FILTRADO INFALIBLE ---
+        const botones = document.querySelectorAll('.btn-link');
+        const nombreBuscado = nombre.trim().toLowerCase();
 
-botones.forEach(btn => {
-    // 1. Obtenemos el texto total del botón
-    const textoBoton = btn.innerText.toLowerCase();
-    const nombreBuscado = nombre.toLowerCase();
+        botones.forEach(btn => {
+            // Leemos el atributo oculto que NO tiene puntos ni emojis
+            const nombreEnBoton = btn.getAttribute('data-nombre');
 
-    // 2. Verificamos si el nombre está en el botón, 
-    // pero nos aseguramos de que sea el nombre completo y no un pedazo.
-    // Usamos una expresión regular para buscar el nombre exacto "aislado"
-    const regex = new RegExp("\\b" + nombreBuscado + "\\b", "i");
-    const esCoincidenciaExacta = regex.test(textoBoton);
+            // Solo mostramos si es exactamente igual al nombre de la quiniela
+            if (nombreEnBoton === nombreBuscado) {
+                btn.style.setProperty('display', 'flex', 'important');
+                btn.classList.add('quiniela-activa');
+            } else {
+                // No ocultamos el botón rojo de cambiar usuario
+                if (btn.id !== 'btn-volver-lista') {
+                    btn.style.setProperty('display', 'none', 'important');
+                }
+            }
+        });
 
-    if (esCoincidenciaExacta) {
-        btn.style.setProperty('display', 'flex', 'important');
-        btn.classList.add('quiniela-activa');
-    } else {
-        // Si es el botón de "Cambiar Usuario" no lo ocultamos
-        if (btn.id !== 'btn-volver-lista') {
-            btn.style.setProperty('display', 'none', 'important');
+        // Ocultar el botón de guardar
+        const btnGuardar = document.querySelector('.btn-save');
+        if (btnGuardar) {
+            btnGuardar.style.display = 'none';
         }
-    }
-});
 
-// 3. Ocultar el botón de guardar (por clase)
-const btnGuardar = document.querySelector('.btn-save');
-if (btnGuardar) {
-    btnGuardar.style.display = 'none';
-}
-
+        // Crear botón de volver si no existe
         if (!document.getElementById('btn-volver-lista')) {
             const btnReset = document.createElement('button');
             btnReset.id = 'btn-volver-lista';
@@ -482,7 +475,6 @@ if (btnGuardar) {
             btnReset.style.backgroundColor = "#ff4444";
             btnReset.style.color = "white";
             btnReset.onclick = () => {
-                // Esto recarga la página con la instrucción de NO mostrar el modal
                 window.location.href = window.location.origin + window.location.pathname + "?nomodal=1";
             };
             document.getElementById('links-container').appendChild(btnReset);
