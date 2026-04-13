@@ -625,7 +625,7 @@ async function generarReporteMaestro() {
         }, {});
 
         let htmlReporte = `<html><head>
-            <title>Reporte Maestro A4 - 2 Col</title>
+            <title>Reporte Maestro</title>
             <style>
                 @page { size: A4; margin: 8mm; }
                 @media print {
@@ -650,7 +650,7 @@ async function generarReporteMaestro() {
                 .btn-print { display: block; width: 280px; margin: 10px auto; padding: 12px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
             </style>
         </head><body>
-            <button class="btn-print no-print" onclick="window.print()">📥 IMPRIMIR REPORTE (2 COLUMNAS A4)</button>`;
+            <button class="btn-print no-print" onclick="window.print()">📥 IMPRIMIR REPORTE</button>`;
 
         for (const usuario in agrupado) {
             const prediccionesUser = agrupado[usuario];
