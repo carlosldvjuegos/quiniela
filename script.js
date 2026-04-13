@@ -247,9 +247,9 @@ async function renderizarFixture() {
                     <div id="extra-${p.id}" class="marcador-desempate" style="display: none;">
                         <span class="etiqueta-desempate">Solo para Clasificación</span>
                         <div class="inputs-desempate">
-                            <input type="number" id="DL-${p.id}" class="in-desempate" placeholder="0" oninput="actualizarTorneo()">
+                            <input type="number" id="DL-${p.id}" class="in-desempate" placeholder="1" oninput="actualizarTorneo()">
                             <span class="sep">:</span>
-                            <input type="number" id="DV-${p.id}" class="in-desempate" placeholder="0" oninput="actualizarTorneo()">
+                            <input type="number" id="DV-${p.id}" class="in-desempate" placeholder="1" oninput="actualizarTorneo()">
                         </div>
                     </div>` : ''}
                 </div>
