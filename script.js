@@ -443,28 +443,36 @@ async function cargarDesdeDB(nombre) {
         actualizarTorneo();
 
         // --- Lógica de filtrado de botones por esta ---
+// --- Reemplaza la lógica de los botones en cargarDesdeDB con esto ---
 const botones = document.querySelectorAll('.btn-link');
 
-    botones.forEach(btn => {
-        // 1. Limpiamos el texto del botón: quitamos emojis y espacios
-        // Esto deja solo el nombre puro del usuario
-        const nombreEnBoton = btn.innerText.replace(/[🥇🥈🥉•]/g, '').trim().toLowerCase();
-        const nombreBuscado = nombre.trim().toLowerCase();
-    
-        // 2. Comparamos si son EXACTAMENTE iguales
-        if (nombreEnBoton === nombreBuscado) {
-            btn.style.setProperty('display', 'flex', 'important');
-            btn.classList.add('quiniela-activa');
-        } else {
+botones.forEach(btn => {
+    // 1. Obtenemos el texto total del botón
+    const textoBoton = btn.innerText.toLowerCase();
+    const nombreBuscado = nombre.toLowerCase();
+
+    // 2. Verificamos si el nombre está en el botón, 
+    // pero nos aseguramos de que sea el nombre completo y no un pedazo.
+    // Usamos una expresión regular para buscar el nombre exacto "aislado"
+    const regex = new RegExp("\\b" + nombreBuscado + "\\b", "i");
+    const esCoincidenciaExacta = regex.test(textoBoton);
+
+    if (esCoincidenciaExacta) {
+        btn.style.setProperty('display', 'flex', 'important');
+        btn.classList.add('quiniela-activa');
+    } else {
+        // Si es el botón de "Cambiar Usuario" no lo ocultamos
+        if (btn.id !== 'btn-volver-lista') {
             btn.style.setProperty('display', 'none', 'important');
         }
-    });
-
-    // 3. Aprovechamos para ocultar el botón de guardar como pediste
-    const btnGuardar = document.querySelector('.btn-save');
-    if (btnGuardar) {
-        btnGuardar.style.display = 'none';
     }
+});
+
+// 3. Ocultar el botón de guardar (por clase)
+const btnGuardar = document.querySelector('.btn-save');
+if (btnGuardar) {
+    btnGuardar.style.display = 'none';
+}
 
         if (!document.getElementById('btn-volver-lista')) {
             const btnReset = document.createElement('button');
