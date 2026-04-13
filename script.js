@@ -414,6 +414,30 @@ async function guardarQuinielaCompleta() {
             return;
         }
 
+
+    // --- NUEVA VALIDACIÓN: CAMPOS VACÍOS EN LOS PARTIDOS ---
+        // Buscamos todos los inputs de goles (L- y V-)
+        const inputsGoles = document.querySelectorAll('.marcador-col input');
+        let primerVacio = null;
+    
+        for (let input of inputsGoles) {
+            if (input.value.trim() === "") {
+                primerVacio = input; // Guardamos el primero que encontremos
+                break; 
+            }
+        }
+    
+        if (primerVacio) {
+            alert("Todavía hay campos vacíos en la quiniela. Por favor, completa todos los resultados.");
+            primerVacio.focus(); // Posiciona el cursor en el primer campo vacío
+            primerVacio.style.borderColor = "red"; // Opcional: marcarlo en rojo para que resalte
+            return; // Detiene el guardado
+        }
+        // -------------------------------------------------------
+
+
+
+        
         // --- NUEVA ADICIÓN: VENTANA DE CONFIRMACIÓN ---
         const mensajeConfirmacion = "¿Estás seguro que los datos están correctos? Una vez los datos se han guardado, no se pueden modificar.";
             if (!confirm(mensajeConfirmacion)) {
