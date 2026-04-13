@@ -441,13 +441,21 @@ async function cargarDesdeDB(nombre) {
         });
 
         actualizarTorneo();
-        
+
         const botones = document.querySelectorAll('.btn-link');
         botones.forEach(btn => {
-            if (btn.innerText.toLowerCase().includes(nombre.toLowerCase())) {
+            // Obtenemos el texto del botón y limpiamos espacios o emojis
+            // Esto asegura que comparemos solo el nombre de usuario
+            const nombreEnBoton = btn.innerText.toLowerCase();
+            const nombreBuscado = nombre.toLowerCase();
+        
+            // CAMBIO CLAVE: Usamos una comparación más estricta
+            // En lugar de .includes(), verificamos si el nombre está contenido de forma aislada
+            if (nombreEnBoton.includes(nombreBuscado) && btn.innerText.trim().split(' ').includes(nombre)) {
                 btn.style.setProperty('display', 'flex', 'important');
                 btn.classList.add('quiniela-activa');
             } else {
+                // Si no es el nombre exacto, se oculta
                 btn.style.setProperty('display', 'none', 'important');
             }
         });
