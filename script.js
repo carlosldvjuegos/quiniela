@@ -336,10 +336,21 @@ async function calcularPuntos() {
     } catch (e) { alert("Error al obtener resultados oficiales."); }
 }
 
-// 6. GUARDAR (MEJORADO CON DESEMPATE)
+// 6. GUARDAR (CORREGIDO PARA EVITAR DUPLICADOS)
 async function guardarQuinielaCompleta() {
     const nombre = document.getElementById('nombre-usuario').value;
+    const btnGuardar = document.querySelector("button[onclick='guardarQuinielaCompleta()']");
+
     if (!nombre) return alert("Escribe tu nombre.");
+
+    // --- PASO 1: DESACTIVAR EL BOTÓN ---
+    if (btnGuardar) {
+        btnGuardar.disabled = true;
+        btnGuardar.innerText = "⏳ Guardando...";
+        btnGuardar.style.opacity = "0.6";
+        btnGuardar.style.cursor = "not-allowed";
+    }
+
     const predicciones = [];
     partidosData.forEach(p => {
         const gl = document.getElementById(`L-${p.id}`).value;
@@ -357,6 +368,7 @@ async function guardarQuinielaCompleta() {
             });
         }
     });
+
     try {
         const res = await fetch(`${API_URL}/guardar`, {
             method: 'POST',
@@ -366,7 +378,18 @@ async function guardarQuinielaCompleta() {
         const data = await res.json();
         alert(data.mensaje);
         actualizarListaLinks();
-    } catch (e) { alert("Error al guardar."); }
+    } catch (e) { 
+        alert("Error al guardar."); 
+    } finally {
+        // --- PASO 2: REACTIVAR EL BOTÓN ---
+        // Se ejecuta tanto si sale bien como si sale mal (error de red)
+        if (btnGuardar) {
+            btnGuardar.disabled = false;
+            btnGuardar.innerText = "Guardar Quiniela"; // Pon aquí el texto original de tu botón
+            btnGuardar.style.opacity = "1";
+            btnGuardar.style.cursor = "pointer";
+        }
+    }
 }
 
 // 7. CARGAR DESDE DB (MEJORADO CON DESEMPATE)
