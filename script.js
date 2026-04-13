@@ -627,55 +627,27 @@ async function generarReporteMaestro() {
         let htmlReporte = `<html><head>
             <title>Reporte Maestro A4 - 2 Col</title>
             <style>
-                @page {
-                    size: A4;
-                    margin: 8mm; /* Margen ligeramente menor para maximizar espacio */
-                }
+                @page { size: A4; margin: 8mm; }
                 @media print {
                     .no-print { display: none; }
                     .page-break { page-break-after: always; border: none !important; box-shadow: none !important; margin: 0 !important; }
                     body { background: white; padding: 0; }
                 }
                 body { font-family: 'Segoe UI', Arial, sans-serif; padding: 10px; background: #f0f0f0; color: #1a1a1a; }
-                
                 .report-container { 
-                    background: white; 
-                    padding: 8mm; 
-                    width: 194mm; 
-                    margin: 0 auto 15px auto;
+                    background: white; padding: 8mm; width: 194mm; margin: 0 auto 15px auto;
                     box-shadow: 0 0 10px rgba(0,0,0,0.1);
                 }
-
-                h2 { 
-                    color: #01215b; 
-                    text-align: center; 
-                    border-bottom: 2px solid #01215b; 
-                    margin: 0 0 10px 0; 
-                    font-size: 20px;
-                    text-transform: uppercase;
-                }
-
-                /* Layout de 2 columnas */
-                .grid-container { 
-                    display: grid; 
-                    grid-template-columns: 1fr 1fr; 
-                    gap: 15px; 
-                }
-
-                table { width: 100%; border-collapse: collapse; font-size: 9px; } /* Fuente ajustada para 52 filas */
+                h2 { color: #01215b; text-align: center; border-bottom: 2px solid #01215b; margin: 0 0 10px 0; font-size: 20px; text-transform: uppercase; }
+                .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+                table { width: 100%; border-collapse: collapse; font-size: 9px; }
                 th { background: #01215b; color: white; padding: 4px 2px; border: 1px solid #01215b; }
                 td { border: 1px solid #eee; padding: 1.5px 3px; text-align: center; line-height: 1; }
-                
                 .col-id { background: #f8f8f8; font-weight: bold; width: 22px; color: #777; font-size: 8px; }
                 .equipo-txt { text-align: left; font-weight: 600; width: 40%; }
                 .marcador-col { width: 22px; font-weight: bold; background-color: #fffde7; border: 1px solid #ffd600; }
                 .col-desempate { color: #d32f2f; font-size: 8px; width: 25px; background: #fafafa; }
-
-                .btn-print { 
-                    display: block; width: 280px; margin: 10px auto; padding: 12px; 
-                    background: #2c3e50; color: white; border: none; border-radius: 6px; 
-                    cursor: pointer; font-weight: bold;
-                }
+                .btn-print { display: block; width: 280px; margin: 10px auto; padding: 12px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
             </style>
         </head><body>
             <button class="btn-print no-print" onclick="window.print()">📥 IMPRIMIR REPORTE (2 COLUMNAS A4)</button>`;
@@ -683,8 +655,9 @@ async function generarReporteMaestro() {
         for (const usuario in agrupado) {
             const prediccionesUser = agrupado[usuario];
             let nombresDinamicos = {}; 
+            let tercerosCandidatos = []; // Nueva lista para guardar los 3ros de cada grupo
 
-            // --- Mantenemos tu lógica de nombres y avances ---
+            // --- 1. LÓGICA DE GRUPOS ACTUALIZADA ---
             const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
             grupos.forEach(letra => {
                 let tabla = {};
@@ -704,9 +677,17 @@ async function generarReporteMaestro() {
                 let ranking = Object.values(tabla).sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
                 if (ranking[0]) nombresDinamicos[`1${letra}`] = ranking[0].nombre;
                 if (ranking[1]) nombresDinamicos[`2${letra}`] = ranking[1].nombre;
+                // Guardamos el tercero para el ranking global de terceros
+                if (ranking[2]) tercerosCandidatos.push(ranking[2]);
             });
 
-            // Lógica de llaves simplificada
+            // --- 2. NUEVA LÓGICA: RANKING DE MEJORES TERCEROS ---
+            tercerosCandidatos.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
+            tercerosCandidatos.forEach((t, index) => {
+                nombresDinamicos[`3T${index + 1}`] = t.nombre;
+            });
+
+            // --- 3. TU LÓGICA DE AVANCES (Se mantiene intacta) ---
             const llavesAvance = [
                 { de: 73, a: 89 }, { de: 74, a: 89 }, { de: 75, a: 90 }, { de: 76, a: 90 },
                 { de: 77, a: 91 }, { de: 78, a: 91 }, { de: 79, a: 92 }, { de: 80, a: 92 },
@@ -736,29 +717,15 @@ async function generarReporteMaestro() {
                 }
             });
 
-            // --- GENERACIÓN DE 2 COLUMNAS ---
+            // --- 4. GENERACIÓN DE HTML (Mantenemos tus 2 columnas intactas) ---
             htmlReporte += `<div class="report-container page-break">
                 <h2>Quiniela: ${usuario}</h2>
                 <div class="grid-container">`;
 
-            const mitad = Math.ceil(prediccionesUser.length / 2); // 52 partidos por columna
-            
+            const mitad = Math.ceil(prediccionesUser.length / 2);
             for (let i = 0; i < 2; i++) {
-                htmlReporte += `<div><table>
-                    <thead>
-                        <tr>
-                            <th class="col-id">#</th>
-                            <th>Equipo Local</th>
-                            <th>L</th>
-                            <th>V</th>
-                            <th>Equipo Visita</th>
-                            <th>Des.</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
-                
+                htmlReporte += `<div><table><thead><tr><th class="col-id">#</th><th>Equipo Local</th><th>L</th><th>V</th><th>Equipo Visita</th><th>Des.</th></tr></thead><tbody>`;
                 const chunk = prediccionesUser.slice(i * mitad, (i + 1) * mitad);
-                
                 chunk.forEach(row => {
                     const p = partidosData.find(item => item.id === row.partido_id) || {};
                     let nombreL = nombresDinamicos[p.local] || p.local;
@@ -766,7 +733,6 @@ async function generarReporteMaestro() {
                     const dL = row.goles_desempate_local ?? "";
                     const dV = row.goles_desempate_visita ?? "";
                     const desTxt = (dL !== "" || dV !== "") ? `${dL}-${dV}` : "-";
-
                     htmlReporte += `<tr>
                         <td class="col-id">${row.partido_id}</td>
                         <td class="equipo-txt">${nombreL}</td>
