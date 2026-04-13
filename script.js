@@ -376,14 +376,7 @@ async function guardarQuinielaCompleta() {
         return;
     }
 
-    // --- NUEVA ADICIÓN: VENTANA DE CONFIRMACIÓN ---
-    const mensajeConfirmacion = "¿Estás seguro que los datos están correctos? Una vez los datos se han guardado, no se pueden modificar.";
-    if (!confirm(mensajeConfirmacion)) {
-        // Si el usuario presiona "Cancelar", salimos de la función
-        return;
-    }
-    // ----------------------------------------------
-
+    
     // 2. RECOPILAR PREDICCIONES Y VALIDAR QUE HAYA AL MENOS UNA
     const predicciones = [];
     partidosData.forEach(p => {
@@ -421,6 +414,15 @@ async function guardarQuinielaCompleta() {
             return;
         }
 
+        // --- NUEVA ADICIÓN: VENTANA DE CONFIRMACIÓN ---
+        const mensajeConfirmacion = "¿Estás seguro que los datos están correctos? Una vez los datos se han guardado, no se pueden modificar.";
+            if (!confirm(mensajeConfirmacion)) {
+                // Si el usuario presiona "Cancelar", salimos de la función
+                return;
+            }
+            // ----------------------------------------------
+
+        
         // 4. SI TODO ESTÁ BIEN, GUARDAMOS
         const res = await fetch(`${API_URL}/guardar`, {
             method: 'POST',
