@@ -625,26 +625,25 @@ async function generarReporteMaestro() {
         }, {});
 
         let htmlReporte = `<html><head>
-            <title>Reporte Maestro A4</title>
+            <title>Reporte Maestro A4 - 2 Col</title>
             <style>
                 @page {
                     size: A4;
-                    margin: 10mm;
+                    margin: 8mm; /* Margen ligeramente menor para maximizar espacio */
                 }
                 @media print {
                     .no-print { display: none; }
-                    .page-break { page-break-after: always; border: none !important; box-shadow: none !important; }
+                    .page-break { page-break-after: always; border: none !important; box-shadow: none !important; margin: 0 !important; }
                     body { background: white; padding: 0; }
                 }
-                body { font-family: 'Arial Narrow', sans-serif; padding: 20px; background: #f0f0f0; color: #1a1a1a; }
+                body { font-family: 'Segoe UI', Arial, sans-serif; padding: 10px; background: #f0f0f0; color: #1a1a1a; }
                 
                 .report-container { 
                     background: white; 
-                    padding: 10mm; 
-                    width: 190mm; /* Ancho ajustado para A4 */
-                    margin: 0 auto 20px auto;
+                    padding: 8mm; 
+                    width: 194mm; 
+                    margin: 0 auto 15px auto;
                     box-shadow: 0 0 10px rgba(0,0,0,0.1);
-                    min-height: 270mm; /* Casi el alto total de A4 */
                 }
 
                 h2 { 
@@ -652,43 +651,44 @@ async function generarReporteMaestro() {
                     text-align: center; 
                     border-bottom: 2px solid #01215b; 
                     margin: 0 0 10px 0; 
-                    padding-bottom: 5px;
-                    font-size: 18px; 
+                    font-size: 20px;
+                    text-transform: uppercase;
                 }
 
+                /* Layout de 2 columnas */
                 .grid-container { 
                     display: grid; 
-                    grid-template-columns: repeat(3, 1fr); 
-                    gap: 8px; 
+                    grid-template-columns: 1fr 1fr; 
+                    gap: 15px; 
                 }
 
-                table { width: 100%; border-collapse: collapse; font-size: 9.5px; }
-                th { background: #01215b; color: white; padding: 3px 1px; font-weight: bold; border: 1px solid #01215b; }
-                td { border: 1px solid #ccc; padding: 2px 1px; text-align: center; line-height: 1.1; }
+                table { width: 100%; border-collapse: collapse; font-size: 9px; } /* Fuente ajustada para 52 filas */
+                th { background: #01215b; color: white; padding: 4px 2px; border: 1px solid #01215b; }
+                td { border: 1px solid #eee; padding: 1.5px 3px; text-align: center; line-height: 1; }
                 
-                .col-id { background: #eee; font-weight: bold; width: 18px; color: #555; }
-                .equipo-txt { text-align: left; padding-left: 3px; font-weight: 600; width: 80px; white-space: nowrap; overflow: hidden; }
-                .marcador-col { width: 18px; font-weight: bold; background-color: #fff9c4; }
-                .col-desempate { color: #d32f2f; font-size: 8px; width: 22px; font-weight: bold; background: #f9f9f9; }
+                .col-id { background: #f8f8f8; font-weight: bold; width: 22px; color: #777; font-size: 8px; }
+                .equipo-txt { text-align: left; font-weight: 600; width: 40%; }
+                .marcador-col { width: 22px; font-weight: bold; background-color: #fffde7; border: 1px solid #ffd600; }
+                .col-desempate { color: #d32f2f; font-size: 8px; width: 25px; background: #fafafa; }
 
                 .btn-print { 
-                    display: block; width: 250px; margin: 20px auto; padding: 10px; 
-                    background: #2c3e50; color: white; border: none; border-radius: 4px; 
-                    cursor: pointer; font-weight: bold; font-size: 16px;
+                    display: block; width: 280px; margin: 10px auto; padding: 12px; 
+                    background: #2c3e50; color: white; border: none; border-radius: 6px; 
+                    cursor: pointer; font-weight: bold;
                 }
             </style>
         </head><body>
-            <button class="btn-print no-print" onclick="window.print()">📥 IMPRIMIR REPORTE (A4)</button>`;
+            <button class="btn-print no-print" onclick="window.print()">📥 IMPRIMIR REPORTE (2 COLUMNAS A4)</button>`;
 
         for (const usuario in agrupado) {
             const prediccionesUser = agrupado[usuario];
             let nombresDinamicos = {}; 
 
-            // --- Lógica de nombres y avances (Exactamente igual a la tuya) ---
+            // --- Mantenemos tu lógica de nombres y avances ---
             const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
             grupos.forEach(letra => {
                 let tabla = {};
-                partidosData.filter(p => p.group === letra || p.grupo === letra).forEach(p => {
+                partidosData.filter(p => p.grupo === letra).forEach(p => {
                     const pred = prediccionesUser.find(pr => pr.partido_id === p.id);
                     if (pred) {
                         const gL = pred.goles_local, gV = pred.goles_visita;
@@ -706,17 +706,16 @@ async function generarReporteMaestro() {
                 if (ranking[1]) nombresDinamicos[`2${letra}`] = ranking[1].nombre;
             });
 
-            // Lógica de llaves (Mantenida para no romper tus datos)
+            // Lógica de llaves simplificada
             const llavesAvance = [
-                { de: 73, a: 89, pos: 'L' }, { de: 74, a: 89, pos: 'V' }, { de: 75, a: 90, pos: 'L' }, { de: 76, a: 90, pos: 'V' },
-                { de: 77, a: 91, pos: 'L' }, { de: 78, a: 91, pos: 'V' }, { de: 79, a: 92, pos: 'L' }, { de: 80, a: 92, pos: 'V' },
-                { de: 81, a: 93, pos: 'L' }, { de: 82, a: 93, pos: 'V' }, { de: 83, a: 94, pos: 'L' }, { de: 84, a: 94, pos: 'V' },
-                { de: 85, a: 95, pos: 'L' }, { de: 86, a: 95, pos: 'V' }, { de: 87, a: 96, pos: 'L' }, { de: 88, a: 96, pos: 'V' },
-                { de: 89, a: 97, pos: 'L' }, { de: 90, a: 97, pos: 'V' }, { de: 91, a: 98, pos: 'L' }, { de: 92, a: 98, pos: 'V' },
-                { de: 93, a: 99, pos: 'L' }, { de: 94, a: 99, pos: 'V' }, { de: 95, a: 100, pos: 'L' }, { de: 96, a: 100, pos: 'V' },
-                { de: 97, a: 101, pos: 'L' }, { de: 98, a: 101, pos: 'V' }, { de: 99, a: 102, pos: 'L' }, { de: 100, a: 102, pos: 'V' },
-                { de: 101, a: 104, pos: 'L', tipo: 'G' }, { de: 102, a: 104, pos: 'V', tipo: 'G' },
-                { de: 101, a: 103, pos: 'L', tipo: 'P' }, { de: 102, a: 103, pos: 'V', tipo: 'P' }
+                { de: 73, a: 89 }, { de: 74, a: 89 }, { de: 75, a: 90 }, { de: 76, a: 90 },
+                { de: 77, a: 91 }, { de: 78, a: 91 }, { de: 79, a: 92 }, { de: 80, a: 92 },
+                { de: 81, a: 93 }, { de: 82, a: 93 }, { de: 83, a: 94 }, { de: 84, a: 94 },
+                { de: 85, a: 95 }, { de: 86, a: 95 }, { de: 87, a: 96 }, { de: 88, a: 96 },
+                { de: 89, a: 97 }, { de: 90, a: 97 }, { de: 91, a: 98 }, { de: 92, a: 98 },
+                { de: 93, a: 99 }, { de: 94, a: 99 }, { de: 95, a: 100 }, { de: 96, a: 100 },
+                { de: 97, a: 101 }, { de: 98, a: 101 }, { de: 99, a: 102 }, { de: 100, a: 102 },
+                { de: 101, a: 104 }, { de: 102, a: 104 }, { de: 101, a: 103 }, { de: 102, a: 103 }
             ];
 
             llavesAvance.forEach(llave => {
@@ -737,28 +736,28 @@ async function generarReporteMaestro() {
                 }
             });
 
-            // --- RENDERIZADO EN 3 COLUMNAS ---
+            // --- GENERACIÓN DE 2 COLUMNAS ---
             htmlReporte += `<div class="report-container page-break">
-                <h2>Quiniela de: ${usuario}</h2>
+                <h2>Quiniela: ${usuario}</h2>
                 <div class="grid-container">`;
 
-            const partidosPorColumna = Math.ceil(prediccionesUser.length / 3);
+            const mitad = Math.ceil(prediccionesUser.length / 2); // 52 partidos por columna
             
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 2; i++) {
                 htmlReporte += `<div><table>
                     <thead>
                         <tr>
                             <th class="col-id">#</th>
-                            <th>Local</th>
+                            <th>Equipo Local</th>
                             <th>L</th>
                             <th>V</th>
-                            <th>Visita</th>
-                            <th>P</th>
+                            <th>Equipo Visita</th>
+                            <th>Des.</th>
                         </tr>
                     </thead>
                     <tbody>`;
                 
-                const chunk = prediccionesUser.slice(i * partidosPorColumna, (i + 1) * partidosPorColumna);
+                const chunk = prediccionesUser.slice(i * mitad, (i + 1) * mitad);
                 
                 chunk.forEach(row => {
                     const p = partidosData.find(item => item.id === row.partido_id) || {};
@@ -791,7 +790,6 @@ async function generarReporteMaestro() {
         alert("Error al generar el reporte detallado."); 
     }
 }
-
 
 
 
