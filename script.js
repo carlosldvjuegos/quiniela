@@ -612,7 +612,6 @@ function ponerNombreEnCard(id, lado, nombre) {
 
 
 
-// 9. REPORTES (Sin cambios significativos)
 async function generarReporteMaestro() {
     try {
         const response = await fetch(`${API_URL}/obtener-todas-predicciones`);
@@ -627,31 +626,44 @@ async function generarReporteMaestro() {
 
         let htmlReporte = `<html><head>
             <title>Reporte Maestro</title>
-            <div style="text-align: right; margin-bottom: 20px;" class="no-print">
-                <button onclick="window.print()" style="background-color: #2c3e50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                📥 Descargar / Imprimir Reporte
-                </button>
-            </div>
             <style>
-                body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-                table { border-collapse: collapse; margin-bottom: 40px; background: white; width: auto; }
-                th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: center; white-space: nowrap; }
-                th { background: #01215b; color: white; font-size: 12px; }
-                .col-id { width: 1%; font-size: 11px; color: #666; }
-                .equipo-txt { text-align: left; font-weight: bold; min-width: 120px; }
-                .marcador-col { width: 35px; font-weight: bold; background-color: #f9f9f9; }
-                /* Estilo para las nuevas columnas a la derecha */
-                .col-clasificacion { background-color: white; color: black; font-weight: bold; width: 40px; border-left: 2px solid #01215b; }
-                th { background: #01215b; color: white; font-size: 12px; }
-                h2 { color: #01215b; border-bottom: 3px solid #01215b; margin-top: 40px; }
+                @media print {
+                    .no-print { display: none; }
+                    .page-break { page-break-after: always; }
+                }
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 10px; background: #f4f4f4; color: #333; }
+                .report-container { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+                
+                /* Layout de 3 columnas */
+                .grid-container { 
+                    display: grid; 
+                    grid-template-columns: repeat(3, 1fr); 
+                    gap: 10px; 
+                }
+
+                h2 { color: #01215b; border-bottom: 2px solid #01215b; margin: 10px 0; text-transform: uppercase; font-size: 18px; }
+                
+                table { width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 5px; }
+                th, td { border: 1px solid #eee; padding: 4px 2px; text-align: center; }
+                th { background: #01215b; color: white; font-weight: bold; }
+                
+                .col-id { background: #f9f9f9; width: 20px; font-weight: bold; color: #777; }
+                .equipo-txt { text-align: left; padding-left: 5px; width: 85px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+                .marcador-col { width: 20px; font-weight: bold; background-color: #fff9c4; border: 1px solid #fbc02d; }
+                .col-clasif { background-color: #e3f2fd; width: 18px; font-style: italic; color: #1565c0; }
+                
+                .btn-print { background-color: #2c3e50; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-bottom: 20px; }
             </style>
-        </head><body><h1>Reporte Detallado de Quinielas</h1>`;
+        </head><body>
+            <div class="no-print" style="text-align: center;">
+                <button class="btn-print" onclick="window.print()">📥 DESCARGAR / IMPRIMIR TODO EL REPORTE</button>
+            </div>`;
 
         for (const usuario in agrupado) {
             const prediccionesUser = agrupado[usuario];
             let nombresDinamicos = {}; 
 
-            // --- SIMULADOR DE AVANCE (Mantiene la lógica para nombres de equipos) ---
+            // --- Lógica de Simulador de Avance (Mantenida igual) ---
             const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
             grupos.forEach(letra => {
                 let tabla = {};
@@ -673,6 +685,7 @@ async function generarReporteMaestro() {
                 if (ranking[1]) nombresDinamicos[`2${letra}`] = ranking[1].nombre;
             });
 
+            // Lógica de llaves (Mantenida igual)
             const llavesAvance = [
                 { de: 73, a: 89, pos: 'L' }, { de: 74, a: 89, pos: 'V' }, { de: 75, a: 90, pos: 'L' }, { de: 76, a: 90, pos: 'V' },
                 { de: 77, a: 91, pos: 'L' }, { de: 78, a: 91, pos: 'V' }, { de: 79, a: 92, pos: 'L' }, { de: 80, a: 92, pos: 'V' },
@@ -703,48 +716,62 @@ async function generarReporteMaestro() {
                 }
             });
 
-            // --- TABLA CON DL Y DV A LA DERECHA ---
-            htmlReporte += `<h2>Quiniela de: ${usuario}</h2>
-                <table>
+            // --- GENERACIÓN DEL HTML POR USUARIO (Estructura de 3 columnas) ---
+            htmlReporte += `<div class="report-container page-break">
+                <h2>Quiniela: ${usuario}</h2>
+                <div class="grid-container">`;
+
+            // Dividir los 104 partidos en 3 grupos (aprox 35 por columna)
+            const partidosPorColumna = Math.ceil(prediccionesUser.length / 3);
+            
+            for (let i = 0; i < 3; i++) {
+                htmlReporte += `<div><table>
                     <thead>
                         <tr>
                             <th class="col-id">ID</th>
                             <th>Local</th>
-                            <th>GL</th>
-                            <th>GV</th>
+                            <th>L</th>
+                            <th>V</th>
                             <th>Visita</th>
-                            <th class="col-clasificacion">Goles Clasif. DL</th>
-                            <th class="col-clasificacion">Goles Clasif. DV</th>
+                            <th title="Desempate">D</th>
                         </tr>
                     </thead>
                     <tbody>`;
-            
-            prediccionesUser.forEach(row => {
-                const p = partidosData.find(item => item.id === row.partido_id) || {};
-                let nombreL = nombresDinamicos[p.local] || p.local;
-                let nombreV = nombresDinamicos[p.visita] || p.visita;
+                
+                const chunk = prediccionesUser.slice(i * partidosPorColumna, (i + 1) * partidosPorColumna);
+                
+                chunk.forEach(row => {
+                    const p = partidosData.find(item => item.id === row.partido_id) || {};
+                    let nombreL = nombresDinamicos[p.local] || p.local;
+                    let nombreV = nombresDinamicos[p.visita] || p.visita;
+                    const dL = row.goles_desempate_local ?? "-";
+                    const dV = row.goles_desempate_visita ?? "-";
+                    const desempateTxt = (dL !== "-" || dV !== "-") ? `${dL}-${dV}` : "";
 
-                const dL = (row.goles_desempate_local !== null && row.goles_desempate_local !== undefined) ? row.goles_desempate_local : "-";
-                const dV = (row.goles_desempate_visita !== null && row.goles_desempate_visita !== undefined) ? row.goles_desempate_visita : "-";
+                    htmlReporte += `<tr>
+                        <td class="col-id">${row.partido_id}</td>
+                        <td class="equipo-txt">${nombreL}</td>
+                        <td class="marcador-col">${row.goles_local}</td>
+                        <td class="marcador-col">${row.goles_visita}</td>
+                        <td class="equipo-txt">${nombreV}</td>
+                        <td class="col-clasif">${desempateTxt}</td>
+                    </tr>`;
+                });
 
-                htmlReporte += `<tr>
-                    <td class="col-id">${row.partido_id}</td>
-                    <td class="equipo-txt">${nombreL}</td>
-                    <td class="marcador-col">${row.goles_local}</td>
-                    <td class="marcador-col">${row.goles_visita}</td>
-                    <td class="equipo-txt">${nombreV}</td>
-                    <td class="col-clasificacion">${dL}</td>
-                    <td class="col-clasificacion">${dV}</td>
-                </tr>`;
-            });
-            htmlReporte += `</tbody></table>`;
+                htmlReporte += `</tbody></table></div>`;
+            }
+
+            htmlReporte += `</div></div>`; // Cierra grid-container y report-container
         }
 
         htmlReporte += `</body></html>`;
         const v = window.open('', '_blank');
         v.document.write(htmlReporte);
         v.document.close();
-    } catch (e) { alert("Error reporte."); }
+    } catch (e) { 
+        console.error(e);
+        alert("Error al generar el reporte detallado."); 
+    }
 }
 
 
