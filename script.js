@@ -440,33 +440,38 @@ async function cargarDesdeDB(nombre) {
 
         actualizarTorneo();
 
-        // --- NUEVA LÓGICA DE FILTRADO INFALIBLE ---
-        const botones = document.querySelectorAll('.btn-link');
-        const nombreBuscado = nombre.trim().toLowerCase();
+        // --- Lógica de filtrado de botones por esta ---
+// --- Reemplaza la lógica de los botones en cargarDesdeDB con esto ---
+const botones = document.querySelectorAll('.btn-link');
 
-        botones.forEach(btn => {
-            // Leemos el atributo oculto que NO tiene puntos ni emojis
-            const nombreEnBoton = btn.getAttribute('data-nombre');
+botones.forEach(btn => {
+    // 1. Obtenemos el texto total del botón
+    const textoBoton = btn.innerText.toLowerCase();
+    const nombreBuscado = nombre.toLowerCase();
 
-            // Solo mostramos si es exactamente igual al nombre de la quiniela
-            if (nombreEnBoton === nombreBuscado) {
-                btn.style.setProperty('display', 'flex', 'important');
-                btn.classList.add('quiniela-activa');
-            } else {
-                // No ocultamos el botón rojo de cambiar usuario
-                if (btn.id !== 'btn-volver-lista') {
-                    btn.style.setProperty('display', 'none', 'important');
-                }
-            }
-        });
+    // 2. Verificamos si el nombre está en el botón, 
+    // pero nos aseguramos de que sea el nombre completo y no un pedazo.
+    // Usamos una expresión regular para buscar el nombre exacto "aislado"
+    const regex = new RegExp("\\b" + nombreBuscado + "\\b", "i");
+    const esCoincidenciaExacta = regex.test(textoBoton);
 
-        // Ocultar el botón de guardar
-        const btnGuardar = document.querySelector('.btn-save');
-        if (btnGuardar) {
-            btnGuardar.style.display = 'none';
+    if (esCoincidenciaExacta) {
+        btn.style.setProperty('display', 'flex', 'important');
+        btn.classList.add('quiniela-activa');
+    } else {
+        // Si es el botón de "Cambiar Usuario" no lo ocultamos
+        if (btn.id !== 'btn-volver-lista') {
+            btn.style.setProperty('display', 'none', 'important');
         }
+    }
+});
 
-        // Crear botón de volver si no existe
+// 3. Ocultar el botón de guardar (por clase)
+const btnGuardar = document.querySelector('.btn-save');
+if (btnGuardar) {
+    btnGuardar.style.display = 'none';
+}
+
         if (!document.getElementById('btn-volver-lista')) {
             const btnReset = document.createElement('button');
             btnReset.id = 'btn-volver-lista';
@@ -475,6 +480,7 @@ async function cargarDesdeDB(nombre) {
             btnReset.style.backgroundColor = "#ff4444";
             btnReset.style.color = "white";
             btnReset.onclick = () => {
+                // Esto recarga la página con la instrucción de NO mostrar el modal
                 window.location.href = window.location.origin + window.location.pathname + "?nomodal=1";
             };
             document.getElementById('links-container').appendChild(btnReset);
