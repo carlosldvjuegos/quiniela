@@ -10,8 +10,8 @@ const partidosData = [
     { id: 2, fase: "Grupos", grupo: "A", fecha: "Viernes 12/06/2026", local: "Rep. Corea", visita: "Rep. Checa" },
     { id: 3, fase: "Grupos", grupo: "A", fecha: "Jueves 18/06/2026", local: "Rep. Checa", visita: "Sudáfrica" },
     { id: 4, fase: "Grupos", grupo: "A", fecha: "Viernes 19/06/2026", local: "México", visita: "Rep. Corea" },
-    { id: 5, fase: "Grupos", grupo: "A", fecha: "Miercoles 25/06/2026", local: "Rep. Checa", visita: "México" },
-    { id: 6, fase: "Grupos", grupo: "A", fecha: "Miercoles 25/06/2026", local: "Sudáfrica", visita: "Rep. Corea" },
+    { id: 5, fase: "Grupos", grupo: "A", fecha: "Jueves 25/06/2026", local: "Rep. Checa", visita: "México" },
+    { id: 6, fase: "Grupos", grupo: "A", fecha: "Jueves 25/06/2026", local: "Sudáfrica", visita: "Rep. Corea" },
 
     // --- GRUPO B ---
     { id: 7, fase: "Grupos", grupo: "B", fecha: "Viernes 12/06/2026", local: "Canadá", visita: "Bosnia y Herzegovina" },
