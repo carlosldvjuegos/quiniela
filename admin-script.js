@@ -326,6 +326,37 @@ function actualizarLogicaAdmin() {
     if (document.getElementById(`N-V-103`)) document.getElementById(`N-V-103`).innerText = getPerdedor(102);
 } // <--- AQUÍ CERRÉ LA FUNCIÓN actualizarLogicaAdmin
 
+
+// --- 5. CARGAR RESULTADOS DESDE LA DB ---
+async function cargarResultadosExistentes() {
+    try {
+        console.log("Cargando resultados oficiales desde la DB...");
+        const response = await fetch(`${API_URL}/obtener-resultados-db`);
+        if (!response.ok) throw new Error("Error en la petición");
+        
+        const resultadosDB = await response.json();
+
+        if (resultadosDB && resultadosDB.length > 0) {
+            resultadosDB.forEach(res => {
+                const inputL = document.getElementById(`R-L-${res.id}`);
+                const inputV = document.getElementById(`R-V-${res.id}`);
+                
+                if (inputL && inputV) {
+                    inputL.value = res.realL;
+                    inputV.value = res.realV;
+                }
+            });
+            
+            // Una vez cargados los inputs, ejecutamos la lógica para mover las llaves
+            actualizarLogicaAdmin();
+            console.log("Resultados cargados y llaves actualizadas.");
+        }
+    } catch (error) {
+        console.error("Error al cargar resultados:", error);
+    }
+}
+
+
 async function guardarResultadosOficiales() {
     const resultadosEnvio = [];
     partidosData.forEach(p => {
@@ -363,7 +394,11 @@ async function guardarResultadosOficiales() {
         alert("Error al guardar.");
     }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
+// ARRANQUE
+document.addEventListener("DOMContentLoaded", async () => {
+    // 1. Dibujamos los partidos (vacíos)
     renderizarPartidosAdmin();
+    
+    // 2. Traemos los datos de la base de datos y llenamos los inputs
+    await cargarResultadosExistentes();
 });
