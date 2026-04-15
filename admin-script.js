@@ -338,16 +338,17 @@ async function cargarResultadosExistentes() {
 
         if (resultadosDB && resultadosDB.length > 0) {
             resultadosDB.forEach(res => {
+                // IMPORTANTE: res.gl y res.gv son los nombres que vienen de tu servidor
                 const inputL = document.getElementById(`R-L-${res.id}`);
                 const inputV = document.getElementById(`R-V-${res.id}`);
                 
                 if (inputL && inputV) {
-                    inputL.value = res.realL;
-                    inputV.value = res.realV;
+                    inputL.value = res.gl; // Cambiado de realL a gl
+                    inputV.value = res.gv; // Cambiado de realV a gv
                 }
             });
             
-            // Una vez cargados los inputs, ejecutamos la lógica para mover las llaves
+            // Ejecutamos la lógica para que se muevan los equipos en las llaves
             actualizarLogicaAdmin();
             console.log("Resultados cargados y llaves actualizadas.");
         }
@@ -396,9 +397,6 @@ async function guardarResultadosOficiales() {
 }
 // ARRANQUE
 document.addEventListener("DOMContentLoaded", async () => {
-    // 1. Dibujamos los partidos (vacíos)
-    renderizarPartidosAdmin();
-    
-    // 2. Traemos los datos de la base de datos y llenamos los inputs
-    await cargarResultadosExistentes();
+    renderizarPartidosAdmin(); // Dibuja la estructura
+    await cargarResultadosExistentes(); // Trae los datos de Neon y llena los huecos
 });
