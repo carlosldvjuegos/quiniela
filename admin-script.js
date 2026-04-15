@@ -5,7 +5,6 @@ const API_URL = (window.location.hostname === "localhost" || window.location.hos
     ? window.location.origin 
     : "https://quiniela-pcas.onrender.com";
 
-// Ranking FIFA para desempates (Igual al de tu index)
 const rankingFIFA = {
     "México": 15, "Sudáfrica": 59, "Rep. Corea": 22, "Rep. Checa": 40,
     "Canadá": 35, "Bosnia y Herzegovina": 74, "Catar": 34, "Suiza": 19,
@@ -161,7 +160,6 @@ const partidosData = [
     { id: 104, fase: "Final", grupo: "Eliminatoria", fecha: "Domingo 19/07/2026", local: "W101", visita: "W102" }
 ];
 
-// 2. RENDERIZAR PARTIDOS
 function renderizarPartidosAdmin() {
     const container = document.getElementById('admin-fixture-container'); 
     if (!container) return;
@@ -198,21 +196,21 @@ function renderizarPartidosAdmin() {
     });
 }
 
-// 3. LÓGICA DE ACTUALIZACIÓN (Copia exacta de tu index)
 function actualizarLogicaAdmin() {
     const resultados = {};
     partidosData.forEach(p => {
-        const gl = document.getElementById(`R-L-${p.id}`).value;
-        const gv = document.getElementById(`R-V-${p.id}`).value;
+        const inputL = document.getElementById(`R-L-${p.id}`);
+        const inputV = document.getElementById(`R-V-${p.id}`);
+        const gl = inputL ? inputL.value : "";
+        const gv = inputV ? inputV.value : "";
         resultados[p.id] = {
             gl: gl !== "" ? parseInt(gl) : null,
             gv: gv !== "" ? parseInt(gv) : null
         };
     });
 
-    // --- CÁLCULO DE GRUPOS ---
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
-    let clasificados = {}; // Guardará { '1A': 'Nombre', '2A': 'Nombre', '3A': 'Nombre' }
+    let clasificados = {};
 
     grupos.forEach(g => {
         let tabla = {};
@@ -223,7 +221,7 @@ function actualizarLogicaAdmin() {
             if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0, ranking: rankingFIFA[p.visita] || 200 };
             
             const res = resultados[p.id];
-            if (res.gl !== null && res.gv !== null) {
+            if (res && res.gl !== null && res.gv !== null) {
                 tabla[p.local].gf += res.gl;
                 tabla[p.visita].gf += res.gv;
                 tabla[p.local].dg += (res.gl - res.gv);
@@ -240,27 +238,23 @@ function actualizarLogicaAdmin() {
         clasificados[`3${g}`] = ordenados[2]?.nombre || `3${g}`;
     });
 
-    // --- ACTUALIZACIÓN DE LLAVES (16VOS) ---
-    // Aquí mapeas los nombres dinámicos a los IDs de 16vos
-    // --- 1. MAPEACIÓN DE 16VOS (BASADO EN GRUPOS) ---
-    // Según tu partidosData IDs 73 al 88
     const mapeo16vos = [
         { id: 73, l: clasificados['2A'], v: clasificados['2B'] },
         { id: 74, l: clasificados['1C'], v: clasificados['2F'] },
-        { id: 75, l: clasificados['1E'], v: clasificados['3A'] || "3A/B/C" }, // Ajustar si usas lógica compleja de mejores terceros
+        { id: 75, l: clasificados['1E'], v: clasificados['3A'] || "3A" },
         { id: 76, l: clasificados['1F'], v: clasificados['2C'] },
         { id: 77, l: clasificados['2E'], v: clasificados['2I'] },
-        { id: 78, l: clasificados['1I'], v: clasificados['3C'] || "3C/D/F" },
-        { id: 79, l: clasificados['1A'], v: clasificados['3E'] || "3C/E/F" },
-        { id: 80, l: clasificados['1L'], v: clasificados['3H'] || "3E/H/I" },
-        { id: 81, l: clasificados['1G'], v: clasificados['3I'] || "3A/E/H" },
-        { id: 82, l: clasificados['1D'], v: clasificados['3B'] || "3B/E/F" },
+        { id: 78, l: clasificados['1I'], v: clasificados['3C'] || "3C" },
+        { id: 79, l: clasificados['1A'], v: clasificados['3E'] || "3E" },
+        { id: 80, l: clasificados['1L'], v: clasificados['3H'] || "3H" },
+        { id: 81, l: clasificados['1G'], v: clasificados['3I'] || "3I" },
+        { id: 82, l: clasificados['1D'], v: clasificados['3B'] || "3B" },
         { id: 83, l: clasificados['1H'], v: clasificados['2J'] },
         { id: 84, l: clasificados['2K'], v: clasificados['2L'] },
-        { id: 85, l: clasificados['1B'], v: clasificados['3F'] || "3E/F/G" },
+        { id: 85, l: clasificados['1B'], v: clasificados['3F'] || "3F" },
         { id: 86, l: clasificados['2D'], v: clasificados['2G'] },
         { id: 87, l: clasificados['1J'], v: clasificados['2H'] },
-        { id: 88, l: clasificados['1K'], v: clasificados['3D'] || "3D/E/I" }
+        { id: 88, l: clasificados['1K'], v: clasificados['3D'] || "3D" }
     ];
 
     mapeo16vos.forEach(m => {
@@ -270,20 +264,16 @@ function actualizarLogicaAdmin() {
         if (lbV) lbV.innerText = m.v;
     });
 
-    // --- FUNCIÓN INTERNA PARA OBTENER GANADOR ---
     const getGanador = (id) => {
-        const gl = resultados[id].gl;
-        const gv = resultados[id].gv;
-        const txtL = document.getElementById(`N-L-${id}`)?.innerText || `Ganador ${id}`;
-        const txtV = document.getElementById(`N-V-${id}`)?.innerText || `Ganador ${id}`;
-        
-        if (gl === null || gv === null) return `Ganador ${id}`;
-        if (gl > gv) return txtL;
-        if (gv > gl) return txtV;
-        return txtL; // Por defecto Local si no hay penaltis definidos en Admin
+        const res = resultados[id];
+        if (!res || res.gl === null || res.gv === null) return `Ganador ${id}`;
+        const txtL = document.getElementById(`N-L-${id}`)?.innerText || `Local ${id}`;
+        const txtV = document.getElementById(`N-V-${id}`)?.innerText || `Visita ${id}`;
+        if (res.gl > res.gv) return txtL;
+        if (res.gv > res.gl) return txtV;
+        return txtL; 
     };
 
-    // --- 2. OCTAVOS DE FINAL (W73 - W88) ---
     const mapeo8vos = [
         { id: 89, l: getGanador(73), v: getGanador(75) },
         { id: 90, l: getGanador(74), v: getGanador(77) },
@@ -300,7 +290,6 @@ function actualizarLogicaAdmin() {
         if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
     });
 
-    // --- 3. CUARTOS DE FINAL (W89 - W96) ---
     const mapeo4tos = [
         { id: 97, l: getGanador(89), v: getGanador(90) },
         { id: 98, l: getGanador(93), v: getGanador(94) },
@@ -313,7 +302,6 @@ function actualizarLogicaAdmin() {
         if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
     });
 
-    // --- 4. SEMIFINALES (W97 - W100) ---
     const mapeoSemis = [
         { id: 101, l: getGanador(97), v: getGanador(98) },
         { id: 102, l: getGanador(99), v: getGanador(100) }
@@ -324,47 +312,40 @@ function actualizarLogicaAdmin() {
         if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
     });
 
-    // --- 5. FINAL Y 3er PUESTO ---
-    const finalL = getGanador(101);
-    const finalV = getGanador(102);
-    
-    // Para el 3er puesto necesitamos los perdedores
     const getPerdedor = (id) => {
-        const gl = resultados[id].gl;
-        const gv = resultados[id].gv;
+        const res = resultados[id];
+        if (!res || res.gl === null || res.gv === null) return `Perdedor ${id}`;
         const txtL = document.getElementById(`N-L-${id}`)?.innerText;
         const txtV = document.getElementById(`N-V-${id}`)?.innerText;
-        if (gl === null || gv === null) return `Perdedor ${id}`;
-        return (gl > gv) ? txtV : txtL;
+        return (res.gl > res.gv) ? txtV : txtL;
     };
 
-    if (document.getElementById(`N-L-104`)) document.getElementById(`N-L-104`).innerText = finalL;
-    if (document.getElementById(`N-V-104`)) document.getElementById(`N-V-104`).innerText = finalV;
-
+    if (document.getElementById(`N-L-104`)) document.getElementById(`N-L-104`).innerText = getGanador(101);
+    if (document.getElementById(`N-V-104`)) document.getElementById(`N-V-104`).innerText = getGanador(102);
     if (document.getElementById(`N-L-103`)) document.getElementById(`N-L-103`).innerText = getPerdedor(101);
     if (document.getElementById(`N-V-103`)) document.getElementById(`N-V-103`).innerText = getPerdedor(102);
+} // <--- AQUÍ CERRÉ LA FUNCIÓN actualizarLogicaAdmin
 
-
-
-    
-
-// 4. GUARDAR CON NOMBRES (Para que la validación funcione)
 async function guardarResultadosOficiales() {
     const resultadosEnvio = [];
     partidosData.forEach(p => {
-        const gl = document.getElementById(`R-L-${p.id}`).value;
-        const gv = document.getElementById(`R-V-${p.id}`).value;
-        const nombreLocal = document.getElementById(`N-L-${p.id}`).innerText;
-        const nombreVisita = document.getElementById(`N-V-${p.id}`).innerText;
+        const inputL = document.getElementById(`R-L-${p.id}`);
+        const inputV = document.getElementById(`R-V-${p.id}`);
+        if (inputL && inputV) {
+            const gl = inputL.value;
+            const gv = inputV.value;
+            const nombreLocal = document.getElementById(`N-L-${p.id}`).innerText;
+            const nombreVisita = document.getElementById(`N-V-${p.id}`).innerText;
 
-        if (gl !== "" && gv !== "") {
-            resultadosEnvio.push({
-                id: p.id,
-                realL: parseInt(gl),
-                realV: parseInt(gv),
-                nombreLocal: nombreLocal,
-                nombreVisita: nombreVisita
-            });
+            if (gl !== "" && gv !== "") {
+                resultadosEnvio.push({
+                    id: p.id,
+                    realL: parseInt(gl),
+                    realV: parseInt(gv),
+                    nombreLocal: nombreLocal,
+                    nombreVisita: nombreVisita
+                });
+            }
         }
     });
 
@@ -383,12 +364,6 @@ async function guardarResultadosOficiales() {
     }
 }
 
-// ARRANQUE
 document.addEventListener("DOMContentLoaded", () => {
     renderizarPartidosAdmin();
-    // cargarResultadosExistentes(); // Puedes habilitarla si quieres que traiga lo guardado
 });
-
-
-
-
