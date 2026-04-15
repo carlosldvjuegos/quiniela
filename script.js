@@ -477,27 +477,27 @@ async function guardarQuinielaCompleta() {
 
 
 
-// 7. CARGAR DESDE DB (MEJORADO CON DESEMPATE Y SUMATORIA DE PUNTOS POR JUEGO)
+// 7. CARGAR DESDE DB (MODIFICADO PARA MOSTRAR PUNTOS POR JUEGO)
 async function cargarDesdeDB(nombre) {
     try {
         const inputNombrePrincipal = document.getElementById('nombre-usuario');
         if (inputNombrePrincipal) inputNombrePrincipal.value = nombre;
         
-        // Limpiar inputs y borrar mensajes de puntos anteriores para que no se dupliquen
+        // Limpiar todos los inputs y mensajes de puntos previos
         document.querySelectorAll('.marcador-col input').forEach(input => input.value = "");
-        document.querySelectorAll('.puntos-por-juego').forEach(el => el.remove());
+        document.querySelectorAll('.puntos-obtenidos').forEach(div => div.remove());
 
-        // 1. Obtenemos resultados oficiales y los datos del usuario en paralelo
+        // 1. Obtener resultados reales y predicciones del usuario
         const [resOficiales, resUsuario] = await Promise.all([
             fetch(`${API_URL}/obtener-resultados-db`),
             fetch(`${API_URL}/cargar/${nombre}`)
         ]);
 
         const oficiales = await resOficiales.json();
-        const datos = await resUsuario.json();
+        const datosPrediccion = await resUsuario.json();
         
-        // 2. Mantenemos tu lógica de carga de goles y desempates
-        datos.forEach(partido => {
+        // 2. Llenar los campos y calcular puntos por cada partido
+        datosPrediccion.forEach(partido => {
             const inL = document.getElementById(`L-${partido.id}`);
             const inV = document.getElementById(`V-${partido.id}`);
             const inDL = document.getElementById(`DL-${partido.id}`);
@@ -510,46 +510,40 @@ async function cargarDesdeDB(nombre) {
             
             gestionarDesempate(partido.id);
 
-            // --- BLOQUE NUEVO: MOSTRAR PUNTOS EN LA ZONA AMARILLA ---
+            // --- LÓGICA PARA MOSTRAR PUNTOS EN LA ZONA AMARILLA ---
             const oficial = oficiales.find(o => o.id === partido.id);
-            if (oficial && inL) {
-                const pts = calcularLogicaPuntos(partido.gl, partido.gv, oficial.gl, oficial.gv);
+            if (oficial) {
+                const ptsGanados = calcularLogicaPuntos(partido.gl, partido.gv, oficial.gl, oficial.gv);
                 
-                // Buscamos el contenedor donde están los inputs
-                const contenedorMarcador = inL.closest('.marcador-col');
-                if (contenedorMarcador) {
+                // Buscamos el contenedor del marcador para meter el texto abajo
+                const marcadorCol = inL.closest('.marcador-col');
+                if (marcadorCol) {
                     const divPuntos = document.createElement('div');
-                    divPuntos.className = 'puntos-por-juego';
-                    // Estilo para que aparezca justo abajo de los marcadores
-                    divPuntos.style = "color: #2c3e50; font-weight: bold; font-size: 13px; margin-top: 8px; text-align: center; border-top: 1px dashed #ccc; padding-top: 4px; width: 100%;";
-                    divPuntos.innerHTML = `Puntos obtenidos en juego es: <span style="color: #27ae60;">${pts}</span>`;
-                    contenedorMarcador.appendChild(divPuntos);
+                    divPuntos.className = 'puntos-obtenidos';
+                    divPuntos.style = "color: #d4af37; font-weight: bold; font-size: 0.85em; margin-top: 5px; text-align: center; width: 100%;";
+                    divPuntos.innerHTML = `Puntos obtenidos en juego: ${ptsGanados}`;
+                    marcadorCol.appendChild(divPuntos);
                 }
             }
         });
 
         actualizarTorneo();
 
-        // --- LÓGICA DE FILTRADO CORREGIDA (SE MANTIENE IGUAL) ---
+        // --- LÓGICA DE FILTRADO (Mantén el resto igual...) ---
         const botones = document.querySelectorAll('.btn-link');
         const nombreBuscado = nombre.toLowerCase().trim();
-
         botones.forEach(btn => {
             const nombreEnBoton = btn.getAttribute('data-nombre-real');
             if (nombreEnBoton === nombreBuscado) {
                 btn.style.setProperty('display', 'flex', 'important');
                 btn.classList.add('quiniela-activa');
             } else {
-                if (btn.id !== 'btn-volver-lista') {
-                    btn.style.setProperty('display', 'none', 'important');
-                }
+                if (btn.id !== 'btn-volver-lista') btn.style.setProperty('display', 'none', 'important');
             }
         });
 
         const btnSave = document.querySelector('.btn-save');
-        if (btnSave) {
-            btnSave.style.display = 'none';
-        }
+        if (btnSave) btnSave.style.display = 'none';
 
         if (!document.getElementById('btn-volver-lista')) {
             const btnReset = document.createElement('button');
