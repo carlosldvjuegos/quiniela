@@ -521,7 +521,7 @@ async function cargarDesdeDB(nombre) {
                     const divPuntos = document.createElement('div');
                     divPuntos.className = 'puntos-obtenidos';
                     divPuntos.style = "color: #003366; font-weight: bold; font-size: 0.85em; margin-top: 5px; text-align: center; width: 100%;";
-                    divPuntos.innerHTML = `Puntos obtenidos en juego: <span style="color: #ff4444;">${ptsGanados}`</span>`;
+                    divPuntos.innerHTML = `Puntos obtenidos en juego: <span style="color: #ff4444;">${ptsGanados}</span>`;
                     marcadorCol.appendChild(divPuntos);
                 }
             }
