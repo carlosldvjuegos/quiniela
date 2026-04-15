@@ -486,27 +486,29 @@ async function guardarQuinielaCompleta() {
 
 
 
-// 7. CARGAR DESDE DB (VERSION FINAL SIN ERRORES)
+// 7. CARGAR DESDE DB (VERSION FINAL CON FILTRO DE EQUIPOS)
 async function cargarDesdeDB(nombre) {
     try {
         const inputNombrePrincipal = document.getElementById('nombre-usuario');
         if (inputNombrePrincipal) inputNombrePrincipal.value = nombre;
         
-        // Limpiar
+        // Limpiar campos y mensajes previos
         document.querySelectorAll('.marcador-col input').forEach(input => input.value = "");
         document.querySelectorAll('.puntos-obtenidos').forEach(div => div.remove());
 
-        // Peticiones seguras
+        // Peticiones seguras a la DB
         const [resOficiales, resUsuario] = await Promise.all([
             fetch(`${API_URL}/obtener-resultados-db`).then(r => r.json()),
             fetch(`${API_URL}/cargar/${nombre}`).then(r => r.json())
         ]).catch(err => {
             console.error("Fallo en la conexión con el servidor", err);
-            return [[], []]; // Devuelve arrays vacíos si falla para no romper el código
+            return [[], []];
         });
 
         if (resUsuario.length === 0) return;
 
+        // Primero actualizamos el torneo para que los nombres de los equipos se llenen en el HTML
+        // Esto es vital para poder comparar los nombres después
         resUsuario.forEach(partido => {
             const inL = document.getElementById(`L-${partido.id}`);
             const inV = document.getElementById(`V-${partido.id}`);
@@ -519,32 +521,58 @@ async function cargarDesdeDB(nombre) {
             if (inDV && partido.dv !== null) inDV.value = partido.dv;
             
             gestionarDesempate(partido.id);
+        });
 
-            // --- Puntos con colores solicitados ---
+        // Ejecutamos la lógica de torneo para que se calculen los clasificados del usuario
+        actualizarTorneo();
+
+        // Ahora recorremos nuevamente para mostrar los puntos con la validación de equipos
+        resUsuario.forEach(partido => {
+            const inL = document.getElementById(`L-${partido.id}`);
             const oficial = resOficiales.find(o => o.id === partido.id);
+
             if (oficial && inL && partido.gl !== null && partido.gv !== null) {
-                const ptsGanados = calcularLogicaPuntos(
-                    parseInt(partido.gl), 
-                    parseInt(partido.gv), 
-                    parseInt(oficial.gl), 
-                    parseInt(oficial.gv)
-                );
+                // Buscamos los nombres de los equipos que están actualmente en la Card del usuario
+                const cardBody = inL.closest('.card-body');
+                const nombreLocalUsuario = cardBody.querySelector('.equipo-col.local').innerText.trim();
+                const nombreVisitaUsuario = cardBody.querySelector('.equipo-col.visita').innerText.trim();
                 
+                // Buscamos los datos del partido original para saber la fase
+                const infoPartido = partidosData.find(p => p.id === partido.id);
+                const esFaseGrupos = infoPartido && infoPartido.fase === "Grupos";
+
+                // VALIDACIÓN: Si es eliminatoria, los nombres deben coincidir con la realidad (oficial)
+                // Nota: oficial.local y oficial.visita deben venir de tu base de datos de resultados
+                const equiposCoinciden = esFaseGrupos || 
+                    (oficial.local === nombreLocalUsuario && oficial.visita === nombreVisitaUsuario);
+
+                let ptsGanados = 0;
+                if (equiposCoinciden) {
+                    ptsGanados = calcularLogicaPuntos(
+                        parseInt(partido.gl), 
+                        parseInt(partido.gv), 
+                        parseInt(oficial.gl), 
+                        parseInt(oficial.gv)
+                    );
+                }
+
                 const marcadorCol = inL.closest('.marcador-col');
                 if (marcadorCol) {
                     const divPuntos = document.createElement('div');
                     divPuntos.className = 'puntos-obtenidos';
-                    // Azul para texto, rojo para puntos
-                    divPuntos.style = "color: #003366; font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center; width: 100%;";
-                    divPuntos.innerHTML = `Puntos obtenidos en juego: <span style="color: #ff0000;">${ptsGanados}</span>`;
+                    divPuntos.style = "color: #003366; font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center; width: 100%; line-height: 1.2;";
+                    
+                    if (!equiposCoinciden) {
+                        divPuntos.innerHTML = `<span style="color: #888; font-size: 10px; font-weight: normal;">Equipos no coinciden</span><br>Puntos: <span style="color: #ff0000;">0</span>`;
+                    } else {
+                        divPuntos.innerHTML = `Puntos obtenidos: <span style="color: #ff0000;">${ptsGanados}</span>`;
+                    }
                     marcadorCol.appendChild(divPuntos);
                 }
             }
         });
 
-        actualizarTorneo();
-
-        // Filtrado de botones
+        // --- Resto de la lógica de filtrado de botones (Sin cambios) ---
         const botones = document.querySelectorAll('.btn-link');
         const nombreBuscado = nombre.toLowerCase().trim();
         botones.forEach(btn => {
@@ -576,7 +604,6 @@ async function cargarDesdeDB(nombre) {
         console.error("Error crítico en cargarDesdeDB:", error); 
     }
 }
-
 
 // 8. LÓGICA DE TORNEO (PROTEGIDA CONTRA DATOS FANTASMAS)
 function actualizarTorneo() {
