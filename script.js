@@ -282,20 +282,21 @@ function gestionarDesempate(id) {
     }
 }
 
-// 4. RANKING (Sin cambios)
+// 4. RANKING (OPTIMIZADO PARA EVITAR ERROR 502)
 async function actualizarListaLinks() {
     const container = document.getElementById('links-container');
     if (!container) return;
 
     try {
-        const [resNombres, resOficiales, resTodasPred] = await Promise.all([
-            fetch(`${API_URL}/registros`),
-            fetch(`${API_URL}/obtener-resultados-db`),
-            fetch(`${API_URL}/obtener-todas-predicciones`)
-        ]);
-
+        // Hacemos las peticiones con un tiempo de espera para no saturar Render
+        const resNombres = await fetch(`${API_URL}/registros`);
+        if (!resNombres.ok) throw new Error("Error en registros");
         const usuarios = await resNombres.json();
+
+        const resOficiales = await fetch(`${API_URL}/obtener-resultados-db`);
         const oficiales = await resOficiales.json();
+
+        const resTodasPred = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const todasLasPredicciones = await resTodasPred.json();
 
         const predPorUsuario = todasLasPredicciones.reduce((acc, p) => {
@@ -310,7 +311,12 @@ async function actualizarListaLinks() {
             susPredicciones.forEach(pred => {
                 const oficial = oficiales.find(o => o.id === pred.partido_id);
                 if (oficial) {
-                    ptsTotales += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, oficial.gl, oficial.gv);
+                    ptsTotales += calcularLogicaPuntos(
+                        parseInt(pred.goles_local), 
+                        parseInt(pred.goles_visita), 
+                        parseInt(oficial.gl), 
+                        parseInt(oficial.gv)
+                    );
                 }
             });
             return { nombre: user.nombre_usuario, puntos: ptsTotales };
@@ -323,8 +329,6 @@ async function actualizarListaLinks() {
             const medallita = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : "•"));
             const btn = document.createElement('button');
             btn.className = "btn-link";
-
-            // --- LÍNEA AGREGADA: Etiqueta invisible con el nombre real ---
             btn.setAttribute('data-nombre-real', u.nombre.toLowerCase().trim());
 
             btn.innerHTML = `
@@ -339,6 +343,7 @@ async function actualizarListaLinks() {
 
     } catch (err) {
         console.error("Error al actualizar ranking:", err);
+        container.innerHTML = "<p style='color:gray; font-size:12px;'>Cargando ranking...</p>";
     }
 }
 
@@ -476,27 +481,28 @@ async function guardarQuinielaCompleta() {
 
 
 
-// 7. CARGAR DESDE DB (MODIFICADO PARA MOSTRAR PUNTOS POR JUEGO)
+// 7. CARGAR DESDE DB (VERSION FINAL SIN ERRORES)
 async function cargarDesdeDB(nombre) {
     try {
         const inputNombrePrincipal = document.getElementById('nombre-usuario');
         if (inputNombrePrincipal) inputNombrePrincipal.value = nombre;
         
-        // Limpiar todos los inputs y mensajes de puntos previos
+        // Limpiar
         document.querySelectorAll('.marcador-col input').forEach(input => input.value = "");
         document.querySelectorAll('.puntos-obtenidos').forEach(div => div.remove());
 
-        // 1. Obtener resultados reales y predicciones del usuario
+        // Peticiones seguras
         const [resOficiales, resUsuario] = await Promise.all([
-            fetch(`${API_URL}/obtener-resultados-db`),
-            fetch(`${API_URL}/cargar/${nombre}`)
-        ]);
+            fetch(`${API_URL}/obtener-resultados-db`).then(r => r.json()),
+            fetch(`${API_URL}/cargar/${nombre}`).then(r => r.json())
+        ]).catch(err => {
+            console.error("Fallo en la conexión con el servidor", err);
+            return [[], []]; // Devuelve arrays vacíos si falla para no romper el código
+        });
 
-        const oficiales = await resOficiales.json();
-        const datosPrediccion = await resUsuario.json();
-        
-        // 2. Llenar los campos y calcular puntos por cada partido
-        datosPrediccion.forEach(partido => {
+        if (resUsuario.length === 0) return;
+
+        resUsuario.forEach(partido => {
             const inL = document.getElementById(`L-${partido.id}`);
             const inV = document.getElementById(`V-${partido.id}`);
             const inDL = document.getElementById(`DL-${partido.id}`);
@@ -509,18 +515,23 @@ async function cargarDesdeDB(nombre) {
             
             gestionarDesempate(partido.id);
 
-            // --- LÓGICA PARA MOSTRAR PUNTOS EN LA ZONA AMARILLA ---
-            const oficial = oficiales.find(o => o.id === partido.id);
-            if (oficial) {
-                const ptsGanados = calcularLogicaPuntos(partido.gl, partido.gv, oficial.gl, oficial.gv);
+            // --- Puntos con colores solicitados ---
+            const oficial = resOficiales.find(o => o.id === partido.id);
+            if (oficial && inL && partido.gl !== null && partido.gv !== null) {
+                const ptsGanados = calcularLogicaPuntos(
+                    parseInt(partido.gl), 
+                    parseInt(partido.gv), 
+                    parseInt(oficial.gl), 
+                    parseInt(oficial.gv)
+                );
                 
-                // Buscamos el contenedor del marcador para meter el texto abajo
                 const marcadorCol = inL.closest('.marcador-col');
                 if (marcadorCol) {
                     const divPuntos = document.createElement('div');
                     divPuntos.className = 'puntos-obtenidos';
-                    divPuntos.style = "color: #003366; font-weight: bold; font-size: 0.85em; margin-top: 5px; text-align: center; width: 100%;";
-                    divPuntos.innerHTML = `Puntos obtenidos en juego: <span style="color: #ff4444;">${ptsGanados}</span>`;
+                    // Azul para texto, rojo para puntos
+                    divPuntos.style = "color: #003366; font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center; width: 100%;";
+                    divPuntos.innerHTML = `Puntos obtenidos en juego: <span style="color: #ff0000;">${ptsGanados}</span>`;
                     marcadorCol.appendChild(divPuntos);
                 }
             }
@@ -528,7 +539,7 @@ async function cargarDesdeDB(nombre) {
 
         actualizarTorneo();
 
-        // --- LÓGICA DE FILTRADO (Mantén el resto igual...) ---
+        // Filtrado de botones
         const botones = document.querySelectorAll('.btn-link');
         const nombreBuscado = nombre.toLowerCase().trim();
         botones.forEach(btn => {
@@ -557,7 +568,7 @@ async function cargarDesdeDB(nombre) {
             document.getElementById('links-container').appendChild(btnReset);
         }
     } catch (error) { 
-        console.error("Error al cargar:", error); 
+        console.error("Error crítico en cargarDesdeDB:", error); 
     }
 }
 
