@@ -1,19 +1,34 @@
-// Prueba de conexión inmediata
-console.log("El script de Admin se ha cargado correctamente.");
+// --- CONFIGURACIÓN INICIAL ---
+console.log("El script de Admin Pro con Lógica de Torneo cargado.");
 
 const API_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
     ? window.location.origin 
     : "https://quiniela-pcas.onrender.com";
 
-// LISTA DE PARTIDOS NECESARIA PARA DIBUJAR LA TABLA
+// Ranking FIFA para desempates (Igual al de tu index)
+const rankingFIFA = {
+    "México": 15, "Sudáfrica": 59, "Rep. Corea": 22, "Rep. Checa": 40,
+    "Canadá": 35, "Bosnia y Herzegovina": 74, "Catar": 34, "Suiza": 19,
+    "Brasil": 5, "Marruecos": 13, "Haití": 90, "Escocia": 51,
+    "EE. UU.": 11, "Paraguay": 56, "Australia": 24, "Turquia": 26,
+    "Alemania": 16, "Curazao": 91, "Costa de Marfil": 38, "Ecuador": 30,
+    "Países Bajos": 7, "Japón": 18, "Suecia": 28, "Túnez": 41,
+    "Bélgica": 3, "Egipto": 36, "RI de Irán": 20, "Nueva Zelanda": 107,
+    "España": 8, "Islas de Cabo Verde": 65, "Arabia Saudita": 53, "Uruguay": 14,
+    "Francia": 2, "Senegal": 17, "Irak": 58, "Noruega": 47,
+    "Argentina": 1, "Argelia": 43, "Austria": 25, "Jordania": 71,
+    "Portugal": 6, "Congo": 84, "Uzbekistán": 64, "Colombia": 12,
+    "Inglaterra": 4, "Croacia": 10, "Ghana": 68, "Panamá": 45
+};
+
 const partidosData = [
     // GRUPO A
-    { id: 1, fase: "Grupos", grupo: "A", fecha: "11/06/2026", local: "México", visita: "Sudáfrica" },
-    { id: 2, fase: "Grupos", grupo: "A", fecha: "12/06/2026", local: "Rep. Corea", visita: "Rep. Checa" },
-    { id: 3, fase: "Grupos", grupo: "A", fecha: "18/06/2026", local: "Rep. Checa", visita: "Sudáfrica" },
-    { id: 4, fase: "Grupos", grupo: "A", fecha: "19/06/2026", local: "México", visita: "Rep. Corea" },
-    { id: 5, fase: "Grupos", grupo: "A", fecha: "25/06/2026", local: "Rep. Checa", visita: "México" },
-    { id: 6, fase: "Grupos", grupo: "A", fecha: "25/06/2026", local: "Sudáfrica", visita: "Rep. Corea" },
+    { id: 1, fase: "Grupos", grupo: "A", fecha: "Jueves 11/06/2026", local: "México", visita: "Sudáfrica" },
+    { id: 2, fase: "Grupos", grupo: "A", fecha: "Viernes 12/06/2026", local: "Rep. Corea", visita: "Rep. Checa" },
+    { id: 3, fase: "Grupos", grupo: "A", fecha: "Jueves 18/06/2026", local: "Rep. Checa", visita: "Sudáfrica" },
+    { id: 4, fase: "Grupos", grupo: "A", fecha: "Viernes 19/06/2026", local: "México", visita: "Rep. Corea" },
+    { id: 5, fase: "Grupos", grupo: "A", fecha: "Jueves 25/06/2026", local: "Rep. Checa", visita: "México" },
+    { id: 6, fase: "Grupos", grupo: "A", fecha: "Jueves 25/06/2026", local: "Sudáfrica", visita: "Rep. Corea" },
 
     // --- GRUPO B (IDs 7-12) ---
     { id: 7, fase: "Grupos", grupo: "B", fecha: "Viernes 12/06/2026", local: "Canadá", visita: "Bosnia y Herzegovina" },
@@ -146,45 +161,33 @@ const partidosData = [
     { id: 104, fase: "Final", grupo: "Eliminatoria", fecha: "Domingo 19/07/2026", local: "W101", visita: "W102" }
 ];
 
-// DIBUJAR LOS PARTIDOS
-// DIBUJAR LOS PARTIDOS (CON EL DISEÑO DEL INDEX)
+// 2. RENDERIZAR PARTIDOS
 function renderizarPartidosAdmin() {
     const container = document.getElementById('admin-fixture-container'); 
-    
-    if (!container) {
-        console.error("❌ ERROR: No se encontró el contenedor 'admin-fixture-container' en el HTML.");
-        return;
-    }
+    if (!container) return;
     
     container.innerHTML = "";
     partidosData.forEach(p => {
         const card = document.createElement('div');
-        // Usamos la clase 'card' o 'partido-card' según tengas en tu style.css
         card.className = "partido-card"; 
+        card.id = `card-${p.id}`;
         
         card.innerHTML = `
             <div class="partido-info">
-                <span class="grupo-label">${p.fase} - Grupo ${p.grupo}</span>
+                <span class="grupo-label">${p.fase} ${p.grupo !== 'Eliminatoria' ? '- Grupo '+p.grupo : ''}</span>
                 <span class="fecha-label">${p.fecha}</span>
             </div>
-            
             <div class="card-body">
                 <div class="equipo-col left">
-                    <span class="nombre-equipo">${p.local}</span>
+                    <span class="nombre-equipo" id="N-L-${p.id}">${p.local}</span>
                 </div>
-
                 <div class="marcador-col">
-                    <input type="number" 
-                           id="R-L-${p.id}" 
-                           class="input-gol">
+                    <input type="number" id="R-L-${p.id}" class="input-gol" oninput="actualizarLogicaAdmin()">
                     <span class="separador">-</span>
-                    <input type="number" 
-                           id="R-V-${p.id}" 
-                           class="input-gol">
+                    <input type="number" id="R-V-${p.id}" class="input-gol" oninput="actualizarLogicaAdmin()">
                 </div>
-
                 <div class="equipo-col right">
-                    <span class="nombre-equipo">${p.visita}</span>
+                    <span class="nombre-equipo" id="N-V-${p.id}">${p.visita}</span>
                 </div>
             </div>
             <div style="text-align: center; font-size: 0.7rem; color: #0066B2; font-weight: bold; margin-top: 5px;">
@@ -193,72 +196,198 @@ function renderizarPartidosAdmin() {
         `;
         container.appendChild(card);
     });
-    console.log("✅ Partidos dibujados con diseño de Index.");
-}
-// CARGAR RESULTADOS DESDE LA BASE DE DATOS
-async function cargarResultadosExistentes() {
-    try {
-        const response = await fetch(`${API_URL}/obtener-resultados-db`);
-        if (!response.ok) return;
-        const datos = await response.json();
-
-        if (datos && datos.length > 0) {
-            datos.forEach(d => {
-                const inputL = document.getElementById(`R-L-${d.id}`);
-                const inputV = document.getElementById(`R-V-${d.id}`);
-                if (inputL) inputL.value = d.gl;
-                if (inputV) inputV.value = d.gv;
-            });
-            console.log("📂 Resultados previos cargados.");
-        }
-    } catch (error) {
-        console.error("Error al recuperar resultados:", error);
-    }
 }
 
-// GUARDAR RESULTADOS EN LA BASE DE DATOS
-async function guardarResultadosOficiales() {
-    const resultados = [];
+// 3. LÓGICA DE ACTUALIZACIÓN (Copia exacta de tu index)
+function actualizarLogicaAdmin() {
+    const resultados = {};
     partidosData.forEach(p => {
-        const inputL = document.getElementById(`R-L-${p.id}`);
-        const inputV = document.getElementById(`R-V-${p.id}`);
+        const gl = document.getElementById(`R-L-${p.id}`).value;
+        const gv = document.getElementById(`R-V-${p.id}`).value;
+        resultados[p.id] = {
+            gl: gl !== "" ? parseInt(gl) : null,
+            gv: gv !== "" ? parseInt(gv) : null
+        };
+    });
+
+    // --- CÁLCULO DE GRUPOS ---
+    const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
+    let clasificados = {}; // Guardará { '1A': 'Nombre', '2A': 'Nombre', '3A': 'Nombre' }
+
+    grupos.forEach(g => {
+        let tabla = {};
+        const partidosGrupo = partidosData.filter(p => p.fase === "Grupos" && p.grupo === g);
         
-        if (inputL && inputV) {
-            const gl = inputL.value;
-            const gv = inputV.value;
+        partidosGrupo.forEach(p => {
+            if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0, ranking: rankingFIFA[p.local] || 200 };
+            if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0, ranking: rankingFIFA[p.visita] || 200 };
             
-            if (gl !== "" && gv !== "") {
-                resultados.push({ 
-                    id: p.id, 
-                    realL: parseInt(gl), 
-                    realV: parseInt(gv) 
-                });
+            const res = resultados[p.id];
+            if (res.gl !== null && res.gv !== null) {
+                tabla[p.local].gf += res.gl;
+                tabla[p.visita].gf += res.gv;
+                tabla[p.local].dg += (res.gl - res.gv);
+                tabla[p.visita].dg += (res.gv - res.gl);
+                if (res.gl > res.gv) tabla[p.local].pts += 3;
+                else if (res.gl < res.gv) tabla[p.visita].pts += 3;
+                else { tabla[p.local].pts += 1; tabla[p.visita].pts += 1; }
             }
+        });
+
+        let ordenados = Object.values(tabla).sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking);
+        clasificados[`1${g}`] = ordenados[0]?.nombre || `1${g}`;
+        clasificados[`2${g}`] = ordenados[1]?.nombre || `2${g}`;
+        clasificados[`3${g}`] = ordenados[2]?.nombre || `3${g}`;
+    });
+
+    // --- ACTUALIZACIÓN DE LLAVES (16VOS) ---
+    // Aquí mapeas los nombres dinámicos a los IDs de 16vos
+    // --- 1. MAPEACIÓN DE 16VOS (BASADO EN GRUPOS) ---
+    // Según tu partidosData IDs 73 al 88
+    const mapeo16vos = [
+        { id: 73, l: clasificados['2A'], v: clasificados['2B'] },
+        { id: 74, l: clasificados['1C'], v: clasificados['2F'] },
+        { id: 75, l: clasificados['1E'], v: clasificados['3A'] || "3A/B/C" }, // Ajustar si usas lógica compleja de mejores terceros
+        { id: 76, l: clasificados['1F'], v: clasificados['2C'] },
+        { id: 77, l: clasificados['2E'], v: clasificados['2I'] },
+        { id: 78, l: clasificados['1I'], v: clasificados['3C'] || "3C/D/F" },
+        { id: 79, l: clasificados['1A'], v: clasificados['3E'] || "3C/E/F" },
+        { id: 80, l: clasificados['1L'], v: clasificados['3H'] || "3E/H/I" },
+        { id: 81, l: clasificados['1G'], v: clasificados['3I'] || "3A/E/H" },
+        { id: 82, l: clasificados['1D'], v: clasificados['3B'] || "3B/E/F" },
+        { id: 83, l: clasificados['1H'], v: clasificados['2J'] },
+        { id: 84, l: clasificados['2K'], v: clasificados['2L'] },
+        { id: 85, l: clasificados['1B'], v: clasificados['3F'] || "3E/F/G" },
+        { id: 86, l: clasificados['2D'], v: clasificados['2G'] },
+        { id: 87, l: clasificados['1J'], v: clasificados['2H'] },
+        { id: 88, l: clasificados['1K'], v: clasificados['3D'] || "3D/E/I" }
+    ];
+
+    mapeo16vos.forEach(m => {
+        const lbL = document.getElementById(`N-L-${m.id}`);
+        const lbV = document.getElementById(`N-V-${m.id}`);
+        if (lbL) lbL.innerText = m.l;
+        if (lbV) lbV.innerText = m.v;
+    });
+
+    // --- FUNCIÓN INTERNA PARA OBTENER GANADOR ---
+    const getGanador = (id) => {
+        const gl = resultados[id].gl;
+        const gv = resultados[id].gv;
+        const txtL = document.getElementById(`N-L-${id}`)?.innerText || `Ganador ${id}`;
+        const txtV = document.getElementById(`N-V-${id}`)?.innerText || `Ganador ${id}`;
+        
+        if (gl === null || gv === null) return `Ganador ${id}`;
+        if (gl > gv) return txtL;
+        if (gv > gl) return txtV;
+        return txtL; // Por defecto Local si no hay penaltis definidos en Admin
+    };
+
+    // --- 2. OCTAVOS DE FINAL (W73 - W88) ---
+    const mapeo8vos = [
+        { id: 89, l: getGanador(73), v: getGanador(75) },
+        { id: 90, l: getGanador(74), v: getGanador(77) },
+        { id: 91, l: getGanador(76), v: getGanador(78) },
+        { id: 92, l: getGanador(79), v: getGanador(80) },
+        { id: 93, l: getGanador(83), v: getGanador(84) },
+        { id: 94, l: getGanador(81), v: getGanador(82) },
+        { id: 95, l: getGanador(86), v: getGanador(88) },
+        { id: 96, l: getGanador(85), v: getGanador(87) }
+    ];
+
+    mapeo8vos.forEach(m => {
+        if (document.getElementById(`N-L-${m.id}`)) document.getElementById(`N-L-${m.id}`).innerText = m.l;
+        if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
+    });
+
+    // --- 3. CUARTOS DE FINAL (W89 - W96) ---
+    const mapeo4tos = [
+        { id: 97, l: getGanador(89), v: getGanador(90) },
+        { id: 98, l: getGanador(93), v: getGanador(94) },
+        { id: 99, l: getGanador(91), v: getGanador(92) },
+        { id: 100, l: getGanador(95), v: getGanador(96) }
+    ];
+
+    mapeo4tos.forEach(m => {
+        if (document.getElementById(`N-L-${m.id}`)) document.getElementById(`N-L-${m.id}`).innerText = m.l;
+        if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
+    });
+
+    // --- 4. SEMIFINALES (W97 - W100) ---
+    const mapeoSemis = [
+        { id: 101, l: getGanador(97), v: getGanador(98) },
+        { id: 102, l: getGanador(99), v: getGanador(100) }
+    ];
+
+    mapeoSemis.forEach(m => {
+        if (document.getElementById(`N-L-${m.id}`)) document.getElementById(`N-L-${m.id}`).innerText = m.l;
+        if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
+    });
+
+    // --- 5. FINAL Y 3er PUESTO ---
+    const finalL = getGanador(101);
+    const finalV = getGanador(102);
+    
+    // Para el 3er puesto necesitamos los perdedores
+    const getPerdedor = (id) => {
+        const gl = resultados[id].gl;
+        const gv = resultados[id].gv;
+        const txtL = document.getElementById(`N-L-${id}`)?.innerText;
+        const txtV = document.getElementById(`N-V-${id}`)?.innerText;
+        if (gl === null || gv === null) return `Perdedor ${id}`;
+        return (gl > gv) ? txtV : txtL;
+    };
+
+    if (document.getElementById(`N-L-104`)) document.getElementById(`N-L-104`).innerText = finalL;
+    if (document.getElementById(`N-V-104`)) document.getElementById(`N-V-104`).innerText = finalV;
+
+    if (document.getElementById(`N-L-103`)) document.getElementById(`N-L-103`).innerText = getPerdedor(101);
+    if (document.getElementById(`N-V-103`)) document.getElementById(`N-V-103`).innerText = getPerdedor(102);
+
+
+
+    
+
+// 4. GUARDAR CON NOMBRES (Para que la validación funcione)
+async function guardarResultadosOficiales() {
+    const resultadosEnvio = [];
+    partidosData.forEach(p => {
+        const gl = document.getElementById(`R-L-${p.id}`).value;
+        const gv = document.getElementById(`R-V-${p.id}`).value;
+        const nombreLocal = document.getElementById(`N-L-${p.id}`).innerText;
+        const nombreVisita = document.getElementById(`N-V-${p.id}`).innerText;
+
+        if (gl !== "" && gv !== "") {
+            resultadosEnvio.push({
+                id: p.id,
+                realL: parseInt(gl),
+                realV: parseInt(gv),
+                nombreLocal: nombreLocal,
+                nombreVisita: nombreVisita
+            });
         }
     });
 
-    if (resultados.length === 0) return alert("Ingresa al menos un resultado oficial.");
+    if (resultadosEnvio.length === 0) return alert("Nada que guardar.");
 
     try {
         const response = await fetch(`${API_URL}/guardar-resultados-db`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(resultados)
+            body: JSON.stringify(resultadosEnvio)
         });
-
-        const resData = await response.json();
-        alert("✅ " + resData.mensaje);
-    } catch (error) {
-        alert("❌ Error al conectar con el servidor.");
+        const data = await response.json();
+        alert(data.mensaje);
+    } catch (e) {
+        alert("Error al guardar.");
     }
 }
 
-// ARRANQUE ÚNICO
+// ARRANQUE
 document.addEventListener("DOMContentLoaded", () => {
     renderizarPartidosAdmin();
-    cargarResultadosExistentes();
+    // cargarResultadosExistentes(); // Puedes habilitarla si quieres que traiga lo guardado
 });
-
 
 
 
