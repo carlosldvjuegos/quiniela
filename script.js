@@ -469,6 +469,11 @@ async function guardarQuinielaCompleta() {
             // ----------------------------------------------
 
         
+        // 5. HACER DESAPARECER EL BOTÓN
+        if (btnGuardar) {
+            btnGuardar.style.display = 'none';
+        }
+        
         // 4. SI TODO ESTÁ BIEN, GUARDAMOS
         const res = await fetch(`${API_URL}/guardar`, {
             method: 'POST',
@@ -478,11 +483,6 @@ async function guardarQuinielaCompleta() {
         
         const data = await res.json();
         alert("¡Quiniela guardada con éxito!");
-
-        // 5. HACER DESAPARECER EL BOTÓN
-        if (btnGuardar) {
-            btnGuardar.style.display = 'none';
-        }
         
         inputNombre.readOnly = true;
 
