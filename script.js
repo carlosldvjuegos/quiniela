@@ -500,6 +500,22 @@ async function cargarDesdeDB(nombre) {
             if (inDV && partido.dv !== null) inDV.value = partido.dv;
             
             gestionarDesempate(partido.id);
+
+            // --- LÓGICA PARA MOSTRAR PUNTOS EN LA ZONA AMARILLA ---
+            const oficial = oficiales.find(o => o.id === partido.id);
+            if (oficial) {
+                const ptsGanados = calcularLogicaPuntos(partido.gl, partido.gv, oficial.gl, oficial.gv);
+                
+                // Buscamos el contenedor del marcador para meter el texto abajo
+                const marcadorCol = inL.closest('.marcador-col');
+                if (marcadorCol) {
+                    const divPuntos = document.createElement('div');
+                    divPuntos.className = 'puntos-obtenidos';
+                    divPuntos.style = "color: #d4af37; font-weight: bold; font-size: 0.85em; margin-top: 5px; text-align: center; width: 100%;";
+                    divPuntos.innerHTML = `Puntos obtenidos en juego: ${ptsGanados}`;
+                    marcadorCol.appendChild(divPuntos);
+                }
+            }
         });
 
         actualizarTorneo();
