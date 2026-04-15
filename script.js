@@ -477,17 +477,26 @@ async function guardarQuinielaCompleta() {
 
 
 
-// 7. CARGAR DESDE DB (MEJORADO CON DESEMPATE)
+// 7. CARGAR DESDE DB (MEJORADO CON DESEMPATE Y SUMATORIA DE PUNTOS POR JUEGO)
 async function cargarDesdeDB(nombre) {
     try {
         const inputNombrePrincipal = document.getElementById('nombre-usuario');
         if (inputNombrePrincipal) inputNombrePrincipal.value = nombre;
-        document.querySelectorAll('.marcador-col input').forEach(input => input.value = "");
-
-        const respuesta = await fetch(`${API_URL}/cargar/${nombre}`);
-        const datos = await respuesta.json();
         
-        // Mantenemos tu lógica de carga de goles y desempates intacta
+        // Limpiar inputs y borrar mensajes de puntos anteriores para que no se dupliquen
+        document.querySelectorAll('.marcador-col input').forEach(input => input.value = "");
+        document.querySelectorAll('.puntos-por-juego').forEach(el => el.remove());
+
+        // 1. Obtenemos resultados oficiales y los datos del usuario en paralelo
+        const [resOficiales, resUsuario] = await Promise.all([
+            fetch(`${API_URL}/obtener-resultados-db`),
+            fetch(`${API_URL}/cargar/${nombre}`)
+        ]);
+
+        const oficiales = await resOficiales.json();
+        const datos = await resUsuario.json();
+        
+        // 2. Mantenemos tu lógica de carga de goles y desempates
         datos.forEach(partido => {
             const inL = document.getElementById(`L-${partido.id}`);
             const inV = document.getElementById(`V-${partido.id}`);
@@ -501,52 +510,47 @@ async function cargarDesdeDB(nombre) {
             
             gestionarDesempate(partido.id);
 
-            // --- LÓGICA PARA MOSTRAR PUNTOS EN LA ZONA AMARILLA ---
+            // --- BLOQUE NUEVO: MOSTRAR PUNTOS EN LA ZONA AMARILLA ---
             const oficial = oficiales.find(o => o.id === partido.id);
-            if (oficial) {
-                const ptsGanados = calcularLogicaPuntos(partido.gl, partido.gv, oficial.gl, oficial.gv);
+            if (oficial && inL) {
+                const pts = calcularLogicaPuntos(partido.gl, partido.gv, oficial.gl, oficial.gv);
                 
-                // Buscamos el contenedor del marcador para meter el texto abajo
-                const marcadorCol = inL.closest('.marcador-col');
-                if (marcadorCol) {
+                // Buscamos el contenedor donde están los inputs
+                const contenedorMarcador = inL.closest('.marcador-col');
+                if (contenedorMarcador) {
                     const divPuntos = document.createElement('div');
-                    divPuntos.className = 'puntos-obtenidos';
-                    divPuntos.style = "color: #d4af37; font-weight: bold; font-size: 0.85em; margin-top: 5px; text-align: center; width: 100%;";
-                    divPuntos.innerHTML = `Puntos obtenidos en juego: ${ptsGanados}`;
-                    marcadorCol.appendChild(divPuntos);
+                    divPuntos.className = 'puntos-por-juego';
+                    // Estilo para que aparezca justo abajo de los marcadores
+                    divPuntos.style = "color: #2c3e50; font-weight: bold; font-size: 13px; margin-top: 8px; text-align: center; border-top: 1px dashed #ccc; padding-top: 4px; width: 100%;";
+                    divPuntos.innerHTML = `Puntos obtenidos en juego es: <span style="color: #27ae60;">${pts}</span>`;
+                    contenedorMarcador.appendChild(divPuntos);
                 }
             }
         });
 
         actualizarTorneo();
 
-        // --- LÓGICA DE FILTRADO CORREGIDA ---
+        // --- LÓGICA DE FILTRADO CORREGIDA (SE MANTIENE IGUAL) ---
         const botones = document.querySelectorAll('.btn-link');
         const nombreBuscado = nombre.toLowerCase().trim();
 
         botones.forEach(btn => {
-            // Leemos la etiqueta invisible que creamos en la otra función
             const nombreEnBoton = btn.getAttribute('data-nombre-real');
-
-            // Solo mostramos si el nombre es EXACTAMENTE igual (sin mirar los puntos)
             if (nombreEnBoton === nombreBuscado) {
                 btn.style.setProperty('display', 'flex', 'important');
                 btn.classList.add('quiniela-activa');
             } else {
-                // No ocultamos el botón rojo de volver
                 if (btn.id !== 'btn-volver-lista') {
                     btn.style.setProperty('display', 'none', 'important');
                 }
             }
         });
 
-        // Ocultar el botón de guardar (como pediste)
         const btnSave = document.querySelector('.btn-save');
         if (btnSave) {
             btnSave.style.display = 'none';
         }
 
-        // Mantenemos tu botón de volver intacto
         if (!document.getElementById('btn-volver-lista')) {
             const btnReset = document.createElement('button');
             btnReset.id = 'btn-volver-lista';
@@ -563,7 +567,6 @@ async function cargarDesdeDB(nombre) {
         console.error("Error al cargar:", error); 
     }
 }
-
 
 
 // 8. LÓGICA DE TORNEO (PROTEGIDA CONTRA DATOS FANTASMAS)
