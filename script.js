@@ -288,17 +288,23 @@ async function actualizarListaLinks() {
     if (!container) return;
 
     try {
-        // Hacemos las peticiones con un tiempo de espera para no saturar Render
-        const resNombres = await fetch(`${API_URL}/registros`);
-        if (!resNombres.ok) throw new Error("Error en registros");
+        // Añadimos un timeout para que la petición no se quede colgada eternamente
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos máximo
+
+        const [resNombres, resOficiales, resTodasPred] = await Promise.all([
+            fetch(`${API_URL}/registros`, { signal: controller.signal }),
+            fetch(`${API_URL}/obtener-resultados-db`, { signal: controller.signal }),
+            fetch(`${API_URL}/obtener-todas-predicciones`, { signal: controller.signal })
+        ]);
+
+        clearTimeout(timeoutId);
+
         const usuarios = await resNombres.json();
-
-        const resOficiales = await fetch(`${API_URL}/obtener-resultados-db`);
         const oficiales = await resOficiales.json();
-
-        const resTodasPred = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const todasLasPredicciones = await resTodasPred.json();
 
+        // Agrupamos predicciones por usuario de forma eficiente
         const predPorUsuario = todasLasPredicciones.reduce((acc, p) => {
             if (!acc[p.nombre_usuario]) acc[p.nombre_usuario] = [];
             acc[p.nombre_usuario].push(p);
@@ -324,13 +330,18 @@ async function actualizarListaLinks() {
 
         listaRanking.sort((a, b) => b.puntos - a.puntos);
 
-        container.innerHTML = "";
+        container.innerHTML = ""; // Limpiamos el "Cargando ranking..."
+        
+        if (listaRanking.length === 0) {
+            container.innerHTML = "<p style='color:gray; font-size:12px; padding:10px;'>No hay quinielas registradas.</p>";
+            return;
+        }
+
         listaRanking.forEach((u, index) => {
             const medallita = index === 0 ? "🥇" : (index === 1 ? "🥈" : (index === 2 ? "🥉" : "•"));
             const btn = document.createElement('button');
             btn.className = "btn-link";
             btn.setAttribute('data-nombre-real', u.nombre.toLowerCase().trim());
-
             btn.innerHTML = `
                 <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
                     <span>${medallita} <b>${u.nombre}</b></span>
@@ -342,10 +353,11 @@ async function actualizarListaLinks() {
         });
 
     } catch (err) {
-        console.error("Error al actualizar ranking:", err);
-        container.innerHTML = "<p style='color:gray; font-size:12px;'>Cargando ranking...</p>";
+        console.error("Error en ranking:", err);
+        container.innerHTML = "<p style='color:red; font-size:11px; padding:10px;'>Error al conectar con el servidor. Reintenta en unos instantes.</p>";
     }
 }
+
 
 // 5. CALCULAR PUNTOS MANUAL (Sin cambios)
 async function calcularPuntos() {
