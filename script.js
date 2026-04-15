@@ -420,25 +420,30 @@ async function guardarQuinielaCompleta() {
         }
 
 
-    // --- NUEVA VALIDACIÓN: CAMPOS VACÍOS EN LOS PARTIDOS ---
-        // Buscamos todos los inputs de goles (L- y V-)
-//        const inputsGoles = document.querySelectorAll('.marcador-col input');
-  //      let primerVacio = null;
-    
-    //    for (let input of inputsGoles) {
-      //   if (input.value.trim() === "") {
-        //        primerVacio = input; // Guardamos el primero que encontremos
-          //      break; 
-            //}
-//        }
-    
-  //      if (primerVacio) {
-    //        alert("Todavía hay campos vacíos en la quiniela. Por favor, completa todos los resultados.");
-      //      primerVacio.focus(); // Posiciona el cursor en el primer campo vacío
-        //    primerVacio.style.borderColor = "red"; // Opcional: marcarlo en rojo para que resalte
-          //  return; // Detiene el guardado
-   //     }
+    // --- VALIDACIÓN CORREGIDA: SOLO CAMPOS VISIBLES ---
+        // Seleccionamos los inputs pero filtramos para quedarnos solo con los que se ven en pantalla
+        const inputsGoles = Array.from(document.querySelectorAll('.marcador-col input')).filter(input => {
+            // offsetParent es null cuando el elemento o su padre tienen "display: none"
+            return input.offsetParent !== null;
+        });
+        
+        let primerVacio = null;
+        
+        for (let input of inputsGoles) {
+            if (input.value.trim() === "") {
+                primerVacio = input; 
+                break; 
+            }
+        }
+        
+        if (primerVacio) {
+            alert("Todavía hay campos vacíos en la quiniela. Por favor, completa todos los resultados visibles.");
+            primerVacio.focus();
+            primerVacio.style.borderColor = "red";
+            return; // Detiene el guardado
+        }
         // -------------------------------------------------------
+
 
 
 
