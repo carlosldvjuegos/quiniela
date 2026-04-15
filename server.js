@@ -68,10 +68,18 @@ const inicializarDB = async () => {
 };
 inicializarDB();
 
-// --- RUTAS ---
-
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin.html'));
+// OBTENER RESULTADOS REALES (Verifica que los alias coincidan con el frontend)
+app.get('/obtener-resultados-db', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT partido_id as id, goles_local as gl, goles_visita as gv, 
+            equipo_local as local, equipo_visitante as visita 
+            FROM resultados_oficiales
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // GUARDAR PREDICCIONES
