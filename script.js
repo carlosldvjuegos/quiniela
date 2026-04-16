@@ -555,11 +555,12 @@ async function cargarDesdeDB(nombre) {
         // 1. Ejecutamos la lógica de torneo primero
         actualizarTorneo();
 
-        // 2. ESPERAMOS UN MOMENTO (Ajustado a 400ms)
+        // 2. ESPERAMOS UN MOMENTO para que el HTML se actualice con los nombres de los equipos
         setTimeout(() => {
             const limpiarTotal = (txt) => {
                 if (!txt) return "";
-                return txt.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, ' ');
+                // MEJORA: Eliminación de acentos, espacios y caracteres especiales para comparación exacta
+                return txt.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "").trim();
             };
 
             resUsuario.forEach(partido => {
@@ -569,6 +570,7 @@ async function cargarDesdeDB(nombre) {
                 if (oficial && inL && partido.gl !== null && partido.gv !== null) {
                     const cardBody = inL.closest('.card-body');
                     
+                    // Ahora que esperamos, estos nombres ya no estarán vacíos
                     const nombreLocalUsuario = limpiarTotal(cardBody.querySelector('.equipo-col.local').innerText);
                     const nombreVisitaUsuario = limpiarTotal(cardBody.querySelector('.equipo-col.visita').innerText);
                     const nombreLocalOficial = limpiarTotal(oficial.local);
@@ -605,7 +607,7 @@ async function cargarDesdeDB(nombre) {
                     }
                 }
             });
-        }, 400); // 400 milisegundos para asegurar que el DOM tenga los nombres listos
+        }, 500); // Se mantiene el tiempo suficiente para procesar los nombres generados por actualizarTorneo()
 
         // Resto de la lógica de filtrado de botones
         const botones = document.querySelectorAll('.btn-link');
