@@ -417,7 +417,7 @@ async function guardarQuinielaCompleta() {
                 
                 // Validar que no haya empate en el desempate
                 if (parseInt(dl) === parseInt(dv)) {
-                    alert(`En el desempate de ${p.local} vs ${p.visita}, los marcadores no pueden ser iguales. Alguien debe ganar para clasificar.`);
+                    alert(`En el desempate de ${nombreRealLocal} vs ${nombreRealVisita}, los marcadores no pueden ser iguales. Alguien debe ganar para clasificar.`);
                     inputDL.focus();
                     throw new Error("Validación fallida: empate en campos de desempate");
                 }
