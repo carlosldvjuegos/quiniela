@@ -525,7 +525,7 @@ async function cargarDesdeDB(nombre) {
         });
         document.querySelectorAll('.puntos-obtenidos').forEach(div => div.remove());
 
-        // Peticiones seguras a la DB
+        // Peticiones seguras a la DB (Aquí es donde busca en la "otra tabla" de resultados oficiales)
         const [resOficiales, resUsuario] = await Promise.all([
             fetch(`${API_URL}/obtener-resultados-db`).then(r => r.json()),
             fetch(`${API_URL}/cargar/${nombre}`).then(r => r.json())
@@ -552,15 +552,16 @@ async function cargarDesdeDB(nombre) {
         });
 
         // --- INICIO BLOQUEO DE CAMPOS ---
-        // Desactiva todos los inputs para que no se pueda poner el cursor ni editar
         document.querySelectorAll('.marcador-col input').forEach(input => {
             input.disabled = true;
-           // input.style.cursor = "not-allowed"; // Cambia el puntero del mouse
         });
         // --- FIN BLOQUEO DE CAMPOS ---
 
         // Ejecutamos la lógica de torneo para que se calculen los clasificados del usuario
         actualizarTorneo();
+
+        // --- FUNCIÓN DE LIMPIEZA INTERNA (Indispensable para comparar datos de diferentes páginas) ---
+        const limpiar = (txt) => txt ? txt.trim().toLowerCase().replace(/\s+/g, ' ') : "";
 
         // Ahora recorremos nuevamente para mostrar los puntos con la validación de equipos
         resUsuario.forEach(partido => {
@@ -569,20 +570,19 @@ async function cargarDesdeDB(nombre) {
 
             if (oficial && inL && partido.gl !== null && partido.gv !== null) {
                 const cardBody = inL.closest('.card-body');
-
-                // --- FUNCIÓN DE LIMPIEZA INTERNA ---
-                const limpiar = (txt) => txt ? txt.trim().toLowerCase().replace(/\s+/g, ' ') : "";
-
+                
+                // Limpiamos el nombre que el usuario ve en SU página
                 const nombreLocalUsuario = limpiar(cardBody.querySelector('.equipo-col.local').innerText);
                 const nombreVisitaUsuario = limpiar(cardBody.querySelector('.equipo-col.visita').innerText);
+                
+                // Limpiamos el nombre que viene de la "otra tabla" (Admin)
                 const nombreLocalOficial = limpiar(oficial.local);
                 const nombreVisitaOficial = limpiar(oficial.visita);
-                // -----------------------------------
                 
                 const infoPartido = partidosData.find(p => p.id === partido.id);
                 const esFaseGrupos = infoPartido && infoPartido.fase === "Grupos";
 
-                // Comparación usando los nombres limpios
+                // Comparación infalible aunque vengan de páginas distintas
                 const equiposCoinciden = esFaseGrupos || 
                     (nombreLocalOficial === nombreLocalUsuario && nombreVisitaOficial === nombreVisitaUsuario);
 
@@ -644,6 +644,7 @@ async function cargarDesdeDB(nombre) {
         console.error("Error crítico en cargarDesdeDB:", error); 
     }
 }
+
 
 // 8. LÓGICA DE TORNEO (PROTEGIDA CONTRA DATOS FANTASMAS)
 function actualizarTorneo() {
