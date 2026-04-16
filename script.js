@@ -509,7 +509,7 @@ async function guardarQuinielaCompleta() {
 }
 
 
-// 7. CARGAR DESDE DB (VERSION MEJORADA: SINCRONIZACIÓN TOTAL)
+// 7. CARGAR DESDE DB (VERSION FINAL CON FILTRO DE EQUIPOS)
 async function cargarDesdeDB(nombre) {
     try {
         const inputNombrePrincipal = document.getElementById('nombre-usuario');
@@ -534,7 +534,6 @@ async function cargarDesdeDB(nombre) {
 
         if (resUsuario.length === 0) return;
 
-        // Llenamos los inputs
         resUsuario.forEach(partido => {
             const inL = document.getElementById(`L-${partido.id}`);
             const inV = document.getElementById(`V-${partido.id}`);
@@ -553,14 +552,13 @@ async function cargarDesdeDB(nombre) {
             input.disabled = true;
         });
 
-        // --- MEJORA AQUÍ: Procesar nombres y puntos con garantía de carga ---
-        actualizarTorneo(); 
+        // 1. Ejecutamos la lógica de torneo primero
+        actualizarTorneo();
 
-        // Aumentamos ligeramente el tiempo y aseguramos la lectura
+        // 2. ESPERAMOS UN MOMENTO (Ajustado a 400ms)
         setTimeout(() => {
             const limpiarTotal = (txt) => {
                 if (!txt) return "";
-                // Normalizamos para que "México" y "Mexico" o "MÉXICO" sean iguales
                 return txt.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, ' ');
             };
 
@@ -568,20 +566,17 @@ async function cargarDesdeDB(nombre) {
                 const inL = document.getElementById(`L-${partido.id}`);
                 const oficial = resOficiales.find(o => o.id === partido.id);
 
-                if (oficial && inL) {
+                if (oficial && inL && partido.gl !== null && partido.gv !== null) {
                     const cardBody = inL.closest('.card-body');
-                    const spanLocal = cardBody.querySelector('.equipo-col.local');
-                    const spanVisita = cardBody.querySelector('.equipo-col.visita');
-
-                    const nombreLocalUsuario = limpiarTotal(spanLocal ? spanLocal.innerText : "");
-                    const nombreVisitaUsuario = limpiarTotal(spanVisita ? spanVisita.innerText : "");
+                    
+                    const nombreLocalUsuario = limpiarTotal(cardBody.querySelector('.equipo-col.local').innerText);
+                    const nombreVisitaUsuario = limpiarTotal(cardBody.querySelector('.equipo-col.visita').innerText);
                     const nombreLocalOficial = limpiarTotal(oficial.local);
                     const nombreVisitaOficial = limpiarTotal(oficial.visita);
                     
                     const infoPartido = partidosData.find(p => p.id === partido.id);
                     const esFaseGrupos = infoPartido && infoPartido.fase === "Grupos";
 
-                    // Verificación de seguridad: si el nombre es "---" o contiene números de posición (1A, 2B), esperamos un poco más
                     const equiposCoinciden = esFaseGrupos || 
                         (nombreLocalOficial === nombreLocalUsuario && nombreVisitaOficial === nombreVisitaUsuario);
 
@@ -602,7 +597,6 @@ async function cargarDesdeDB(nombre) {
                         divPuntos.style = "color: #003366; font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center; width: 100%; line-height: 1.2;";
                         
                         if (!equiposCoinciden) {
-                            // Si no coinciden, mostramos qué equipos esperaba el sistema para debug rápido
                             divPuntos.innerHTML = `<span style="color: #888; font-size: 10px; font-weight: normal;">Equipos no coinciden</span><br>Puntos: <span style="color: #ff0000;">0</span>`;
                         } else {
                             divPuntos.innerHTML = `Puntos obtenidos: <span style="color: #ff0000;">${ptsGanados}</span>`;
@@ -611,7 +605,40 @@ async function cargarDesdeDB(nombre) {
                     }
                 }
             });
-        }, 300); // Subimos a 300ms para dar margen al DOM de renderizar los nombres de las llaves
+        }, 400); // 400 milisegundos para asegurar que el DOM tenga los nombres listos
+
+        // Resto de la lógica de filtrado de botones
+        const botones = document.querySelectorAll('.btn-link');
+        const nombreBuscado = nombre.toLowerCase().trim();
+        botones.forEach(btn => {
+            const nombreEnBoton = btn.getAttribute('data-nombre-real');
+            if (nombreEnBoton === nombreBuscado) {
+                btn.style.setProperty('display', 'flex', 'important');
+                btn.classList.add('quiniela-activa');
+            } else {
+                if (btn.id !== 'btn-volver-lista') btn.style.setProperty('display', 'none', 'important');
+            }
+        });
+
+        const btnSave = document.querySelector('.btn-save');
+        if (btnSave) btnSave.style.display = 'none';
+
+        if (!document.getElementById('btn-volver-lista')) {
+            const btnReset = document.createElement('button');
+            btnReset.id = 'btn-volver-lista';
+            btnReset.innerText = "✕ Cambiar Usuario";
+            btnReset.className = "btn-link";
+            btnReset.style.backgroundColor = "#ff4444";
+            btnReset.style.color = "white";
+            btnReset.onclick = () => {
+                window.location.href = window.location.origin + window.location.pathname + "?nomodal=1";
+            };
+            document.getElementById('links-container').appendChild(btnReset);
+        }
+    } catch (error) { 
+        console.error("Error crítico en cargarDesdeDB:", error); 
+    }
+}
 
         
 // 8. LÓGICA DE TORNEO (PROTEGIDA CONTRA DATOS FANTASMAS)
