@@ -511,10 +511,16 @@ async function guardarQuinielaCompleta() {
 async function cargarDesdeDB(nombre) {
     try {
         const inputNombrePrincipal = document.getElementById('nombre-usuario');
-        if (inputNombrePrincipal) inputNombrePrincipal.value = nombre;
+        if (inputNombrePrincipal) {
+            inputNombrePrincipal.value = nombre;
+            inputNombrePrincipal.readOnly = true; // Bloquea el nombre
+        }
         
         // Limpiar campos y mensajes previos
-        document.querySelectorAll('.marcador-col input').forEach(input => input.value = "");
+        document.querySelectorAll('.marcador-col input').forEach(input => {
+            input.value = "";
+            input.disabled = false; // Reset temporal para poder llenar
+        });
         document.querySelectorAll('.puntos-obtenidos').forEach(div => div.remove());
 
         // Peticiones seguras a la DB
@@ -529,7 +535,6 @@ async function cargarDesdeDB(nombre) {
         if (resUsuario.length === 0) return;
 
         // Primero actualizamos el torneo para que los nombres de los equipos se llenen en el HTML
-        // Esto es vital para poder comparar los nombres después
         resUsuario.forEach(partido => {
             const inL = document.getElementById(`L-${partido.id}`);
             const inV = document.getElementById(`V-${partido.id}`);
@@ -544,6 +549,14 @@ async function cargarDesdeDB(nombre) {
             gestionarDesempate(partido.id);
         });
 
+        // --- INICIO BLOQUEO DE CAMPOS ---
+        // Desactiva todos los inputs para que no se pueda poner el cursor ni editar
+        document.querySelectorAll('.marcador-col input').forEach(input => {
+            input.disabled = true;
+            input.style.cursor = "not-allowed"; // Cambia el puntero del mouse
+        });
+        // --- FIN BLOQUEO DE CAMPOS ---
+
         // Ejecutamos la lógica de torneo para que se calculen los clasificados del usuario
         actualizarTorneo();
 
@@ -553,17 +566,13 @@ async function cargarDesdeDB(nombre) {
             const oficial = resOficiales.find(o => o.id === partido.id);
 
             if (oficial && inL && partido.gl !== null && partido.gv !== null) {
-                // Buscamos los nombres de los equipos que están actualmente en la Card del usuario
                 const cardBody = inL.closest('.card-body');
                 const nombreLocalUsuario = cardBody.querySelector('.equipo-col.local').innerText.trim();
                 const nombreVisitaUsuario = cardBody.querySelector('.equipo-col.visita').innerText.trim();
                 
-                // Buscamos los datos del partido original para saber la fase
                 const infoPartido = partidosData.find(p => p.id === partido.id);
                 const esFaseGrupos = infoPartido && infoPartido.fase === "Grupos";
 
-                // VALIDACIÓN: Si es eliminatoria, los nombres deben coincidir con la realidad (oficial)
-                // Nota: oficial.local y oficial.visita deben venir de tu base de datos de resultados
                 const equiposCoinciden = esFaseGrupos || 
                     (oficial.local === nombreLocalUsuario && oficial.visita === nombreVisitaUsuario);
 
@@ -593,7 +602,7 @@ async function cargarDesdeDB(nombre) {
             }
         });
 
-        // --- Resto de la lógica de filtrado de botones (Sin cambios) ---
+        // Resto de la lógica de filtrado de botones
         const botones = document.querySelectorAll('.btn-link');
         const nombreBuscado = nombre.toLowerCase().trim();
         botones.forEach(btn => {
