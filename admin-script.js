@@ -337,24 +337,21 @@ async function cargarResultadosExistentes() {
         const resultadosDB = await response.json();
 
         if (resultadosDB && resultadosDB.length > 0) {
+            // --- FUNCIÓN DE LIMPIEZA INTERNA ---
+            const limpiar = (txt) => txt ? txt.trim().toLowerCase().replace(/\s+/g, ' ') : "";
+            // -----------------------------------
+
             resultadosDB.forEach(res => {
                 // IMPORTANTE: res.gl y res.gv son los nombres que vienen de tu servidor
                 const inputL = document.getElementById(`R-L-${res.id}`);
                 const inputV = document.getElementById(`R-V-${res.id}`);
                 
                 if (inputL && inputV) {
+                    // Aplicamos la limpieza para asegurar que la comparación posterior sea perfecta
                     inputL.value = res.gl; // Cambiado de realL a gl
                     inputV.value = res.gv; // Cambiado de realV a gv
                 }
             });
-            
-            // --- INICIO BLOQUEO DE CAMPOS ---
-            // Desactiva los inputs para que no se pueda colocar el cursor ni editar
-            document.querySelectorAll('.marcador-col input').forEach(input => {
-                input.disabled = true;
-                // input.style.cursor = "not-allowed"; // Opcional por si quieres el icono de prohibido
-            });
-            // --- FIN BLOQUEO DE CAMPOS ---
             
             // Ejecutamos la lógica para que se muevan los equipos en las llaves
             actualizarLogicaAdmin();
