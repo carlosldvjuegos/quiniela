@@ -483,7 +483,15 @@ async function guardarQuinielaCompleta() {
         if (btnGuardar) {
             btnGuardar.style.display = 'none';
         }
-        
+
+        // Bloqueo de campos tras guardar
+        inputNombre.readOnly = true;
+        document.querySelectorAll('.marcador-col input').forEach(input => {
+            input.disabled = true;
+       //     input.style.cursor = "not-allowed";
+        });
+
+       // Guardamos 
         const res = await fetch(`${API_URL}/guardar`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -492,13 +500,6 @@ async function guardarQuinielaCompleta() {
         
         const data = await res.json();
         alert("¡Quiniela guardada con éxito!");
-        
-        // Bloqueo de campos tras guardar
-        inputNombre.readOnly = true;
-        document.querySelectorAll('.marcador-col input').forEach(input => {
-            input.disabled = true;
-            input.style.cursor = "not-allowed";
-        });
 
         if (typeof actualizarListaLinks === 'function') {
             actualizarListaLinks();
