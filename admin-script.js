@@ -348,6 +348,14 @@ async function cargarResultadosExistentes() {
                 }
             });
             
+            // --- INICIO BLOQUEO DE CAMPOS ---
+            // Desactiva los inputs para que no se pueda colocar el cursor ni editar
+            document.querySelectorAll('.marcador-col input').forEach(input => {
+                input.disabled = true;
+                // input.style.cursor = "not-allowed"; // Opcional por si quieres el icono de prohibido
+            });
+            // --- FIN BLOQUEO DE CAMPOS ---
+            
             // Ejecutamos la lógica para que se muevan los equipos en las llaves
             actualizarLogicaAdmin();
             console.log("Resultados cargados y llaves actualizadas.");
