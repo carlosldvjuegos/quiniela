@@ -53,7 +53,7 @@ header {
     width: 280px;
     min-width: 280px;
     position: sticky;
-    top: 20px;
+    top: 80px; /* Ajustado para que no choque con el panel fijo si el usuario baja mucho */
     background: white;
     padding: 15px;
     border-radius: 10px;
@@ -124,27 +124,25 @@ header {
     cursor: pointer !important;
 }
 
-<style>
-    /* Esto evita que el botón salga en la impresión o en el PDF */
-    @media print {
-        .no-print {
-            display: none !important;
-        }
-        
-        body {
-            background-color: white !important;
-            padding: 0 !important;
-        }
-
-        .modal-content {
-            box-shadow: none !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
+/* --- ESTILOS DE IMPRESIÓN --- */
+@media print {
+    .no-print, .user-panel {
+        display: none !important;
     }
-</style>
+    
+    body {
+        background-color: white !important;
+        padding: 0 !important;
+    }
+
+    .modal-content {
+        box-shadow: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}
 
 
 /* FIXTURE */
@@ -217,7 +215,7 @@ header {
 .etiqueta-real { font-size: 0.6rem; text-transform: uppercase; display: block; }
 .cuadro-real { font-weight: 900; color: #27ae60; font-size: 1.1rem; }
 
-/* PANEL DE CONTROL */
+/* PANEL DE CONTROL FIJO (STICKY) */
 .user-panel {
     background: white;
     padding: 15px;
@@ -226,7 +224,14 @@ header {
     display: flex;
     gap: 10px;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* Sombra más fuerte para el efecto flotante */
+    
+    /* CAMBIOS AQUÍ: PANEL FIJO ARRIBA */
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 2000; /* Mayor que el sidebar para que gane */
+    border-bottom: 3px solid var(--gold); /* Un detalle visual para separar */
 }
 
 .user-panel input { padding: 10px; border: 1px solid #ddd; border-radius: 5px; flex: 1; }
@@ -353,7 +358,7 @@ input, button, select, textarea {
 
     .sidebar {
         width: 100%;
-        position: sticky; 
+        position: relative; /* En móvil es mejor que no sea sticky si el panel de control ya lo es */
         top: 0;
         z-index: 100;
         background: white;
@@ -449,5 +454,3 @@ input, button, select, textarea {
 .close-modal-btn:hover {
     background: #003a8c;
 }
-
-
