@@ -393,7 +393,6 @@ async function guardarQuinielaCompleta() {
         return;
     }
 
-    
     // 2. RECOPILAR PREDICCIONES Y VALIDAR QUE HAYA AL MENOS UNA
     const predicciones = [];
     partidosData.forEach(p => {
@@ -403,6 +402,28 @@ async function guardarQuinielaCompleta() {
         const dv = document.getElementById(`DV-${p.id}`)?.value || null;
 
         if (gl !== "" && gv !== "") {
+            
+            // --- INICIO VALIDACIÓN DESEMPATE (SOLO ELIMINATORIAS) ---
+            if (p.fase !== "Grupos" && parseInt(gl) === parseInt(gv)) {
+                const inputDL = document.getElementById(`DL-${p.id}`);
+                const inputDV = document.getElementById(`DV-${p.id}`);
+                
+                // Validar que no estén vacíos
+                if (dl === null || dv === null || dl === "" || dv === "") {
+                    alert(`El partido ${p.local} vs ${p.visita} terminó en empate. Debes indicar quién clasifica en los campos de desempate.`);
+                    inputDL.focus();
+                    throw new Error("Validación fallida: campos de desempate vacíos");
+                }
+                
+                // Validar que no haya empate en el desempate
+                if (parseInt(dl) === parseInt(dv)) {
+                    alert(`En el desempate de ${p.local} vs ${p.visita}, los marcadores no pueden ser iguales. Alguien debe ganar para clasificar.`);
+                    inputDL.focus();
+                    throw new Error("Validación fallida: empate en campos de desempate");
+                }
+            }
+            // --- FIN VALIDACIÓN DESEMPATE ---
+
             predicciones.push({ 
                 id: p.id, 
                 gl: parseInt(gl), 
@@ -431,16 +452,12 @@ async function guardarQuinielaCompleta() {
             return;
         }
 
-
-    // --- VALIDACIÓN CORREGIDA: SOLO CAMPOS VISIBLES ---
-        // Seleccionamos los inputs pero filtramos para quedarnos solo con los que se ven en pantalla
+        // --- VALIDACIÓN CORREGIDA: SOLO CAMPOS VISIBLES ---
         const inputsGoles = Array.from(document.querySelectorAll('.marcador-col input')).filter(input => {
-            // offsetParent es null cuando el elemento o su padre tienen "display: none"
             return input.offsetParent !== null;
         });
         
         let primerVacio = null;
-        
         for (let input of inputsGoles) {
             if (input.value.trim() === "") {
                 primerVacio = input; 
@@ -452,22 +469,14 @@ async function guardarQuinielaCompleta() {
             alert("Todavía hay campos vacíos en la quiniela. Por favor, completa todos los resultados visibles.");
             primerVacio.focus();
             primerVacio.style.borderColor = "red";
-            return; // Detiene el guardado
+            return;
         }
-        // -------------------------------------------------------
 
-
-
-
-        
-        // --- NUEVA ADICIÓN: VENTANA DE CONFIRMACIÓN ---
+        // --- VENTANA DE CONFIRMACIÓN ---
         const mensajeConfirmacion = "¿Estás seguro que los datos están correctos? Una vez los datos se han guardado, no se pueden modificar.";
-            if (!confirm(mensajeConfirmacion)) {
-                // Si el usuario presiona "Cancelar", salimos de la función
-                return;
-            }
-            // ----------------------------------------------
-
+        if (!confirm(mensajeConfirmacion)) {
+            return;
+        }
         
         // 5. HACER DESAPARECER EL BOTÓN
         if (btnGuardar) {
@@ -491,11 +500,11 @@ async function guardarQuinielaCompleta() {
         }
 
     } catch (e) { 
+        if (e.message.includes("Validación fallida")) return; // Detiene el flujo si falló el desempate
         console.error(e);
         alert("Hubo un error al guardar. Revisa tu conexión."); 
     }
 }
-
 
 
 // 7. CARGAR DESDE DB (VERSION FINAL CON FILTRO DE EQUIPOS)
