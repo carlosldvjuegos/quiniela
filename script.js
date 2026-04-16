@@ -515,17 +515,15 @@ async function cargarDesdeDB(nombre) {
         const inputNombrePrincipal = document.getElementById('nombre-usuario');
         if (inputNombrePrincipal) {
             inputNombrePrincipal.value = nombre;
-            inputNombrePrincipal.readOnly = true; // Bloquea el nombre
+            inputNombrePrincipal.readOnly = true;
         }
         
-        // Limpiar campos y mensajes previos
         document.querySelectorAll('.marcador-col input').forEach(input => {
             input.value = "";
-            input.disabled = false; // Reset temporal para poder llenar
+            input.disabled = false; 
         });
         document.querySelectorAll('.puntos-obtenidos').forEach(div => div.remove());
 
-        // Peticiones seguras a la DB
         const [resOficiales, resUsuario] = await Promise.all([
             fetch(`${API_URL}/obtener-resultados-db`).then(r => r.json()),
             fetch(`${API_URL}/cargar/${nombre}`).then(r => r.json())
@@ -536,7 +534,6 @@ async function cargarDesdeDB(nombre) {
 
         if (resUsuario.length === 0) return;
 
-        // Primero actualizamos el torneo para que los nombres de los equipos se llenen en el HTML
         resUsuario.forEach(partido => {
             const inL = document.getElementById(`L-${partido.id}`);
             const inV = document.getElementById(`V-${partido.id}`);
@@ -551,73 +548,65 @@ async function cargarDesdeDB(nombre) {
             gestionarDesempate(partido.id);
         });
 
-        // --- INICIO BLOQUEO DE CAMPOS ---
-        // Desactiva todos los inputs para que no se pueda poner el cursor ni editar
         document.querySelectorAll('.marcador-col input').forEach(input => {
             input.disabled = true;
-           // input.style.cursor = "not-allowed"; // Cambia el puntero del mouse
         });
-        // --- FIN BLOQUEO DE CAMPOS ---
 
-        // Ejecutamos la lógica de torneo para que se calculen los clasificados del usuario
+        // 1. Ejecutamos la lógica de torneo primero
         actualizarTorneo();
 
-        // --- FUNCIÓN DE LIMPIEZA AGRESIVA ---
-        const limpiarTotal = (txt) => {
-            if (!txt) return "";
-            return txt.trim()
-                      .toLowerCase()
-                      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                      .replace(/\s+/g, ' ');
-        };
+        // 2. ESPERAMOS UN MOMENTO para que el HTML se actualice con los nombres de los equipos
+        setTimeout(() => {
+            const limpiarTotal = (txt) => {
+                if (!txt) return "";
+                return txt.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, ' ');
+            };
 
-        // Ahora recorremos nuevamente para mostrar los puntos con la validación de equipos
-        resUsuario.forEach(partido => {
-            const inL = document.getElementById(`L-${partido.id}`);
-            const oficial = resOficiales.find(o => o.id === partido.id);
+            resUsuario.forEach(partido => {
+                const inL = document.getElementById(`L-${partido.id}`);
+                const oficial = resOficiales.find(o => o.id === partido.id);
 
-            if (oficial && inL && partido.gl !== null && partido.gv !== null) {
-                const cardBody = inL.closest('.card-body');
-                
-                // Aplicamos la limpieza a lo que viene de la DB y a lo que hay en el HTML
-                const nombreLocalUsuario = limpiarTotal(cardBody.querySelector('.equipo-col.local').innerText);
-                const nombreVisitaUsuario = limpiarTotal(cardBody.querySelector('.equipo-col.visita').innerText);
-                
-                const nombreLocalOficial = limpiarTotal(oficial.local);
-                const nombreVisitaOficial = limpiarTotal(oficial.visita);
-                
-                const infoPartido = partidosData.find(p => p.id === partido.id);
-                const esFaseGrupos = infoPartido && infoPartido.fase === "Grupos";
-
-                // Comparación protegida contra errores de escritura
-                const equiposCoinciden = esFaseGrupos || 
-                    (nombreLocalOficial === nombreLocalUsuario && nombreVisitaOficial === nombreVisitaUsuario);
-
-                let ptsGanados = 0;
-                if (equiposCoinciden) {
-                    ptsGanados = calcularLogicaPuntos(
-                        parseInt(partido.gl), 
-                        parseInt(partido.gv), 
-                        parseInt(oficial.gl), 
-                        parseInt(oficial.gv)
-                    );
-                }
-
-                const marcadorCol = inL.closest('.marcador-col');
-                if (marcadorCol) {
-                    const divPuntos = document.createElement('div');
-                    divPuntos.className = 'puntos-obtenidos';
-                    divPuntos.style = "color: #003366; font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center; width: 100%; line-height: 1.2;";
+                if (oficial && inL && partido.gl !== null && partido.gv !== null) {
+                    const cardBody = inL.closest('.card-body');
                     
-                    if (!equiposCoinciden) {
-                        divPuntos.innerHTML = `<span style="color: #888; font-size: 10px; font-weight: normal;">Equipos no coinciden</span><br>Puntos: <span style="color: #ff0000;">0</span>`;
-                    } else {
-                        divPuntos.innerHTML = `Puntos obtenidos: <span style="color: #ff0000;">${ptsGanados}</span>`;
+                    // Ahora que esperamos, estos nombres ya no estarán vacíos
+                    const nombreLocalUsuario = limpiarTotal(cardBody.querySelector('.equipo-col.local').innerText);
+                    const nombreVisitaUsuario = limpiarTotal(cardBody.querySelector('.equipo-col.visita').innerText);
+                    const nombreLocalOficial = limpiarTotal(oficial.local);
+                    const nombreVisitaOficial = limpiarTotal(oficial.visita);
+                    
+                    const infoPartido = partidosData.find(p => p.id === partido.id);
+                    const esFaseGrupos = infoPartido && infoPartido.fase === "Grupos";
+
+                    const equiposCoinciden = esFaseGrupos || 
+                        (nombreLocalOficial === nombreLocalUsuario && nombreVisitaOficial === nombreVisitaUsuario);
+
+                    let ptsGanados = 0;
+                    if (equiposCoinciden) {
+                        ptsGanados = calcularLogicaPuntos(
+                            parseInt(partido.gl), 
+                            parseInt(partido.gv), 
+                            parseInt(oficial.gl), 
+                            parseInt(oficial.gv)
+                        );
                     }
-                    marcadorCol.appendChild(divPuntos);
+
+                    const marcadorCol = inL.closest('.marcador-col');
+                    if (marcadorCol) {
+                        const divPuntos = document.createElement('div');
+                        divPuntos.className = 'puntos-obtenidos';
+                        divPuntos.style = "color: #003366; font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center; width: 100%; line-height: 1.2;";
+                        
+                        if (!equiposCoinciden) {
+                            divPuntos.innerHTML = `<span style="color: #888; font-size: 10px; font-weight: normal;">Equipos no coinciden</span><br>Puntos: <span style="color: #ff0000;">0</span>`;
+                        } else {
+                            divPuntos.innerHTML = `Puntos obtenidos: <span style="color: #ff0000;">${ptsGanados}</span>`;
+                        }
+                        marcadorCol.appendChild(divPuntos);
+                    }
                 }
-            }
-        });
+            });
+        }, 100); // 100 milisegundos de espera son suficientes
 
         // Resto de la lógica de filtrado de botones
         const botones = document.querySelectorAll('.btn-link');
@@ -651,7 +640,6 @@ async function cargarDesdeDB(nombre) {
         console.error("Error crítico en cargarDesdeDB:", error); 
     }
 }
-
 
 // 8. LÓGICA DE TORNEO (PROTEGIDA CONTRA DATOS FANTASMAS)
 function actualizarTorneo() {
