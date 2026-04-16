@@ -553,7 +553,7 @@ async function cargarDesdeDB(nombre) {
         // Desactiva todos los inputs para que no se pueda poner el cursor ni editar
         document.querySelectorAll('.marcador-col input').forEach(input => {
             input.disabled = true;
-            input.style.cursor = "not-allowed"; // Cambia el puntero del mouse
+           // input.style.cursor = "not-allowed"; // Cambia el puntero del mouse
         });
         // --- FIN BLOQUEO DE CAMPOS ---
 
