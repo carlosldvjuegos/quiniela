@@ -495,6 +495,14 @@ async function guardarQuinielaCompleta() {
         
         inputNombre.readOnly = true;
 
+        // --- NUEVA LÓGICA: DESACTIVAR CAMPOS TRAS GUARDAR ---
+        inputNombre.readOnly = true;
+        document.querySelectorAll('.marcador-col input').forEach(input => {
+            input.disabled = true;
+            input.style.cursor = "not-allowed";
+        });
+        // ---------------------------------------------------
+        
         if (typeof actualizarListaLinks === 'function') {
             actualizarListaLinks();
         }
