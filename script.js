@@ -167,10 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
-
-
-
 // 2. LÓGICA DE PUNTOS
 function calcularLogicaPuntos(pL, pV, rL, rV) {
     // 1. Marcador Exacto (5 Puntos)
@@ -573,14 +569,22 @@ async function cargarDesdeDB(nombre) {
 
             if (oficial && inL && partido.gl !== null && partido.gv !== null) {
                 const cardBody = inL.closest('.card-body');
-                const nombreLocalUsuario = cardBody.querySelector('.equipo-col.local').innerText.trim();
-                const nombreVisitaUsuario = cardBody.querySelector('.equipo-col.visita').innerText.trim();
+
+                // --- FUNCIÓN DE LIMPIEZA INTERNA ---
+                const limpiar = (txt) => txt ? txt.trim().toLowerCase().replace(/\s+/g, ' ') : "";
+
+                const nombreLocalUsuario = limpiar(cardBody.querySelector('.equipo-col.local').innerText);
+                const nombreVisitaUsuario = limpiar(cardBody.querySelector('.equipo-col.visita').innerText);
+                const nombreLocalOficial = limpiar(oficial.local);
+                const nombreVisitaOficial = limpiar(oficial.visita);
+                // -----------------------------------
                 
                 const infoPartido = partidosData.find(p => p.id === partido.id);
                 const esFaseGrupos = infoPartido && infoPartido.fase === "Grupos";
 
+                // Comparación usando los nombres limpios
                 const equiposCoinciden = esFaseGrupos || 
-                    (oficial.local === nombreLocalUsuario && oficial.visita === nombreVisitaUsuario);
+                    (nombreLocalOficial === nombreLocalUsuario && nombreVisitaOficial === nombreVisitaUsuario);
 
                 let ptsGanados = 0;
                 if (equiposCoinciden) {
