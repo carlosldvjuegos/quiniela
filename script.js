@@ -607,7 +607,7 @@ async function cargarDesdeDB(nombre) {
                     }
                 }
             });
-        }, 500); // Se mantiene el tiempo suficiente para procesar los nombres generados por actualizarTorneo()
+        }, 1500); // Se mantiene el tiempo suficiente para procesar los nombres generados por actualizarTorneo()
 
         // Resto de la lógica de filtrado de botones
         const botones = document.querySelectorAll('.btn-link');
