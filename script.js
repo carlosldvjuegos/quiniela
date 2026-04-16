@@ -408,6 +408,10 @@ async function guardarQuinielaCompleta() {
                 const inputDL = document.getElementById(`DL-${p.id}`);
                 const inputDV = document.getElementById(`DV-${p.id}`);
                 
+                // Obtenemos los nombres reales de los equipos desde el DOM (lo que ve el usuario)
+                const nombreRealLocal = document.querySelector(`#L-${p.id}`).closest('.card-body').querySelector('.equipo-col.local').innerText.trim();
+                const nombreRealVisita = document.querySelector(`#V-${p.id}`).closest('.card-body').querySelector('.equipo-col.visita').innerText.trim();
+
                 // Validar que no estén vacíos
                 if (dl === null || dv === null || dl === "" || dv === "") {
                     alert(`El partido ${nombreRealLocal} vs ${nombreRealVisita} terminó en empate. Debes indicar quién clasifica en los campos de desempate.`);
@@ -441,7 +445,6 @@ async function guardarQuinielaCompleta() {
     }
 
     try {
-        // 3. CONDICIÓN: Revisar si el nombre ya existe en la base de datos
         const resCheck = await fetch(`${API_URL}/registros`);
         const usuariosExistentes = await resCheck.json();
         const existe = usuariosExistentes.some(u => u.nombre_usuario.toLowerCase() === nombre.toLowerCase());
@@ -453,7 +456,6 @@ async function guardarQuinielaCompleta() {
             return;
         }
 
-        // --- VALIDACIÓN CORREGIDA: SOLO CAMPOS VISIBLES ---
         const inputsGoles = Array.from(document.querySelectorAll('.marcador-col input')).filter(input => {
             return input.offsetParent !== null;
         });
@@ -473,18 +475,15 @@ async function guardarQuinielaCompleta() {
             return;
         }
 
-        // --- VENTANA DE CONFIRMACIÓN ---
         const mensajeConfirmacion = "¿Estás seguro que los datos están correctos? Una vez los datos se han guardado, no se pueden modificar.";
         if (!confirm(mensajeConfirmacion)) {
             return;
         }
         
-        // 5. HACER DESAPARECER EL BOTÓN
         if (btnGuardar) {
             btnGuardar.style.display = 'none';
         }
         
-        // 4. SI TODO ESTÁ BIEN, GUARDAMOS
         const res = await fetch(`${API_URL}/guardar`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -494,22 +493,19 @@ async function guardarQuinielaCompleta() {
         const data = await res.json();
         alert("¡Quiniela guardada con éxito!");
         
-        inputNombre.readOnly = true;
-
-        // --- NUEVA LÓGICA: DESACTIVAR CAMPOS TRAS GUARDAR ---
+        // Bloqueo de campos tras guardar
         inputNombre.readOnly = true;
         document.querySelectorAll('.marcador-col input').forEach(input => {
             input.disabled = true;
             input.style.cursor = "not-allowed";
         });
-        // ---------------------------------------------------
-        
+
         if (typeof actualizarListaLinks === 'function') {
             actualizarListaLinks();
         }
 
     } catch (e) { 
-        if (e.message.includes("Validación fallida")) return; // Detiene el flujo si falló el desempate
+        if (e.message.includes("Validación fallida")) return;
         console.error(e);
         alert("Hubo un error al guardar. Revisa tu conexión."); 
     }
