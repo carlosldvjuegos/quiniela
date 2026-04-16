@@ -410,13 +410,14 @@ async function guardarQuinielaCompleta() {
                 
                 // Validar que no estén vacíos
                 if (dl === null || dv === null || dl === "" || dv === "") {
-                    alert(`El partido ${p.local} vs ${p.visita} terminó en empate. Debes indicar quién clasifica en los campos de desempate.`);
+                    alert(`El partido ${nombreRealLocal} vs ${nombreRealVisita} terminó en empate. Debes indicar quién clasifica en los campos de desempate.`);
                     inputDL.focus();
                     throw new Error("Validación fallida: campos de desempate vacíos");
                 }
                 
                 // Validar que no haya empate en el desempate
                 if (parseInt(dl) === parseInt(dv)) {
+                    // AQUÍ ESTÁ LA LÍNEA CORREGIDA
                     alert(`En el desempate de ${nombreRealLocal} vs ${nombreRealVisita}, los marcadores no pueden ser iguales. Alguien debe ganar para clasificar.`);
                     inputDL.focus();
                     throw new Error("Validación fallida: empate en campos de desempate");
