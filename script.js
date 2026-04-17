@@ -643,24 +643,21 @@ async function cargarDesdeDB(nombre) {
 }
 
         
-// 8. LÓGICA DE TORNEO (PROTEGIDA CONTRA DATOS FANTASMAS)
 function actualizarTorneo() {
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let clasificados = {}; 
     let datosGrupos = {};
-    
-    // Bandera de seguridad: verificamos si el usuario ha escrito algo
     let hayDatosEfectivos = false;
 
+    // 1. CÁLCULO DE TABLAS POR GRUPO (CRITERIOS FIFA)
     grupos.forEach(letra => {
         let tabla = {};
         const partidosGrupo = partidosData.filter(p => p.grupo === letra);
         
         partidosGrupo.forEach(p => {
-            const inputL = document.getElementById(`L-${p.id}`);
-            const inputV = document.getElementById(`V-${p.id}`);
+            const inputL = document.getElementById(`L-${p.id}`) || document.getElementById(`R-L-${p.id}`);
+            const inputV = document.getElementById(`V-${p.id}`) || document.getElementById(`R-V-${p.id}`);
             
-            // Solo procesamos si AMBOS campos tienen números (no vacíos)
             if (inputL && inputV && inputL.value !== "" && inputV.value !== "") {
                 hayDatosEfectivos = true; 
                 const gL = parseInt(inputL.value);
@@ -678,32 +675,38 @@ function actualizarTorneo() {
             }
         });
 
-        // Si hay datos, generamos el ranking del grupo
+        // Ordenar Grupo: 1. Puntos, 2. Dif Goles, 3. Goles Favor
         let ranking = Object.values(tabla).sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
-        datosGrupos[letra] = { ranking };
+        datosGrupos[letra] = ranking;
         
         if (ranking.length >= 1) clasificados[`1${letra}`] = ranking[0].nombre;
         if (ranking.length >= 2) clasificados[`2${letra}`] = ranking[1].nombre;
-        if (ranking.length >= 3) clasificados[`3${letra}`] = ranking[2].nombre;
     });
 
-    // --- ESCUDO DE SEGURIDAD ---
-    // Si no hay ningún gol escrito en toda la fase de grupos, limpiamos todo y salimos
     if (!hayDatosEfectivos) {
-        limpiarLlavesDinamicas();
+        if (typeof limpiarLlavesDinamicas === 'function') limpiarLlavesDinamicas();
         return; 
     }
 
-    // Lógica de mejores terceros (solo si hay datos)
-    const mejoresTerceros = [];
-    Object.keys(datosGrupos).forEach(l => {
-        if (datosGrupos[l].ranking && datosGrupos[l].ranking[2]) {
-            mejoresTerceros.push(datosGrupos[l].ranking[2]);
+    // 2. RANKING DE MEJORES TERCEROS
+    let listaTerceros = [];
+    grupos.forEach(l => {
+        if (datosGrupos[l] && datosGrupos[l][2]) {
+            listaTerceros.push(datosGrupos[l][2]);
         }
     });
-    mejoresTerceros.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
-    mejoresTerceros.slice(0, 8).forEach((t, i) => clasificados[`3T${i+1}`] = t.nombre);
 
+    // Ordenar terceros con criterio FIFA
+    listaTerceros.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
+
+    // Tomamos los mejores 8 y los asignamos por ID (3T1, 3T2, etc.)
+    // NOTA: Para máxima precisión FIFA, estos deberían ir a posiciones específicas 
+    // según los grupos de origen, pero para tu quiniela, esto asegura que los 8 mejores pasen.
+    listaTerceros.slice(0, 8).forEach((t, i) => {
+        clasificados[`3T${i+1}`] = t.nombre;
+    });
+
+    // 3. ENVIAR A FASES ELIMINATORIAS
     actualizarFasesEliminatorias(clasificados);
 }
 
