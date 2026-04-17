@@ -365,16 +365,26 @@ async function cargarResultadosExistentes() {
 
 async function guardarResultadosOficiales() {
     const resultadosEnvio = [];
+    
     partidosData.forEach(p => {
         const inputL = document.getElementById(`R-L-${p.id}`);
         const inputV = document.getElementById(`R-V-${p.id}`);
-        if (inputL && inputV) {
-            const gl = inputL.value;
-            const gv = inputV.value;
-            const nombreLocal = document.getElementById(`N-L-${p.id}`).innerText;
-            const nombreVisita = document.getElementById(`N-V-${p.id}`).innerText;
+        
+        // Obtenemos los elementos de texto de los nombres
+        const elNombreL = document.getElementById(`N-L-${p.id}`);
+        const elNombreV = document.getElementById(`N-V-${p.id}`);
 
+        if (inputL && inputV) {
+            const gl = inputL.value.trim();
+            const gv = inputV.value.trim();
+
+            // Solo procesamos si ambos campos de goles tienen valor
             if (gl !== "" && gv !== "") {
+                // Capturamos el nombre: Si el elemento existe, tomamos el texto; 
+                // si no (por error de ID), enviamos un string vacío para evitar el NULL
+                const nombreLocal = elNombreL ? elNombreL.innerText.trim() : "";
+                const nombreVisita = elNombreV ? elNombreV.innerText.trim() : "";
+
                 resultadosEnvio.push({
                     id: p.id,
                     realL: parseInt(gl),
@@ -386,7 +396,7 @@ async function guardarResultadosOficiales() {
         }
     });
 
-    if (resultadosEnvio.length === 0) return alert("Nada que guardar.");
+    if (resultadosEnvio.length === 0) return alert("No hay marcadores completos para guardar.");
 
     try {
         const response = await fetch(`${API_URL}/guardar-resultados-db`, {
@@ -394,12 +404,21 @@ async function guardarResultadosOficiales() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(resultadosEnvio)
         });
+        
         const data = await response.json();
-        alert(data.mensaje);
+        
+        if (response.ok) {
+            alert("¡Éxito!: " + (data.mensaje || "Resultados guardados correctamente."));
+        } else {
+            alert("Error del servidor: " + (data.error || "No se pudo guardar."));
+        }
     } catch (e) {
-        alert("Error al guardar.");
+        console.error("Error en la petición:", e);
+        alert("Error de conexión al intentar guardar.");
     }
 }
+
+
 // ARRANQUE
 document.addEventListener("DOMContentLoaded", async () => {
     renderizarPartidosAdmin(); // Dibuja la estructura
