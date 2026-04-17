@@ -211,7 +211,9 @@ function actualizarLogicaAdmin() {
 
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let clasificados = {};
+    let todosLosTerceros = [];
 
+    // 1. PROCESAR CADA GRUPO
     grupos.forEach(g => {
         let tabla = {};
         const partidosGrupo = partidosData.filter(p => p.fase === "Grupos" && p.grupo === g);
@@ -232,29 +234,50 @@ function actualizarLogicaAdmin() {
             }
         });
 
-        let ordenados = Object.values(tabla).sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking);
+        // ORDEN FIFA: Puntos > Dif. Goles > Goles Favor > Ranking FIFA
+        let ordenados = Object.values(tabla).sort((a, b) => 
+            b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
+        );
+
         clasificados[`1${g}`] = ordenados[0]?.nombre || `1${g}`;
         clasificados[`2${g}`] = ordenados[1]?.nombre || `2${g}`;
-        clasificados[`3${g}`] = ordenados[2]?.nombre || `3${g}`;
+        
+        // Guardamos el tercero para el ranking global de terceros
+        if (ordenados[2]) {
+            todosLosTerceros.push(ordenados[2]);
+        }
     });
 
+    // 2. CÁLCULO DE LOS 8 MEJORES TERCEROS
+    // Los ordenamos igual que a los grupos
+    let mejoresTerceros = todosLosTerceros.sort((a, b) => 
+        b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
+    ).slice(0, 8);
+
+    // Asignamos a las llaves de terceros (3T1 al 3T8)
+    mejoresTerceros.forEach((t, index) => {
+        clasificados[`3T${index + 1}`] = t.nombre;
+    });
+
+    // 3. MAPEO DE 16VOS (Ajustado a los IDs de tu partidosData)
+    // He ajustado las visitas para que busquen al 3T correspondiente
     const mapeo16vos = [
         { id: 73, l: clasificados['2A'], v: clasificados['2B'] },
         { id: 74, l: clasificados['1C'], v: clasificados['2F'] },
-        { id: 75, l: clasificados['1E'], v: clasificados['3A'] || "3A" },
+        { id: 75, l: clasificados['1E'], v: clasificados['3T1'] || "3T1" },
         { id: 76, l: clasificados['1F'], v: clasificados['2C'] },
         { id: 77, l: clasificados['2E'], v: clasificados['2I'] },
-        { id: 78, l: clasificados['1I'], v: clasificados['3C'] || "3C" },
-        { id: 79, l: clasificados['1A'], v: clasificados['3E'] || "3E" },
-        { id: 80, l: clasificados['1L'], v: clasificados['3H'] || "3H" },
-        { id: 81, l: clasificados['1G'], v: clasificados['3I'] || "3I" },
-        { id: 82, l: clasificados['1D'], v: clasificados['3B'] || "3B" },
+        { id: 78, l: clasificados['1I'], v: clasificados['3T2'] || "3T2" },
+        { id: 79, l: clasificados['1A'], v: clasificados['3T3'] || "3T3" },
+        { id: 80, l: clasificados['1L'], v: clasificados['3T4'] || "3T4" },
+        { id: 81, l: clasificados['1G'], v: clasificados['3T5'] || "3T5" },
+        { id: 82, l: clasificados['1D'], v: clasificados['3T6'] || "3T6" },
         { id: 83, l: clasificados['1H'], v: clasificados['2J'] },
         { id: 84, l: clasificados['2K'], v: clasificados['2L'] },
-        { id: 85, l: clasificados['1B'], v: clasificados['3F'] || "3F" },
+        { id: 85, l: clasificados['1B'], v: clasificados['3T7'] || "3T7" },
         { id: 86, l: clasificados['2D'], v: clasificados['2G'] },
         { id: 87, l: clasificados['1J'], v: clasificados['2H'] },
-        { id: 88, l: clasificados['1K'], v: clasificados['3D'] || "3D" }
+        { id: 88, l: clasificados['1K'], v: clasificados['3T8'] || "3T8" }
     ];
 
     mapeo16vos.forEach(m => {
@@ -264,16 +287,16 @@ function actualizarLogicaAdmin() {
         if (lbV) lbV.innerText = m.v;
     });
 
+    // --- LÓGICA DE GANADORES (8vos en adelante) ---
     const getGanador = (id) => {
         const res = resultados[id];
-        if (!res || res.gl === null || res.gv === null) return `Ganador ${id}`;
         const txtL = document.getElementById(`N-L-${id}`)?.innerText || `Local ${id}`;
         const txtV = document.getElementById(`N-V-${id}`)?.innerText || `Visita ${id}`;
-        if (res.gl > res.gv) return txtL;
-        if (res.gv > res.gl) return txtV;
-        return txtL; 
+        if (!res || res.gl === null || res.gv === null) return `W${id}`;
+        return (res.gl > res.gv) ? txtL : txtV;
     };
 
+    // Actualizar 8vos
     const mapeo8vos = [
         { id: 89, l: getGanador(73), v: getGanador(75) },
         { id: 90, l: getGanador(74), v: getGanador(77) },
@@ -290,13 +313,13 @@ function actualizarLogicaAdmin() {
         if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
     });
 
+    // ... (El resto de mapeo4tos, Semis y Finales se mantiene igual porque usan getGanador)
     const mapeo4tos = [
         { id: 97, l: getGanador(89), v: getGanador(90) },
         { id: 98, l: getGanador(93), v: getGanador(94) },
         { id: 99, l: getGanador(91), v: getGanador(92) },
         { id: 100, l: getGanador(95), v: getGanador(96) }
     ];
-
     mapeo4tos.forEach(m => {
         if (document.getElementById(`N-L-${m.id}`)) document.getElementById(`N-L-${m.id}`).innerText = m.l;
         if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
@@ -306,24 +329,13 @@ function actualizarLogicaAdmin() {
         { id: 101, l: getGanador(97), v: getGanador(98) },
         { id: 102, l: getGanador(99), v: getGanador(100) }
     ];
-
     mapeoSemis.forEach(m => {
         if (document.getElementById(`N-L-${m.id}`)) document.getElementById(`N-L-${m.id}`).innerText = m.l;
         if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
     });
 
-    const getPerdedor = (id) => {
-        const res = resultados[id];
-        if (!res || res.gl === null || res.gv === null) return `Perdedor ${id}`;
-        const txtL = document.getElementById(`N-L-${id}`)?.innerText;
-        const txtV = document.getElementById(`N-V-${id}`)?.innerText;
-        return (res.gl > res.gv) ? txtV : txtL;
-    };
-
     if (document.getElementById(`N-L-104`)) document.getElementById(`N-L-104`).innerText = getGanador(101);
     if (document.getElementById(`N-V-104`)) document.getElementById(`N-V-104`).innerText = getGanador(102);
-    if (document.getElementById(`N-L-103`)) document.getElementById(`N-L-103`).innerText = getPerdedor(101);
-    if (document.getElementById(`N-V-103`)) document.getElementById(`N-V-103`).innerText = getPerdedor(102);
 } // <--- AQUÍ CERRÉ LA FUNCIÓN actualizarLogicaAdmin
 
 
