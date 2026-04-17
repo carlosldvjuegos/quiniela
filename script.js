@@ -347,7 +347,7 @@ async function actualizarListaLinks() {
             susPredicciones.forEach(pred => {
                 const oficial = oficiales.find(o => o.id === pred.partido_id);
                 if (oficial) {
-                    ptsTotales += calcularLogicaPuntos(
+                    ptsTotales += calcularPuntosPartido(
                         parseInt(pred.goles_local), 
                         parseInt(pred.goles_visita), 
                         parseInt(oficial.gl), 
