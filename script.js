@@ -649,22 +649,23 @@ function actualizarTorneo() {
     let datosGrupos = {};
     let hayDatosEfectivos = false;
 
-    // 1. CÁLCULO DE TABLAS POR GRUPO (CRITERIOS FIFA)
+    // 1. CÁLCULO DE TABLAS POR GRUPO (CRITERIO FIFA COMPLETO)
     grupos.forEach(letra => {
         let tabla = {};
         const partidosGrupo = partidosData.filter(p => p.grupo === letra);
         
         partidosGrupo.forEach(p => {
-            const inputL = document.getElementById(`L-${p.id}`) || document.getElementById(`R-L-${p.id}`);
-            const inputV = document.getElementById(`V-${p.id}`) || document.getElementById(`R-V-${p.id}`);
+            const inputL = document.getElementById(`L-${p.id}`);
+            const inputV = document.getElementById(`V-${p.id}`);
             
             if (inputL && inputV && inputL.value !== "" && inputV.value !== "") {
                 hayDatosEfectivos = true; 
                 const gL = parseInt(inputL.value);
                 const gV = parseInt(inputV.value);
                 
-                if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0 };
-                if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0 };
+                // Añadimos rankingFIFA para que coincida con el Admin
+                if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0, ranking: rankingFIFA[p.local] || 200 };
+                if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0, ranking: rankingFIFA[p.visita] || 200 };
                 
                 tabla[p.local].gf += gL; tabla[p.visita].gf += gV;
                 tabla[p.local].dg += (gL - gV); tabla[p.visita].dg += (gV - gL);
@@ -675,8 +676,10 @@ function actualizarTorneo() {
             }
         });
 
-        // Ordenar Grupo: 1. Puntos, 2. Dif Goles, 3. Goles Favor
-        let ranking = Object.values(tabla).sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
+        // ORDEN UNIFICADO CON EL ADMIN
+        let ranking = Object.values(tabla).sort((a, b) => 
+            b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
+        );
         datosGrupos[letra] = ranking;
         
         if (ranking.length >= 1) clasificados[`1${letra}`] = ranking[0].nombre;
@@ -688,7 +691,7 @@ function actualizarTorneo() {
         return; 
     }
 
-    // 2. RANKING DE MEJORES TERCEROS
+    // 2. RANKING DE MEJORES TERCEROS (IGUAL AL ADMIN)
     let listaTerceros = [];
     grupos.forEach(l => {
         if (datosGrupos[l] && datosGrupos[l][2]) {
@@ -696,12 +699,12 @@ function actualizarTorneo() {
         }
     });
 
-    // Ordenar terceros con criterio FIFA
-    listaTerceros.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
+    // Ordenar terceros exactamente igual que en Admin
+    listaTerceros.sort((a, b) => 
+        b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
+    );
 
-    // Tomamos los mejores 8 y los asignamos por ID (3T1, 3T2, etc.)
-    // NOTA: Para máxima precisión FIFA, estos deberían ir a posiciones específicas 
-    // según los grupos de origen, pero para tu quiniela, esto asegura que los 8 mejores pasen.
+    // Asignamos 3T1, 3T2... para que actualizarFasesEliminatorias los reconozca
     listaTerceros.slice(0, 8).forEach((t, i) => {
         clasificados[`3T${i+1}`] = t.nombre;
     });
