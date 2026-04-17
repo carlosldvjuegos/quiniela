@@ -746,7 +746,7 @@ function actualizarTorneo() {
 
     // 3. ENVIAR A FASES ELIMINATORIAS
     actualizarFasesEliminatorias(clasificados);
-}
+
 
     // 2. RANKING DE MEJORES TERCEROS (IGUAL AL ADMIN)
     let listaTerceros = [];
