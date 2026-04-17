@@ -746,28 +746,9 @@ function actualizarTorneo() {
 
     // 3. ENVIAR A FASES ELIMINATORIAS
     actualizarFasesEliminatorias(clasificados);
+}
 
 
-    // 2. RANKING DE MEJORES TERCEROS (IGUAL AL ADMIN)
-    let listaTerceros = [];
-    grupos.forEach(l => {
-        if (datosGrupos[l] && datosGrupos[l][2]) {
-            listaTerceros.push(datosGrupos[l][2]);
-        }
-    });
-
-    // Ordenar terceros exactamente igual que en Admin
-    listaTerceros.sort((a, b) => 
-        b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
-    );
-
-    // Asignamos 3T1, 3T2... para que actualizarFasesEliminatorias los reconozca
-    listaTerceros.slice(0, 8).forEach((t, i) => {
-        clasificados[`3T${i+1}`] = t.nombre;
-    });
-
-    // 3. ENVIAR A FASES ELIMINATORIAS
-    actualizarFasesEliminatorias(clasificados);
 
 // NUEVA FUNCIÓN: Limpiar nombres de países cuando la quiniela está vacía
 function limpiarLlavesDinamicas() {
