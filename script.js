@@ -168,41 +168,75 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // 2. LÓGICA DE PUNTOS
-function calcularLogicaPuntos(pL, pV, rL, rV) {
-    // 1. Marcador Exacto (5 Puntos)
-    if (pL === rL && pV === rV) {
-        return 5;
+function calcularPuntosPartido(pred, oficial) {
+    // 1. VALIDACIÓN DE IDENTIDAD (CRÍTICO)
+    // Si los nombres no coinciden (porque el usuario puso a otro equipo en la llave), 0 puntos.
+    const nombreL_Usuario = pred.nombreLocal.trim().toLowerCase();
+    const nombreV_Usuario = pred.nombreVisita.trim().toLowerCase();
+    const nombreL_Oficial = oficial.equipo_local.trim().toLowerCase();
+    const nombreV_Oficial = oficial.equipo_visitante.trim().toLowerCase();
+
+    if (nombreL_Usuario !== nombreL_Oficial || nombreV_Usuario !== nombreV_Oficial) {
+        return 0; 
     }
 
-    // 2. Lógica para Empates Reales
+    // 2. EXTRACCIÓN DE GOLES
+    const pL = parseInt(pred.gl);
+    const pV = parseInt(pred.gv);
+    const rL = parseInt(oficial.gl);
+    const rV = parseInt(oficial.gv);
+
+    // --- TU LÓGICA DE PUNTOS MEJORADA ---
+
+    // A. Marcador Exacto (5 Puntos)
+    if (pL === rL && pV === rV) return 5;
+
+    // B. Lógica para Empates Reales
     if (rL === rV) {
         if (pL === pV) return 2; // Acertó empate pero no marcador
-        // Si no puso empate, verificamos si al menos acertó la cantidad de goles (ej. 1-1 vs 2-1)
-        if (pL === rL || pV === rV) return 1; 
+        if (pL === rL || pV === rV) return 1; // Solo un lado de los goles
         return 0;
     }
 
-    // Determinamos tendencia
+    // C. Tendencia (Ganador/Perdedor)
     const tendenciaPredicha = Math.sign(pL - pV);
     const tendenciaReal = Math.sign(rL - rV);
 
-    // 3. Lógica si ACERTÓ la tendencia (Ganador/Perdedor)
     if (tendenciaPredicha === tendenciaReal) {
-        if (pL === rL || pV === rV) {
-            return 3; // Tendencia + Goles de uno
-        }
+        if (pL === rL || pV === rV) return 3; // Tendencia + Goles de uno
         return 2; // Solo tendencia
     }
 
-    // 4. Lógica si NO ACERTÓ la tendencia
-    // Solo damos 1 punto si al menos acertó los goles de uno (ej. 1-1 vs 2-1 del ejemplo)
-    if (pL === rL || pV === rV) {
-        return 1;
-    }
+    // D. No acertó tendencia, pero quizás acertó goles de un equipo
+    if (pL === rL || pV === rV) return 1;
 
-    // 5. No acertó nada
     return 0;
 }
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+async function procesarPuntajeTotal() {
+    // 1. Obtenemos los resultados oficiales de la DB
+    const response = await fetch(`${API_URL}/obtener-resultados-db`);
+    const resultadosOficiales = await response.json();
+    
+    // 2. Obtenemos lo que el usuario tiene escrito en pantalla
+    const prediccionesUsuario = obtenerPrediccionesDePantalla(); 
+
+    let puntajeFinal = 0;
+
+    resultadosOficiales.forEach(oficial => {
+        const pred = prediccionesUsuario.find(p => p.id === oficial.id);
+        if (pred) {
+            puntajeFinal += calcularPuntosPartido(pred, oficial);
+        }
+    });
+
+    // 3. Mostrar el resultado en algún elemento HTML
+    const elPuntaje = document.getElementById('puntaje-total-usuario');
+    if (elPuntaje) elPuntaje.innerText = `Tus Puntos: ${puntajeFinal}`;
+}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // 3. RENDERIZAR LA TABLA (MEJORADA CON DESEMPATE)
 async function renderizarFixture() {
@@ -648,10 +682,9 @@ function actualizarTorneo() {
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let clasificados = {}; 
     let datosGrupos = {};
-    
-    // Bandera de seguridad: verificamos si el usuario ha escrito algo
     let hayDatosEfectivos = false;
 
+    // 1. CÁLCULO DE TABLAS POR GRUPO (CRITERIO FIFA COMPLETO)
     grupos.forEach(letra => {
         let tabla = {};
         const partidosGrupo = partidosData.filter(p => p.grupo === letra);
@@ -660,14 +693,14 @@ function actualizarTorneo() {
             const inputL = document.getElementById(`L-${p.id}`);
             const inputV = document.getElementById(`V-${p.id}`);
             
-            // Solo procesamos si AMBOS campos tienen números (no vacíos)
             if (inputL && inputV && inputL.value !== "" && inputV.value !== "") {
                 hayDatosEfectivos = true; 
                 const gL = parseInt(inputL.value);
                 const gV = parseInt(inputV.value);
                 
-                if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0 };
-                if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0 };
+                // Añadimos rankingFIFA para que coincida con el Admin
+                if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0, ranking: rankingFIFA[p.local] || 200 };
+                if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0, ranking: rankingFIFA[p.visita] || 200 };
                 
                 tabla[p.local].gf += gL; tabla[p.visita].gf += gV;
                 tabla[p.local].dg += (gL - gV); tabla[p.visita].dg += (gV - gL);
@@ -678,32 +711,40 @@ function actualizarTorneo() {
             }
         });
 
-        // Si hay datos, generamos el ranking del grupo
-        let ranking = Object.values(tabla).sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
-        datosGrupos[letra] = { ranking };
+        // ORDEN UNIFICADO CON EL ADMIN
+        let ranking = Object.values(tabla).sort((a, b) => 
+            b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
+        );
+        datosGrupos[letra] = ranking;
         
         if (ranking.length >= 1) clasificados[`1${letra}`] = ranking[0].nombre;
         if (ranking.length >= 2) clasificados[`2${letra}`] = ranking[1].nombre;
-        if (ranking.length >= 3) clasificados[`3${letra}`] = ranking[2].nombre;
     });
 
-    // --- ESCUDO DE SEGURIDAD ---
-    // Si no hay ningún gol escrito en toda la fase de grupos, limpiamos todo y salimos
     if (!hayDatosEfectivos) {
-        limpiarLlavesDinamicas();
+        if (typeof limpiarLlavesDinamicas === 'function') limpiarLlavesDinamicas();
         return; 
     }
 
-    // Lógica de mejores terceros (solo si hay datos)
-    const mejoresTerceros = [];
-    Object.keys(datosGrupos).forEach(l => {
-        if (datosGrupos[l].ranking && datosGrupos[l].ranking[2]) {
-            mejoresTerceros.push(datosGrupos[l].ranking[2]);
+    // 2. RANKING DE MEJORES TERCEROS (IGUAL AL ADMIN)
+    let listaTerceros = [];
+    grupos.forEach(l => {
+        if (datosGrupos[l] && datosGrupos[l][2]) {
+            listaTerceros.push(datosGrupos[l][2]);
         }
     });
-    mejoresTerceros.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
-    mejoresTerceros.slice(0, 8).forEach((t, i) => clasificados[`3T${i+1}`] = t.nombre);
 
+    // Ordenar terceros exactamente igual que en Admin
+    listaTerceros.sort((a, b) => 
+        b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
+    );
+
+    // Asignamos 3T1, 3T2... para que actualizarFasesEliminatorias los reconozca
+    listaTerceros.slice(0, 8).forEach((t, i) => {
+        clasificados[`3T${i+1}`] = t.nombre;
+    });
+
+    // 3. ENVIAR A FASES ELIMINATORIAS
     actualizarFasesEliminatorias(clasificados);
 }
 
