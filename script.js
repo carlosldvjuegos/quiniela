@@ -768,7 +768,6 @@ function actualizarTorneo() {
 
     // 3. ENVIAR A FASES ELIMINATORIAS
     actualizarFasesEliminatorias(clasificados);
-}
 
 // NUEVA FUNCIÓN: Limpiar nombres de países cuando la quiniela está vacía
 function limpiarLlavesDinamicas() {
