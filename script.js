@@ -544,6 +544,8 @@ async function generarReporteMaestro() {
     } catch(e) { alert("Error reporte."); }
 }
 
+function cerrarMiModal() { document.getElementById('modal-informativo').style.display = 'none'; }
+
 // 9. INICIO
 window.onload = async () => {
     await renderizarFixture();
@@ -554,4 +556,4 @@ window.onload = async () => {
     if (modal) modal.style.display = urlParams.has('nomodal') ? 'none' : 'block';
 };
 
-function cerrarMiModal() { document.getElementById('modal-informativo').style.display = 'none'; }
+
