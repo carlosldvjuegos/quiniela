@@ -3,7 +3,6 @@ const API_URL = (window.location.hostname === "localhost" || window.location.hos
     ? window.location.origin
     : "https://quiniela-pcas.onrender.com";
 
-// Ranking FIFA para desempates automáticos (debe coincidir con tu Admin)
 const rankingFIFA = {
     "México": 15, "Sudáfrica": 60, "Rep. Corea": 22, "Rep. Checa": 30,
     "Canadá": 40, "Bosnia y Herzegovina": 55, "Catar": 35, "Suiza": 12,
@@ -19,7 +18,7 @@ const rankingFIFA = {
     "Inglaterra": 8, "Croacia": 9, "Ghana": 61, "Panamá": 45
 };
 
-// 1. LISTA DE PARTIDOS (Mundial 2026)
+// 1. LISTA DE PARTIDOS
 const partidosData = [
     // GRUPO A
     { id: 1, fase: "Grupos", grupo: "A", fecha: "Jueves 11/06/2026", local: "México", visita: "Sudáfrica" },
@@ -107,72 +106,64 @@ const partidosData = [
     { id: 72, fase: "Grupos", grupo: "L", fecha: "Sábado 27/06/2026", local: "Croacia", visita: "Ghana" },
 
     // DIECISEISAVOS
-    { id: 73, fase: "16vos", grupo: "Eliminatoria", fecha: "28/06", local: "2A", visita: "2B" },
-    { id: 74, fase: "16vos", grupo: "Eliminatoria", fecha: "29/06", local: "1C", visita: "2F" },
-    { id: 75, fase: "16vos", grupo: "Eliminatoria", fecha: "29/06", local: "1E", visita: "3T1" },
-    { id: 76, fase: "16vos", grupo: "Eliminatoria", fecha: "30/06", local: "1F", visita: "2C" },
-    { id: 77, fase: "16vos", grupo: "Eliminatoria", fecha: "30/06", local: "2E", visita: "2I" },
-    { id: 78, fase: "16vos", grupo: "Eliminatoria", fecha: "30/06", local: "1I", visita: "3T2" },
-    { id: 79, fase: "16vos", grupo: "Eliminatoria", fecha: "01/07", local: "1A", visita: "3T3" },
-    { id: 80, fase: "16vos", grupo: "Eliminatoria", fecha: "01/07", local: "1L", visita: "3T4" },
-    { id: 81, fase: "16vos", grupo: "Eliminatoria", fecha: "01/07", local: "1G", visita: "3T5" },
-    { id: 82, fase: "16vos", grupo: "Eliminatoria", fecha: "02/07", local: "1D", visita: "3T6" },
-    { id: 83, fase: "16vos", grupo: "Eliminatoria", fecha: "02/07", local: "1H", visita: "2J" },
-    { id: 84, fase: "16vos", grupo: "Eliminatoria", fecha: "03/07", local: "2K", visita: "2L" },
-    { id: 85, fase: "16vos", grupo: "Eliminatoria", fecha: "03/07", local: "1B", visita: "3T7" },
-    { id: 86, fase: "16vos", grupo: "Eliminatoria", fecha: "03/07", local: "2D", visita: "2G" },
-    { id: 87, fase: "16vos", grupo: "Eliminatoria", fecha: "04/07", local: "1J", visita: "2H" },
-    { id: 88, fase: "16vos", grupo: "Eliminatoria", fecha: "04/07", local: "1K", visita: "3T8" },
+    { id: 73, fase: "16vos", grupo: "Eliminatoria", fecha: "Domingo 28/06/2026", local: "2A", visita: "2B" },
+    { id: 74, fase: "16vos", grupo: "Eliminatoria", fecha: "Lunes 29/06/2026", local: "1C", visita: "2F" },
+    { id: 75, fase: "16vos", grupo: "Eliminatoria", fecha: "Lunes 29/06/2026", local: "1E", visita: "3T1" },
+    { id: 76, fase: "16vos", grupo: "Eliminatoria", fecha: "Martes 30/06/2026", local: "1F", visita: "2C" },
+    { id: 77, fase: "16vos", grupo: "Eliminatoria", fecha: "Martes 30/06/2026", local: "2E", visita: "2I" },
+    { id: 78, fase: "16vos", grupo: "Eliminatoria", fecha: "Martes 30/06/2026", local: "1I", visita: "3T2" },
+    { id: 79, fase: "16vos", grupo: "Eliminatoria", fecha: "Miércoles 01/07/2026", local: "1A", visita: "3T3" },
+    { id: 80, fase: "16vos", grupo: "Eliminatoria", fecha: "Miércoles 01/07/2026", local: "1L", visita: "3T4" },
+    { id: 81, fase: "16vos", grupo: "Eliminatoria", fecha: "Miércoles 01/07/2026", local: "1G", visita: "3T5" },
+    { id: 82, fase: "16vos", grupo: "Eliminatoria", fecha: "Jueves 02/07/2026", local: "1D", visita: "3T6" },
+    { id: 83, fase: "16vos", grupo: "Eliminatoria", fecha: "Jueves 02/07/2026", local: "1H", visita: "2J" },
+    { id: 84, fase: "16vos", grupo: "Eliminatoria", fecha: "Viernes 03/07/2026", local: "2K", visita: "2L" },
+    { id: 85, fase: "16vos", grupo: "Eliminatoria", fecha: "Viernes 03/07/2026", local: "1B", visita: "3T7" },
+    { id: 86, fase: "16vos", grupo: "Eliminatoria", fecha: "Viernes 03/07/2026", local: "2D", visita: "2G" },
+    { id: 87, fase: "16vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "1J", visita: "2H" },
+    { id: 88, fase: "16vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "1K", visita: "3T8" },
 
     // OCTAVOS
-    { id: 89, fase: "8vos", grupo: "Eliminatoria", fecha: "04/07", local: "G73", visita: "G75" },
-    { id: 90, fase: "8vos", grupo: "Eliminatoria", fecha: "04/07", local: "G74", visita: "G77" },
-    { id: 91, fase: "8vos", grupo: "Eliminatoria", fecha: "05/07", local: "G76", visita: "G78" },
-    { id: 92, fase: "8vos", grupo: "Eliminatoria", fecha: "06/07", local: "G79", visita: "G80" },
-    { id: 93, fase: "8vos", grupo: "Eliminatoria", fecha: "06/07", local: "G83", visita: "G84" },
-    { id: 94, fase: "8vos", grupo: "Eliminatoria", fecha: "07/07", local: "G81", visita: "G82" },
-    { id: 95, fase: "8vos", grupo: "Eliminatoria", fecha: "07/07", local: "G86", visita: "G88" },
-    { id: 96, fase: "8vos", grupo: "Eliminatoria", fecha: "07/07", local: "G85", visita: "G87" },
+    { id: 89, fase: "8vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "G73", visita: "G75" },
+    { id: 90, fase: "8vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "G74", visita: "G77" },
+    { id: 91, fase: "8vos", grupo: "Eliminatoria", fecha: "Domingo 05/07/2026", local: "G76", visita: "G78" },
+    { id: 92, fase: "8vos", grupo: "Eliminatoria", fecha: "Lunes 06/07/2026", local: "G79", visita: "G80" },
+    { id: 93, fase: "8vos", grupo: "Eliminatoria", fecha: "Lunes 06/07/2026", local: "G83", visita: "G84" },
+    { id: 94, fase: "8vos", grupo: "Eliminatoria", fecha: "Martes 07/07/2026", local: "G81", visita: "G82" },
+    { id: 95, fase: "8vos", grupo: "Eliminatoria", fecha: "Martes 07/07/2026", local: "G86", visita: "G88" },
+    { id: 96, fase: "8vos", grupo: "Eliminatoria", fecha: "Martes 07/07/2026", local: "G85", visita: "G87" },
 
     // CUARTOS
-    { id: 97, fase: "4tos", grupo: "Eliminatoria", fecha: "09/07", local: "G89", visita: "G90" },
-    { id: 98, fase: "4tos", grupo: "Eliminatoria", fecha: "10/07", local: "G93", visita: "G94" },
-    { id: 99, fase: "4tos", grupo: "Eliminatoria", fecha: "11/07", local: "G91", visita: "G92" },
-    { id: 100, fase: "4tos", grupo: "Eliminatoria", fecha: "12/07", local: "G95", visita: "G96" },
+    { id: 97, fase: "4tos", grupo: "Eliminatoria", fecha: "Jueves 09/07/2026", local: "G89", visita: "G90" },
+    { id: 98, fase: "4tos", grupo: "Eliminatoria", fecha: "Viernes 10/07/2026", local: "G93", visita: "G94" },
+    { id: 99, fase: "4tos", grupo: "Eliminatoria", fecha: "Sábado 11/07/2026", local: "G91", visita: "G92" },
+    { id: 100, fase: "4tos", grupo: "Eliminatoria", fecha: "Domingo 12/07/2026", local: "G95", visita: "G96" },
 
     // SEMIS
-    { id: 101, fase: "Semis", grupo: "Eliminatoria", fecha: "14/07", local: "G97", visita: "G98" },
-    { id: 102, fase: "Semis", grupo: "Eliminatoria", fecha: "15/07", local: "G99", visita: "G100" },
+    { id: 101, fase: "Semis", grupo: "Eliminatoria", fecha: "Martes 14/07/2026", local: "G97", visita: "G98" },
+    { id: 102, fase: "Semis", grupo: "Eliminatoria", fecha: "Miércoles 15/07/2026", local: "G99", visita: "G100" },
 
     // FINALES
-    { id: 103, fase: "3er Puesto", grupo: "Eliminatoria", fecha: "18/07", local: "P101", visita: "P102" },
-    { id: 104, fase: "Final", grupo: "Eliminatoria", fecha: "19/07", local: "G101", visita: "G102" }
+    { id: 103, fase: "3er Puesto", grupo: "Eliminatoria", fecha: "Sábado 18/07/2026", local: "P101", visita: "P102" },
+    { id: 104, fase: "Final", grupo: "Eliminatoria", fecha: "Domingo 19/07/2026", local: "G101", visita: "G102" }
 ];
 
 // 2. LÓGICA DE PUNTOS UNIFICADA
 function calcularLogicaPuntos(pL, pV, rL, rV) {
     pL = parseInt(pL); pV = parseInt(pV);
     rL = parseInt(rL); rV = parseInt(rV);
-
-    // Marcador Exacto
     if (pL === rL && pV === rV) return 5;
-
-    // Empate Real
     if (rL === rV) {
-        if (pL === pV) return 2; // Acertó empate pero no marcador
+        if (pL === pV) return 2;
         if (pL === rL || pV === rV) return 1;
         return 0;
     }
-
-    // Tendencia
     const tP = Math.sign(pL - pV);
     const tR = Math.sign(rL - rV);
-
     if (tP === tR) {
-        if (pL === rL || pV === rV) return 3; // Tendencia + Goles de uno
-        return 2; // Solo tendencia
+        if (pL === rL || pV === rV) return 3;
+        return 2;
     }
-
     if (pL === rL || pV === rV) return 1;
     return 0;
 }
@@ -250,28 +241,23 @@ function gestionarDesempate(id) {
 async function actualizarListaLinks() {
     const container = document.getElementById('links-container');
     if (!container) return;
-
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
-
         const [resNombres, resOficiales, resTodasPred] = await Promise.all([
             fetch(`${API_URL}/registros`, { signal: controller.signal }),
             fetch(`${API_URL}/obtener-resultados-db`, { signal: controller.signal }),
             fetch(`${API_URL}/obtener-todas-predicciones`, { signal: controller.signal })
         ]);
         clearTimeout(timeoutId);
-
         const usuarios = await resNombres.json();
         const oficiales = await resOficiales.json();
         const todasPred = await resTodasPred.json();
-
         const predPorUser = todasPred.reduce((acc, p) => {
             if (!acc[p.nombre_usuario]) acc[p.nombre_usuario] = [];
             acc[p.nombre_usuario].push(p);
             return acc;
         }, {});
-
         let ranking = usuarios.map(user => {
             let pts = 0;
             const susPreds = predPorUser[user.nombre_usuario] || [];
@@ -281,10 +267,8 @@ async function actualizarListaLinks() {
             });
             return { nombre: user.nombre_usuario, puntos: pts };
         });
-
         ranking.sort((a, b) => b.puntos - a.puntos);
         container.innerHTML = "";
-        
         ranking.forEach((u, i) => {
             const med = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : "•"));
             const btn = document.createElement('button');
@@ -300,11 +284,24 @@ async function actualizarListaLinks() {
     } catch (e) { container.innerHTML = "<p style='color:red;'>Error al cargar ranking.</p>"; }
 }
 
-// 5. GUARDAR
+// 5. GUARDAR (CON VALIDACIONES RESTAURADAS)
 async function guardarQuinielaCompleta() {
     const inputNombre = document.getElementById('nombre-usuario');
     const nombre = inputNombre.value.trim();
-    if (!nombre) return alert("Escribe un nombre.");
+    if (!nombre) return alert("Por favor, ingresa tu nombre.");
+
+    // VALIDACIÓN DE CAMPOS VACÍOS RESTAURADA
+    let todosLlenos = true;
+    partidosData.forEach(p => {
+        const gl = document.getElementById(`L-${p.id}`).value;
+        const gv = document.getElementById(`V-${p.id}`).value;
+        if (gl === "" || gv === "") todosLlenos = false;
+    });
+
+    if (!todosLlenos) {
+        alert("Debes completar todos los pronósticos antes de guardar.");
+        return;
+    }
 
     const predicciones = [];
     try {
@@ -314,43 +311,61 @@ async function guardarQuinielaCompleta() {
             const dl = document.getElementById(`DL-${p.id}`)?.value || null;
             const dv = document.getElementById(`DV-${p.id}`)?.value || null;
 
-            if (gl !== "" && gv !== "") {
-                if (p.fase !== "Grupos" && parseInt(gl) === parseInt(gv)) {
-                    if (!dl || !dv || dl === "" || dv === "" || parseInt(dl) === parseInt(dv)) {
-                        alert("Revisa los desempates en llaves de eliminación.");
-                        throw new Error("Validación desempate");
-                    }
+            if (p.fase !== "Grupos" && parseInt(gl) === parseInt(gv)) {
+                if (!dl || !dv || dl === "" || dv === "" || parseInt(dl) === parseInt(dv)) {
+                    alert(`Revisa el desempate en el partido: ${p.local} vs ${p.visita}. No pueden empatar en penales.`);
+                    throw new Error("Validación desempate");
                 }
-                predicciones.push({ id: p.id, gl: parseInt(gl), gv: parseInt(gv), dl: dl ? parseInt(dl) : null, dv: dv ? parseInt(dv) : null });
             }
+            predicciones.push({ id: p.id, gl: parseInt(gl), gv: parseInt(gv), dl: dl ? parseInt(dl) : null, dv: dv ? parseInt(dv) : null });
         });
     } catch(e) { return; }
 
-    if (predicciones.length === 0) return alert("Quiniela vacía.");
+    // BLOQUEO DE BOTÓN RESTAURADO
+    const btnSave = document.querySelector(".btn-save");
+    btnSave.disabled = true;
+    btnSave.innerText = "Guardando...";
 
     try {
         const resCheck = await fetch(`${API_URL}/registros`);
         const existentes = await resCheck.json();
-        if (existentes.some(u => u.nombre_usuario.toLowerCase() === nombre.toLowerCase())) return alert("Nombre ya existe.");
+        if (existentes.some(u => u.nombre_usuario.toLowerCase() === nombre.toLowerCase())) {
+            alert("Este nombre ya existe. Por favor usa otro.");
+            btnSave.disabled = false;
+            btnSave.innerText = "💾 Guardar";
+            return;
+        }
 
-        if (!confirm("¿Guardar? No podrás editar después.")) return;
+        if (!confirm("¿Deseas guardar tu quiniela? No podrás editarla después.")) {
+            btnSave.disabled = false;
+            btnSave.innerText = "💾 Guardar";
+            return;
+        }
 
         await fetch(`${API_URL}/guardar`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ nombre, predicciones })
         });
-        alert("¡Guardado!");
+        alert("¡Tu quiniela ha sido guardada con éxito!");
         location.reload();
-    } catch (e) { alert("Error al guardar."); }
+    } catch (e) { 
+        alert("Error al guardar en el servidor."); 
+        btnSave.disabled = false;
+        btnSave.innerText = "💾 Guardar";
+    }
 }
 
-// 6. CARGAR DESDE DB
+// 6. CARGAR DESDE DB (OCULTA BOTÓN GUARDAR)
 async function cargarDesdeDB(nombre) {
     try {
         const inputN = document.getElementById('nombre-usuario');
         if (inputN) { inputN.value = nombre; inputN.readOnly = true; }
         
+        // OCULTAR BOTÓN GUARDAR AL VER UNA QUINIELA EXISTENTE
+        const btnSave = document.querySelector(".btn-save");
+        if (btnSave) btnSave.style.display = "none";
+
         document.querySelectorAll('.marcador-col input').forEach(i => { i.value = ""; i.disabled = false; });
         document.querySelectorAll('.puntos-obtenidos').forEach(d => d.remove());
 
@@ -377,7 +392,6 @@ async function cargarDesdeDB(nombre) {
                 const iL = document.getElementById(`L-${p.id}`);
                 const ofi = resOficiales.find(o => o.id === p.id);
                 if (ofi && iL) {
-                    const card = iL.closest('.card-body');
                     const pts = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
                     const div = document.createElement('div');
                     div.className = 'puntos-obtenidos';
@@ -389,7 +403,6 @@ async function cargarDesdeDB(nombre) {
             document.querySelectorAll('.marcador-col input').forEach(i => i.disabled = true);
         }, 1200);
 
-        // UI: Filtrar botones
         const btns = document.querySelectorAll('.btn-link');
         btns.forEach(b => {
             if (b.getAttribute('data-nombre-real') === nombre.toLowerCase().trim()) {
@@ -410,7 +423,7 @@ async function cargarDesdeDB(nombre) {
     } catch(e) { console.error(e); }
 }
 
-// 7. LÓGICA DE TORNEO
+// 7. LÓGICA DE TORNEO (TERCER PUESTO ARREGLADO)
 function actualizarTorneo() {
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
     let clasificados = {}; let datosGrupos = {}; let hayDatos = false;
@@ -436,16 +449,10 @@ function actualizarTorneo() {
         if (rk[1]) clasificados[`2${l}`] = rk[1].nombre;
     });
 
-    if (!hayDatos) return limpiarLlavesDinamicas();
+    if (!hayDatos) return;
 
     let terceros = [];
-    // MEJORA FIFA: Guardamos el origen también aquí
-    grupos.forEach(l => { 
-        if (datosGrupos[l]?.[2]) {
-            terceros.push({ ...datosGrupos[l][2], grupo: l }); 
-        }
-    });
-    
+    grupos.forEach(l => { if (datosGrupos[l]?.[2]) terceros.push({ ...datosGrupos[l][2], grupo: l }); });
     terceros.sort((a,b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.rank - b.rank);
     terceros.slice(0, 8).forEach((t, i) => clasificados[`3T${i+1}`] = t.nombre);
 
@@ -459,7 +466,10 @@ function actualizarFasesEliminatorias(clasificados) {
         { id: 81, L: "1G", V: "3T5" }, { id: 82, L: "1D", V: "3T6" }, { id: 83, L: "1H", V: "2J" }, { id: 84, L: "2K", V: "2L" },
         { id: 85, L: "1B", V: "3T7" }, { id: 86, L: "2D", V: "2G" }, { id: 87, L: "1J", V: "2H" }, { id: 88, L: "1K", V: "3T8" }
     ];
-    mapeo.forEach(m => { ponerNombreEnCard(m.id, 'L', clasificados[m.L] || m.L); ponerNombreEnCard(m.id, 'V', clasificados[m.V] || m.V); });
+    mapeo.forEach(m => { 
+        ponerNombreEnCard(m.id, 'L', clasificados[m.L] || m.L); 
+        ponerNombreEnCard(m.id, 'V', clasificados[m.V] || m.V); 
+    });
 
     const avance = [
         { de: 73, a: 89, pos: 'L', tipo: 'ganador' }, { de: 75, a: 89, pos: 'V', tipo: 'ganador' },
@@ -467,14 +477,13 @@ function actualizarFasesEliminatorias(clasificados) {
         { de: 76, a: 91, pos: 'L', tipo: 'ganador' }, { de: 78, a: 91, pos: 'V', tipo: 'ganador' },
         { de: 79, a: 92, pos: 'L', tipo: 'ganador' }, { de: 80, a: 92, pos: 'V', tipo: 'ganador' },
         
-        // CORRECCIÓN AQUÍ: Para que coincida con la ruta del Administrador
-        { de: 81, a: 94, pos: 'L', tipo: 'ganador' }, { de: 82, a: 93, pos: 'V', tipo: 'ganador' },
-        { de: 83, a: 93, pos: 'L', tipo: 'ganador' }, { de: 84, a: 94, pos: 'V', tipo: 'ganador' },
+        // CORRECCIÓN IDS 93 Y 94 (Ruta Admin)
+        { de: 83, a: 93, pos: 'L', tipo: 'ganador' }, { de: 84, a: 93, pos: 'V', tipo: 'ganador' },
+        { de: 81, a: 94, pos: 'L', tipo: 'ganador' }, { de: 82, a: 94, pos: 'V', tipo: 'ganador' },
         
         { de: 86, a: 95, pos: 'L', tipo: 'ganador' }, { de: 88, a: 95, pos: 'V', tipo: 'ganador' },
         { de: 85, a: 96, pos: 'L', tipo: 'ganador' }, { de: 87, a: 96, pos: 'V', tipo: 'ganador' },
         
-        // El resto sigue igual
         { de: 89, a: 97, pos: 'L', tipo: 'ganador' }, { de: 90, a: 97, pos: 'V', tipo: 'ganador' },
         { de: 93, a: 98, pos: 'L', tipo: 'ganador' }, { de: 94, a: 98, pos: 'V', tipo: 'ganador' },
         { de: 91, a: 99, pos: 'L', tipo: 'ganador' }, { de: 92, a: 99, pos: 'V', tipo: 'ganador' },
@@ -482,6 +491,8 @@ function actualizarFasesEliminatorias(clasificados) {
         { de: 97, a: 101, pos: 'L', tipo: 'ganador' }, { de: 98, a: 101, pos: 'V', tipo: 'ganador' },
         { de: 99, a: 102, pos: 'L', tipo: 'ganador' }, { de: 100, a: 102, pos: 'V', tipo: 'ganador' },
         { de: 101, a: 104, pos: 'L', tipo: 'ganador' }, { de: 102, a: 104, pos: 'V', tipo: 'ganador' },
+        
+        // TERCER PUESTO (ARREGLADO PARA MOSTRAR PERDEDORES)
         { de: 101, a: 103, pos: 'L', tipo: 'perdedor' }, { de: 102, a: 103, pos: 'V', tipo: 'perdedor' }
     ];
     procesarAvanceFutbol(avance);
@@ -507,36 +518,39 @@ function procesarAvanceFutbol(llaves) {
 }
 
 function ponerNombreEnCard(id, lado, nombre) {
-    const el = document.getElementById(`${lado}-${id}`);
+    const el = document.getElementById(`${lado === 'L' ? 'L' : 'V'}-${id}`);
     if (el) { el.closest('.partido-card').querySelector(lado === 'L' ? '.local' : '.visita').innerText = nombre; }
 }
 
-// 8. REPORTE MAESTRO (A4 2 COLUMNAS)
+// 8. REPORTE MAESTRO (FORMATO A4 + IMPRESIÓN)
 async function generarReporteMaestro() {
     try {
         const res = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await res.json();
-        if (!datos.length) return alert("Sin datos.");
+        if (!datos.length) return alert("No hay datos para generar el reporte.");
         const agrupado = datos.reduce((acc, r) => { (acc[r.nombre_usuario] = acc[r.nombre_usuario] || []).push(r); return acc; }, {});
 
-        let html = `<html><head><style>
-            @page { size: A4; margin: 8mm; }
-            body { font-family: sans-serif; font-size: 9px; }
-            .report-container { background: white; width: 190mm; margin: 0 auto 10px; page-break-after: always; }
-            h2 { border-bottom: 2px solid #01215b; text-align: center; }
-            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #ccc; padding: 2px; text-align: center; }
-            th { background: #01215b; color: white; }
-            .equipo { text-align: left; width: 35%; font-weight: bold; }
-        </style></head><body>`;
+        let html = `<html><head><title>Reporte Maestro</title><style>
+            @page { size: A4; margin: 10mm; }
+            body { font-family: 'Roboto', sans-serif; font-size: 10px; color: #333; }
+            .report-container { background: white; width: 100%; margin-bottom: 20px; page-break-after: always; }
+            h2 { border-bottom: 2px solid #01215b; text-align: center; color: #01215b; padding-bottom: 5px; }
+            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+            th, td { border: 1px solid #ddd; padding: 4px; text-align: center; }
+            th { background: #01215b; color: white; font-weight: bold; }
+            .equipo { text-align: left; width: 35%; font-weight: bold; font-size: 9px; }
+            .no-print { text-align: center; margin-bottom: 20px; }
+            @media print { .no-print { display: none; } }
+        </style></head><body>
+        <div class="no-print"><button onclick="window.print()" style="padding:10px 20px; cursor:pointer;">🖨️ IMPRIMIR REPORTE</button></div>`;
 
         for (const user in agrupado) {
-            html += `<div class="report-container"><h2>Usuario: ${user}</h2><div class="grid">`;
+            html += `<div class="report-container"><h2>Quiniela: ${user}</h2><div class="grid">`;
             const preds = agrupado[user];
             const mitad = Math.ceil(preds.length / 2);
             for (let i = 0; i < 2; i++) {
-                html += `<div><table><thead><tr><th>#</th><th>Local</th><th>L</th><th>V</th><th>Visita</th><th>Des</th></tr></thead><tbody>`;
+                html += `<div><table><thead><tr><th>#</th><th>Local</th><th>L</th><th>V</th><th>Visita</th><th>Pals</th></tr></thead><tbody>`;
                 preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
                     const p = partidosData.find(item => item.id === r.partido_id) || {};
                     const des = (r.goles_desempate_local !== null) ? `${r.goles_desempate_local}-${r.goles_desempate_visita}` : "-";
@@ -548,15 +562,12 @@ async function generarReporteMaestro() {
         }
         html += `</body></html>`;
         const v = window.open('', '_blank'); v.document.write(html); v.document.close();
-    } catch(e) { alert("Error reporte."); }
+    } catch(e) { alert("Error al generar el reporte maestro."); }
 }
 
 function cerrarMiModal() {
     const modal = document.getElementById('modal-informativo');
-    if (modal) {
-        // Esta línea es la que "rompe" el bloqueo y permite que tu botón cierre la ventana
-        modal.style.setProperty('display', 'none', 'important');
-    }
+    if (modal) modal.style.display = 'none';
 }
 
 // 9. INICIO
@@ -568,5 +579,3 @@ window.onload = async () => {
     const modal = document.getElementById('modal-informativo');
     if (modal) modal.style.display = urlParams.has('nomodal') ? 'none' : 'block';
 };
-
-
