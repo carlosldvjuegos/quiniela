@@ -463,8 +463,8 @@ function actualizarFasesEliminatorias(clasificados) {
     const mapeo = [
         { id: 73, L: "2A", V: "2B" }, { id: 74, L: "1C", V: "2F" }, { id: 75, L: "1E", V: "3T1" }, { id: 76, L: "1F", V: "2C" },
         { id: 77, L: "2E", V: "2I" }, { id: 78, L: "1I", V: "3T2" }, { id: 79, L: "1A", V: "3T3" }, { id: 80, L: "1L", V: "3T4" },
-        { id: 81, L: "1G", V: "3T5" }, { id: 82, L: "1D", V: "3T6" }, { id: 83, L: "1H", V: "2J" }, { id: 84, L: "2K", V: "2L" },
-        { id: 85, L: "1B", V: "3T7" }, { id: 86, L: "2D", V: "2G" }, { id: 87, L: "1J", V: "2H" }, { id: 88, L: "1K", V: "3T8" }
+        { id: 81, L: "1G", V: "3T5" }, { id: 82, L: "2D", V: "2G" }, { id: 83, L: "1H", V: "2J" }, { id: 84, L: "2K", V: "2L" },
+        { id: 85, L: "1B", V: "3T7" }, { id: 86, L: "1D", V: "3T6" }, { id: 87, L: "1J", V: "2H" }, { id: 88, L: "1K", V: "3T8" }
     ];
     mapeo.forEach(m => { 
         ponerNombreEnCard(m.id, 'L', clasificados[m.L] || m.L); 
