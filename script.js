@@ -528,57 +528,81 @@ async function generarReporteMaestro() {
         const res = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await res.json();
         if (!datos.length) return alert("No hay datos para generar el reporte.");
-        const agrupado = datos.reduce((acc, r) => { (acc[r.nombre_usuario] = acc[r.nombre_usuario] || []).push(r); return acc; }, {});
+        
+        const agrupado = datos.reduce((acc, r) => { 
+            (acc[r.nombre_usuario] = acc[r.nombre_usuario] || []).push(r); 
+            return acc; 
+        }, {});
 
         let html = `<html><head><title>Reporte Maestro</title><style>
-            @page { size: A4; margin: 5mm; }
-            body { font-family: Arial, sans-serif; font-size: 7.5px; color: #333; margin: 0; padding: 0; }
+            @page { size: A4; margin: 0; }
+            body { 
+                font-family: 'Segoe UI', Arial, sans-serif; 
+                background-color: #f0f0f0; 
+                margin: 0; 
+                padding: 0; 
+            }
             .report-container { 
                 background: white; 
                 width: 210mm; 
-                height: 297mm;
-                page-break-after: always; 
-                padding: 5mm;
+                height: 297mm; 
+                margin: 0 auto;
+                padding: 10mm;
                 box-sizing: border-box;
+                page-break-after: always;
+                display: flex;
+                flex-direction: column;
             }
             h2 { 
                 border-bottom: 2px solid #01215b; 
                 text-align: center; 
                 color: #01215b; 
-                margin: 0 0 5px 0;
-                font-size: 12px;
+                margin: 0 0 8px 0;
+                font-size: 16px;
                 text-transform: uppercase;
             }
-            .grid { 
+            .grid-wrapper { 
                 display: flex;
-                justify-content: space-between;
-                gap: 5mm;
+                justify-content: center;
+                gap: 8mm; /* Espacio entre las dos columnas */
+                flex-grow: 1;
             }
-            table { width: 48%; border-collapse: collapse; table-layout: fixed; }
+            table { 
+                border-collapse: collapse; 
+                table-layout: fixed; /* ESTO EVITA QUE SE DESCUADRE */
+                width: 92mm; /* Ancho exacto para que dos tablas quepan con margen */
+            }
             th, td { 
-                border: 0.5px solid #aaa; 
-                padding: 2px 1px; 
+                border: 0.5px solid #333; 
+                padding: 1px 2px; 
                 text-align: center; 
-                vertical-align: middle;
+                font-size: 7.5px;
+                height: 4.5mm; /* Altura fija para asegurar que quepan los 52 renglones */
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;
             }
-            th { background: #01215b; color: white; font-weight: bold; font-size: 7px; }
+            th { background: #01215b; color: white; font-weight: bold; }
             
-            /* Anchos fijos para que no se encimen */
-            .col-id { width: 15px; }
-            .col-equipo { width: 70px; text-align: left; padding-left: 2px; font-weight: bold; }
-            .col-gol { width: 15px; background: #f9f9f9; }
-            .col-pals { width: 25px; font-size: 6.5px; }
+            /* DEFINICIÓN DE ANCHOS DE COLUMNA PARA QUE NO SE MUEVAN */
+            .col-id { width: 6mm; }
+            .col-equipo { width: 28mm; text-align: left; font-weight: bold; }
+            .col-gol { width: 7mm; background-color: #f5f5f5; }
+            .col-pals { width: 10mm; font-size: 6.5px; color: #555; }
 
-            .no-print { text-align: center; padding: 10px; background: #eee; }
-            @media print { .no-print { display: none; } }
+            .no-print { text-align: center; padding: 15px; background: #333; }
+            button { padding: 10px 25px; cursor: pointer; font-weight: bold; background: #28a745; color: white; border: none; border-radius: 5px; }
+            
+            @media print { 
+                body { background: none; }
+                .no-print { display: none; } 
+                .report-container { margin: 0; border: none; }
+            }
         </style></head><body>
-        <div class="no-print"><button onclick="window.print()" style="padding:10px 20px; cursor:pointer;">🖨️ IMPRIMIR QUINIELAS</button></div>`;
+        <div class="no-print"><button onclick="window.print()">🖨️ IMPRIMIR REPORTE A4</button></div>`;
 
         for (const user in agrupado) {
-            html += `<div class="report-container"><h2>Quiniela: ${user}</h2><div class="grid">`;
+            html += `<div class="report-container"><h2>Quiniela: ${user}</h2><div class="grid-wrapper">`;
             const preds = agrupado[user];
             preds.sort((a, b) => a.partido_id - b.partido_id);
             
@@ -594,14 +618,14 @@ async function generarReporteMaestro() {
                 </tr></thead><tbody>`;
                 
                 preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
-                    const p = partidosData.find(item => item.id === r.partido_id) || {};
+                    const p = partidosData.find(item => item.id === r.partido_id) || { local: '---', visita: '---' };
                     const des = (r.goles_desempate_local !== null) ? `${r.goles_desempate_local}-${r.goles_desempate_visita}` : "-";
                     html += `<tr>
                         <td>${r.partido_id}</td>
-                        <td class="col-equipo">${p.local || '---'}</td>
+                        <td class="col-equipo">${p.local}</td>
                         <td class="col-gol">${r.goles_local}</td>
                         <td class="col-gol">${r.goles_visita}</td>
-                        <td class="col-equipo">${p.visita || '---'}</td>
+                        <td class="col-equipo">${p.visita}</td>
                         <td class="col-pals">${des}</td>
                     </tr>`;
                 });
