@@ -531,60 +531,65 @@ async function generarReporteMaestro() {
         const agrupado = datos.reduce((acc, r) => { (acc[r.nombre_usuario] = acc[r.nombre_usuario] || []).push(r); return acc; }, {});
 
         let html = `<html><head><title>Reporte Maestro</title><style>
-            @page { size: A4; margin: 8mm; }
-            body { font-family: 'Roboto', sans-serif; font-size: 8.5px; color: #333; margin: 0; padding: 0; }
+            @page { size: A4; margin: 5mm; }
+            body { font-family: Arial, sans-serif; font-size: 7.5px; color: #333; margin: 0; padding: 0; }
             .report-container { 
                 background: white; 
-                width: 100%; 
-                height: 275mm; /* Altura casi completa de A4 para ajustar */
+                width: 210mm; 
+                height: 297mm;
                 page-break-after: always; 
+                padding: 5mm;
                 box-sizing: border-box;
             }
             h2 { 
                 border-bottom: 2px solid #01215b; 
                 text-align: center; 
                 color: #01215b; 
-                padding-bottom: 3px; 
-                margin: 0 0 10px 0;
-                font-size: 14px;
+                margin: 0 0 5px 0;
+                font-size: 12px;
+                text-transform: uppercase;
             }
             .grid { 
-                display: grid; 
-                grid-template-columns: 1fr 1fr; 
-                gap: 10px; 
+                display: flex;
+                justify-content: space-between;
+                gap: 5mm;
             }
-            table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+            table { width: 48%; border-collapse: collapse; table-layout: fixed; }
             th, td { 
-                border: 1px solid #bbb; 
+                border: 0.5px solid #aaa; 
                 padding: 2px 1px; 
                 text-align: center; 
+                vertical-align: middle;
                 overflow: hidden;
                 white-space: nowrap;
+                text-overflow: ellipsis;
             }
-            th { background: #01215b; color: white; font-weight: bold; font-size: 8px; }
-            .equipo { text-align: left; width: 32%; font-weight: bold; font-size: 8px; padding-left: 3px; }
-            .col-id { width: 8%; }
-            .col-gol { width: 10%; }
-            .col-pals { width: 12%; }
-            .no-print { text-align: center; margin-bottom: 20px; padding: 10px; }
+            th { background: #01215b; color: white; font-weight: bold; font-size: 7px; }
+            
+            /* Anchos fijos para que no se encimen */
+            .col-id { width: 15px; }
+            .col-equipo { width: 70px; text-align: left; padding-left: 2px; font-weight: bold; }
+            .col-gol { width: 15px; background: #f9f9f9; }
+            .col-pals { width: 25px; font-size: 6.5px; }
+
+            .no-print { text-align: center; padding: 10px; background: #eee; }
             @media print { .no-print { display: none; } }
         </style></head><body>
-        <div class="no-print"><button onclick="window.print()" style="padding:10px 20px; cursor:pointer; font-weight:bold;">🖨️ IMPRIMIR REPORTE (A4)</button></div>`;
+        <div class="no-print"><button onclick="window.print()" style="padding:10px 20px; cursor:pointer;">🖨️ IMPRIMIR QUINIELAS</button></div>`;
 
         for (const user in agrupado) {
             html += `<div class="report-container"><h2>Quiniela: ${user}</h2><div class="grid">`;
             const preds = agrupado[user];
-            // Ordenamos por ID para que el reporte sea legible
             preds.sort((a, b) => a.partido_id - b.partido_id);
             
             const mitad = Math.ceil(preds.length / 2);
             for (let i = 0; i < 2; i++) {
-                html += `<div><table><thead><tr>
+                html += `<table><thead><tr>
                     <th class="col-id">#</th>
-                    <th class="equipo">Local</th>
+                    <th class="col-equipo">Local</th>
                     <th class="col-gol">L</th>
                     <th class="col-gol">V</th>
-                    <th class="equipo">Visita</th>
+                    <th class="col-equipo">Visita</th>
                     <th class="col-pals">Pals</th>
                 </tr></thead><tbody>`;
                 
@@ -593,23 +598,20 @@ async function generarReporteMaestro() {
                     const des = (r.goles_desempate_local !== null) ? `${r.goles_desempate_local}-${r.goles_desempate_visita}` : "-";
                     html += `<tr>
                         <td>${r.partido_id}</td>
-                        <td class="equipo">${p.local || '---'}</td>
-                        <td>${r.goles_local}</td>
-                        <td>${r.goles_visita}</td>
-                        <td class="equipo">${p.visita || '---'}</td>
-                        <td>${des}</td>
+                        <td class="col-equipo">${p.local || '---'}</td>
+                        <td class="col-gol">${r.goles_local}</td>
+                        <td class="col-gol">${r.goles_visita}</td>
+                        <td class="col-equipo">${p.visita || '---'}</td>
+                        <td class="col-pals">${des}</td>
                     </tr>`;
                 });
-                html += `</tbody></table></div>`;
+                html += `</tbody></table>`;
             }
             html += `</div></div>`;
         }
         html += `</body></html>`;
         const v = window.open('', '_blank'); v.document.write(html); v.document.close();
-    } catch(e) { 
-        console.error(e);
-        alert("Error al generar el reporte maestro."); 
-    }
+    } catch(e) { console.error(e); alert("Error al generar el reporte."); }
 }
 
 function cerrarMiModal() {
