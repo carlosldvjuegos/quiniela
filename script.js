@@ -439,15 +439,17 @@ function actualizarTorneo() {
     if (!hayDatos) return limpiarLlavesDinamicas();
 
     let terceros = [];
-    grupos.forEach(l => { if (datosGrupos[l]?.[2]) terceros.push(datosGrupos[l][2]); });
+    // MEJORA FIFA: Guardamos el origen también aquí
+    grupos.forEach(l => { 
+        if (datosGrupos[l]?.[2]) {
+            terceros.push({ ...datosGrupos[l][2], grupo: l }); 
+        }
+    });
+    
     terceros.sort((a,b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.rank - b.rank);
     terceros.slice(0, 8).forEach((t, i) => clasificados[`3T${i+1}`] = t.nombre);
 
     actualizarFasesEliminatorias(clasificados);
-}
-
-function limpiarLlavesDinamicas() {
-    partidosData.forEach(p => { if (p.fase !== "Grupos") { ponerNombreEnCard(p.id, 'L', p.local); ponerNombreEnCard(p.id, 'V', p.visita); } });
 }
 
 function actualizarFasesEliminatorias(clasificados) {
@@ -460,17 +462,22 @@ function actualizarFasesEliminatorias(clasificados) {
     mapeo.forEach(m => { ponerNombreEnCard(m.id, 'L', clasificados[m.L] || m.L); ponerNombreEnCard(m.id, 'V', clasificados[m.V] || m.V); });
 
     const avance = [
-        { de: 73, a: 89, pos: 'L', tipo: 'ganador' }, { de: 74, a: 89, pos: 'V', tipo: 'ganador' },
-        { de: 75, a: 90, pos: 'L', tipo: 'ganador' }, { de: 76, a: 90, pos: 'V', tipo: 'ganador' },
-        { de: 77, a: 91, pos: 'L', tipo: 'ganador' }, { de: 78, a: 91, pos: 'V', tipo: 'ganador' },
+        { de: 73, a: 89, pos: 'L', tipo: 'ganador' }, { de: 75, a: 89, pos: 'V', tipo: 'ganador' },
+        { de: 74, a: 90, pos: 'L', tipo: 'ganador' }, { de: 77, a: 90, pos: 'V', tipo: 'ganador' },
+        { de: 76, a: 91, pos: 'L', tipo: 'ganador' }, { de: 78, a: 91, pos: 'V', tipo: 'ganador' },
         { de: 79, a: 92, pos: 'L', tipo: 'ganador' }, { de: 80, a: 92, pos: 'V', tipo: 'ganador' },
+        
+        // CORRECCIÓN AQUÍ: Para que coincida con la ruta del Administrador
         { de: 81, a: 93, pos: 'L', tipo: 'ganador' }, { de: 82, a: 93, pos: 'V', tipo: 'ganador' },
         { de: 83, a: 94, pos: 'L', tipo: 'ganador' }, { de: 84, a: 94, pos: 'V', tipo: 'ganador' },
-        { de: 85, a: 95, pos: 'L', tipo: 'ganador' }, { de: 86, a: 95, pos: 'V', tipo: 'ganador' },
-        { de: 87, a: 96, pos: 'L', tipo: 'ganador' }, { de: 88, a: 96, pos: 'V', tipo: 'ganador' },
+        
+        { de: 86, a: 95, pos: 'L', tipo: 'ganador' }, { de: 88, a: 95, pos: 'V', tipo: 'ganador' },
+        { de: 85, a: 96, pos: 'L', tipo: 'ganador' }, { de: 87, a: 96, pos: 'V', tipo: 'ganador' },
+        
+        // El resto sigue igual
         { de: 89, a: 97, pos: 'L', tipo: 'ganador' }, { de: 90, a: 97, pos: 'V', tipo: 'ganador' },
-        { de: 91, a: 98, pos: 'L', tipo: 'ganador' }, { de: 92, a: 98, pos: 'V', tipo: 'ganador' },
-        { de: 93, a: 99, pos: 'L', tipo: 'ganador' }, { de: 94, a: 99, pos: 'V', tipo: 'ganador' },
+        { de: 93, a: 98, pos: 'L', tipo: 'ganador' }, { de: 94, a: 98, pos: 'V', tipo: 'ganador' },
+        { de: 91, a: 99, pos: 'L', tipo: 'ganador' }, { de: 92, a: 99, pos: 'V', tipo: 'ganador' },
         { de: 95, a: 100, pos: 'L', tipo: 'ganador' }, { de: 96, a: 100, pos: 'V', tipo: 'ganador' },
         { de: 97, a: 101, pos: 'L', tipo: 'ganador' }, { de: 98, a: 101, pos: 'V', tipo: 'ganador' },
         { de: 99, a: 102, pos: 'L', tipo: 'ganador' }, { de: 100, a: 102, pos: 'V', tipo: 'ganador' },
