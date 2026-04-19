@@ -114,8 +114,8 @@ const partidosData = [
     { id: 78, fase: "16vos", grupo: "Eliminatoria", fecha: "Martes 30/06/2026", local: "1I", visita: "3T2" },
     { id: 79, fase: "16vos", grupo: "Eliminatoria", fecha: "Miércoles 01/07/2026", local: "1A", visita: "3T3" },
     { id: 80, fase: "16vos", grupo: "Eliminatoria", fecha: "Miércoles 01/07/2026", local: "1L", visita: "3T4" },
-    { id: 81, fase: "16vos", grupo: "Eliminatoria", fecha: "Miércoles 01/07/2026", local: "1G", visita: "3AEHIJ" },
-    { id: 82, fase: "16vos", grupo: "Eliminatoria", fecha: "Jueves 02/07/2026", local: "1D", visita: "3BEFIJ" },
+    { id: 81, fase: "16vos", grupo: "Eliminatoria", fecha: "Miércoles 01/07/2026", local: "1G", visita: "3T5" },
+    { id: 82, fase: "16vos", grupo: "Eliminatoria", fecha: "Jueves 02/07/2026", local: "1D", visita: "3T6" },
     { id: 83, fase: "16vos", grupo: "Eliminatoria", fecha: "Jueves 02/07/2026", local: "1H", visita: "2J" },
     { id: 84, fase: "16vos", grupo: "Eliminatoria", fecha: "Viernes 03/07/2026", local: "2K", visita: "2L" },
     { id: 85, fase: "16vos", grupo: "Eliminatoria", fecha: "Viernes 03/07/2026", local: "1B", visita: "3T7" },
@@ -456,24 +456,14 @@ function actualizarTorneo() {
     terceros.sort((a,b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.rank - b.rank);
     terceros.slice(0, 8).forEach((t, i) => clasificados[`3T${i+1}`] = t.nombre);
 
-    // --- ESTA ES LA ÚNICA MEJORA INYECTADA ---
-    // Mantenemos tu lógica de slice(0,8) pero usamos los nombres que espera tu Admin
-    const etiquetasAdmin = ["3T1", "3T2", "3T3", "3T4", "3AEHIJ", "3BEFIJ", "3T7", "3T8"];
-
-    terceros.slice(0, 8).forEach((t, i) => {
-        const etiqueta = etiquetasAdmin[i]; 
-        clasificados[etiqueta] = t.nombre;
-    });
-    // ------------------------------------------
-
-    actualizarFasesEliminatorias(clasificados);
+        actualizarFasesEliminatorias(clasificados);
 }
 
 function actualizarFasesEliminatorias(clasificados) {
     const mapeo = [
         { id: 73, L: "2A", V: "2B" }, { id: 74, L: "1C", V: "2F" }, { id: 75, L: "1E", V: "3T1" }, { id: 76, L: "1F", V: "2C" },
         { id: 77, L: "2E", V: "2I" }, { id: 78, L: "1I", V: "3T2" }, { id: 79, L: "1A", V: "3T3" }, { id: 80, L: "1L", V: "3T4" },
-        { id: 81, L: "1G", V: "3AEHIJ" }, { id: 82, L: "1D", V: "3BEFIJ" }, { id: 83, L: "1H", V: "2J" }, { id: 84, L: "2K", V: "2L" },
+        { id: 81, L: "1G", V: "3T5" }, { id: 82, L: "1D", V: "3T6" }, { id: 83, L: "1H", V: "2J" }, { id: 84, L: "2K", V: "2L" },
         { id: 85, L: "1B", V: "3T7" }, { id: 86, L: "2D", V: "2G" }, { id: 87, L: "1J", V: "2H" }, { id: 88, L: "1K", V: "3T8" }
     ];
     mapeo.forEach(m => { 
