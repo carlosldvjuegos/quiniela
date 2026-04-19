@@ -213,7 +213,6 @@ function actualizarLogicaAdmin() {
     let clasificados = {};
     let todosLosTerceros = [];
 
-    // 1. PROCESAR CADA GRUPO
     grupos.forEach(g => {
         let tabla = {};
         const partidosGrupo = partidosData.filter(p => p.fase === "Grupos" && p.grupo === g);
@@ -234,7 +233,6 @@ function actualizarLogicaAdmin() {
             }
         });
 
-        // ORDEN FIFA: Puntos > Dif. Goles > Goles Favor > Ranking FIFA
         let ordenados = Object.values(tabla).sort((a, b) => 
             b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
         );
@@ -242,25 +240,29 @@ function actualizarLogicaAdmin() {
         clasificados[`1${g}`] = ordenados[0]?.nombre || `1${g}`;
         clasificados[`2${g}`] = ordenados[1]?.nombre || `2${g}`;
         
-        // Guardamos el tercero para el ranking global de terceros
+        // MEJORA FIFA: Guardamos el nombre y su grupo de origen
         if (ordenados[2]) {
-            todosLosTerceros.push(ordenados[2]);
+            todosLosTerceros.push({
+                nombre: ordenados[2].nombre,
+                pts: ordenados[2].pts,
+                dg: ordenados[2].dg,
+                gf: ordenados[2].gf,
+                ranking: ordenados[2].ranking,
+                grupo: g 
+            });
         }
     });
 
-    // 2. CÁLCULO DE LOS 8 MEJORES TERCEROS
-    // Los ordenamos igual que a los grupos
+    // Ordenar ranking de terceros
     let mejoresTerceros = todosLosTerceros.sort((a, b) => 
         b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
     ).slice(0, 8);
 
-    // Asignamos a las llaves de terceros (3T1 al 3T8)
+    // Asignar 3T1 a 3T8
     mejoresTerceros.forEach((t, index) => {
         clasificados[`3T${index + 1}`] = t.nombre;
     });
 
-    // 3. MAPEO DE 16VOS (Ajustado a los IDs de tu partidosData)
-    // He ajustado las visitas para que busquen al 3T correspondiente
     const mapeo16vos = [
         { id: 73, l: clasificados['2A'], v: clasificados['2B'] },
         { id: 74, l: clasificados['1C'], v: clasificados['2F'] },
@@ -287,7 +289,6 @@ function actualizarLogicaAdmin() {
         if (lbV) lbV.innerText = m.v;
     });
 
-    // --- LÓGICA DE GANADORES (8vos en adelante) ---
     const getGanador = (id) => {
         const res = resultados[id];
         const txtL = document.getElementById(`N-L-${id}`)?.innerText || `Local ${id}`;
@@ -296,14 +297,14 @@ function actualizarLogicaAdmin() {
         return (res.gl > res.gv) ? txtL : txtV;
     };
 
-    // Actualizar 8vos
+    // CORRECCIÓN DE LLAVES 93 Y 94 (Sincronizado con Usuario)
     const mapeo8vos = [
         { id: 89, l: getGanador(73), v: getGanador(75) },
         { id: 90, l: getGanador(74), v: getGanador(77) },
         { id: 91, l: getGanador(76), v: getGanador(78) },
         { id: 92, l: getGanador(79), v: getGanador(80) },
-        { id: 93, l: getGanador(83), v: getGanador(84) },
-        { id: 94, l: getGanador(81), v: getGanador(82) },
+        { id: 93, l: getGanador(81), v: getGanador(82) }, // <--- Corregido
+        { id: 94, l: getGanador(83), v: getGanador(84) }, // <--- Corregido
         { id: 95, l: getGanador(86), v: getGanador(88) },
         { id: 96, l: getGanador(85), v: getGanador(87) }
     ];
@@ -313,7 +314,6 @@ function actualizarLogicaAdmin() {
         if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
     });
 
-    // ... (El resto de mapeo4tos, Semis y Finales se mantiene igual porque usan getGanador)
     const mapeo4tos = [
         { id: 97, l: getGanador(89), v: getGanador(90) },
         { id: 98, l: getGanador(93), v: getGanador(94) },
