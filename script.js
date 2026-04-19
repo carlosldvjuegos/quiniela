@@ -531,30 +531,74 @@ async function generarReporteMaestro() {
         const agrupado = datos.reduce((acc, r) => { (acc[r.nombre_usuario] = acc[r.nombre_usuario] || []).push(r); return acc; }, {});
 
         let html = `<html><head><title>Reporte Maestro</title><style>
-            @page { size: A4; margin: 10mm; }
-            body { font-family: 'Roboto', sans-serif; font-size: 10px; color: #333; }
-            .report-container { background: white; width: 100%; margin-bottom: 20px; page-break-after: always; }
-            h2 { border-bottom: 2px solid #01215b; text-align: center; color: #01215b; padding-bottom: 5px; }
-            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-            th, td { border: 1px solid #ddd; padding: 4px; text-align: center; }
-            th { background: #01215b; color: white; font-weight: bold; }
-            .equipo { text-align: left; width: 35%; font-weight: bold; font-size: 9px; }
-            .no-print { text-align: center; margin-bottom: 20px; }
+            @page { size: A4; margin: 8mm; }
+            body { font-family: 'Roboto', sans-serif; font-size: 8.5px; color: #333; margin: 0; padding: 0; }
+            .report-container { 
+                background: white; 
+                width: 100%; 
+                height: 275mm; /* Altura casi completa de A4 para ajustar */
+                page-break-after: always; 
+                box-sizing: border-box;
+            }
+            h2 { 
+                border-bottom: 2px solid #01215b; 
+                text-align: center; 
+                color: #01215b; 
+                padding-bottom: 3px; 
+                margin: 0 0 10px 0;
+                font-size: 14px;
+            }
+            .grid { 
+                display: grid; 
+                grid-template-columns: 1fr 1fr; 
+                gap: 10px; 
+            }
+            table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+            th, td { 
+                border: 1px solid #bbb; 
+                padding: 2px 1px; 
+                text-align: center; 
+                overflow: hidden;
+                white-space: nowrap;
+            }
+            th { background: #01215b; color: white; font-weight: bold; font-size: 8px; }
+            .equipo { text-align: left; width: 32%; font-weight: bold; font-size: 8px; padding-left: 3px; }
+            .col-id { width: 8%; }
+            .col-gol { width: 10%; }
+            .col-pals { width: 12%; }
+            .no-print { text-align: center; margin-bottom: 20px; padding: 10px; }
             @media print { .no-print { display: none; } }
         </style></head><body>
-        <div class="no-print"><button onclick="window.print()" style="padding:10px 20px; cursor:pointer;">🖨️ IMPRIMIR REPORTE</button></div>`;
+        <div class="no-print"><button onclick="window.print()" style="padding:10px 20px; cursor:pointer; font-weight:bold;">🖨️ IMPRIMIR REPORTE (A4)</button></div>`;
 
         for (const user in agrupado) {
             html += `<div class="report-container"><h2>Quiniela: ${user}</h2><div class="grid">`;
             const preds = agrupado[user];
+            // Ordenamos por ID para que el reporte sea legible
+            preds.sort((a, b) => a.partido_id - b.partido_id);
+            
             const mitad = Math.ceil(preds.length / 2);
             for (let i = 0; i < 2; i++) {
-                html += `<div><table><thead><tr><th>#</th><th>Local</th><th>L</th><th>V</th><th>Visita</th><th>Pals</th></tr></thead><tbody>`;
+                html += `<div><table><thead><tr>
+                    <th class="col-id">#</th>
+                    <th class="equipo">Local</th>
+                    <th class="col-gol">L</th>
+                    <th class="col-gol">V</th>
+                    <th class="equipo">Visita</th>
+                    <th class="col-pals">Pals</th>
+                </tr></thead><tbody>`;
+                
                 preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
                     const p = partidosData.find(item => item.id === r.partido_id) || {};
                     const des = (r.goles_desempate_local !== null) ? `${r.goles_desempate_local}-${r.goles_desempate_visita}` : "-";
-                    html += `<tr><td>${r.partido_id}</td><td class="equipo">${p.local || '---'}</td><td>${r.goles_local}</td><td>${r.goles_visita}</td><td class="equipo">${p.visita || '---'}</td><td>${des}</td></tr>`;
+                    html += `<tr>
+                        <td>${r.partido_id}</td>
+                        <td class="equipo">${p.local || '---'}</td>
+                        <td>${r.goles_local}</td>
+                        <td>${r.goles_visita}</td>
+                        <td class="equipo">${p.visita || '---'}</td>
+                        <td>${des}</td>
+                    </tr>`;
                 });
                 html += `</tbody></table></div>`;
             }
@@ -562,7 +606,10 @@ async function generarReporteMaestro() {
         }
         html += `</body></html>`;
         const v = window.open('', '_blank'); v.document.write(html); v.document.close();
-    } catch(e) { alert("Error al generar el reporte maestro."); }
+    } catch(e) { 
+        console.error(e);
+        alert("Error al generar el reporte maestro."); 
+    }
 }
 
 function cerrarMiModal() {
