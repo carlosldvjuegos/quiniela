@@ -468,8 +468,8 @@ function actualizarFasesEliminatorias(clasificados) {
         { de: 79, a: 92, pos: 'L', tipo: 'ganador' }, { de: 80, a: 92, pos: 'V', tipo: 'ganador' },
         
         // CORRECCIÓN AQUÍ: Para que coincida con la ruta del Administrador
-        { de: 81, a: 94, pos: 'L', tipo: 'ganador' }, { de: 82, a: 94, pos: 'V', tipo: 'ganador' },
-        { de: 83, a: 93, pos: 'L', tipo: 'ganador' }, { de: 84, a: 93, pos: 'V', tipo: 'ganador' },
+        { de: 81, a: 93, pos: 'L', tipo: 'ganador' }, { de: 82, a: 93, pos: 'V', tipo: 'ganador' },
+        { de: 83, a: 94, pos: 'L', tipo: 'ganador' }, { de: 84, a: 94, pos: 'V', tipo: 'ganador' },
         
         { de: 86, a: 95, pos: 'L', tipo: 'ganador' }, { de: 88, a: 95, pos: 'V', tipo: 'ganador' },
         { de: 85, a: 96, pos: 'L', tipo: 'ganador' }, { de: 87, a: 96, pos: 'V', tipo: 'ganador' },
