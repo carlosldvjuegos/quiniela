@@ -48,7 +48,7 @@ const partidosData = [
     { id: 21, fase: "Grupos", grupo: "D", fecha: "Sábado 20/06/2026", local: "Turquia", visita: "Paraguay" },
     { id: 22, fase: "Grupos", grupo: "D", fecha: "Viernes 19/06/2026", local: "EE. UU.", visita: "Australia" },
     { id: 23, fase: "Grupos", grupo: "D", fecha: "Viernes 26/06/2026", local: "Turquia", visita: "EE. UU." },
-    { id: 24, fase: "Grupos", grupo: "D", fecha: "Paraguay", visita: "Australia" },
+    { id: 24, fase: "Grupos", grupo: "D", fecha: "Jueves 26/06/2026",  local: "Paraguay", visita: "Australia" },
     // GRUPO E
     { id: 25, fase: "Grupos", grupo: "E", fecha: "Domingo 14/06/2026", local: "Alemania", visita: "Curazao" },
     { id: 26, fase: "Grupos", grupo: "E", fecha: "Lunes 15/06/2026", local: "Costa de Marfil", visita: "Ecuador" },
