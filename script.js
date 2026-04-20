@@ -618,6 +618,14 @@ async function generarReporteMaestro() {
     } catch(e) { console.error(e); alert("Error al generar el reporte."); }
 }
 
+function cerrarMiModal() {
+    const modal = document.getElementById('modal-informativo');
+    if (modal) {
+        // Esta línea es la que "rompe" el bloqueo y permite que tu botón cierre la ventana
+        modal.style.setProperty('display', 'none', 'important');
+    }
+}
+
 // 9. INICIO
 window.onload = async () => {
     await renderizarFixture();
