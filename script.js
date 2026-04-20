@@ -536,27 +536,67 @@ async function generarReporteMaestro() {
 
         let html = `<html><head><title>Reporte Maestro</title><style>
             @page { size: A4; margin: 0; }
-            body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 0; }
-            .report-container { 
-                background: white; width: 210mm; height: 297mm; margin: 0 auto;
-                padding: 10mm; box-sizing: border-box; page-break-after: always;
-                display: flex; flex-direction: column;
+            body { 
+                font-family: 'Segoe UI', Arial, sans-serif; 
+                background-color: #f0f0f0; 
+                margin: 0; 
+                padding: 0; 
             }
-            h2 { border-bottom: 2px solid #01215b; text-align: center; color: #01215b; margin: 0 0 8px 0; font-size: 16px; text-transform: uppercase; }
-            .grid-wrapper { display: flex; justify-content: center; gap: 8mm; flex-grow: 1; }
-            table { border-collapse: collapse; table-layout: fixed; width: 92mm; }
+            .report-container { 
+                background: white; 
+                width: 210mm; 
+                height: 297mm; 
+                margin: 0 auto;
+                padding: 10mm;
+                box-sizing: border-box;
+                page-break-after: always;
+                display: flex;
+                flex-direction: column;
+            }
+            h2 { 
+                border-bottom: 2px solid #01215b; 
+                text-align: center; 
+                color: #01215b; 
+                margin: 0 0 8px 0;
+                font-size: 16px;
+                text-transform: uppercase;
+            }
+            .grid-wrapper { 
+                display: flex;
+                justify-content: center;
+                gap: 8mm; 
+                flex-grow: 1;
+            }
+            table { 
+                border-collapse: collapse; 
+                table-layout: fixed; 
+                width: 92mm; 
+            }
             th, td { 
-                border: 0.5px solid #333; padding: 1px 2px; text-align: center; 
-                font-size: 7.5px; height: 4.5mm; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; 
+                border: 0.5px solid #333; 
+                padding: 1px 2px; 
+                text-align: center; 
+                font-size: 7.5px;
+                height: 4.5mm; 
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
             }
             th { background: #01215b; color: white; font-weight: bold; }
+            
             .col-id { width: 6mm; }
             .col-equipo { width: 28mm; text-align: left; font-weight: bold; }
             .col-gol { width: 7mm; background-color: #f5f5f5; }
             .col-pals { width: 10mm; font-size: 6.5px; color: #555; }
+
             .no-print { text-align: center; padding: 15px; background: #333; }
             button { padding: 10px 25px; cursor: pointer; font-weight: bold; background: #28a745; color: white; border: none; border-radius: 5px; }
-            @media print { body { background: none; } .no-print { display: none; } .report-container { margin: 0; border: none; } }
+            
+            @media print { 
+                body { background: none; }
+                .no-print { display: none; } 
+                .report-container { margin: 0; border: none; }
+            }
         </style></head><body>
         <div class="no-print"><button onclick="window.print()">🖨️ IMPRIMIR REPORTE A4</button></div>`;
 
@@ -565,46 +605,31 @@ async function generarReporteMaestro() {
             const preds = agrupado[user];
             preds.sort((a, b) => a.partido_id - b.partido_id);
             
-            // --- NUEVA LÓGICA DE TRADUCCIÓN ---
-            // Si r.nombre_local no existe, intentamos usar lo que esté en r.equipo_local o similar
-            // Para asegurar que no salgan códigos como "1A"
-            const obtenerNombreReal = (partidoId, labelTecnico, esLocal, predActual) => {
-                // 1. Si la predicción ya trae un nombre de equipo real, lo usamos
-                if (esLocal && predActual.nombre_local) return predActual.nombre_local;
-                if (!esLocal && predActual.nombre_visita) return predActual.nombre_visita;
-                
-                // 2. Si es fase de grupos (ID 1 al 72), el nombre suele estar en partidosData
-                const pBase = partidosData.find(item => item.id === partidoId);
-                if (partidoId <= 72 && pBase) {
-                    return esLocal ? pBase.local : pBase.visita;
-                }
-                
-                // 3. Si sigue saliendo el código (como 1A o G73), devolvemos el código original 
-                // para no dejar la celda vacía, pero esto indica que la DB no guardó los nombres.
-                return labelTecnico;
-            };
-
             const mitad = Math.ceil(preds.length / 2);
             for (let i = 0; i < 2; i++) {
                 html += `<table><thead><tr>
-                    <th class="col-id">#</th><th class="col-equipo">Local</th><th class="col-gol">L</th>
-                    <th class="col-gol">V</th><th class="col-equipo">Visita</th><th class="col-pals">Pals</th>
+                    <th class="col-id">#</th>
+                    <th class="col-equipo">Local</th>
+                    <th class="col-gol">L</th>
+                    <th class="col-gol">V</th>
+                    <th class="col-equipo">Visita</th>
+                    <th class="col-pals">Pals</th>
                 </tr></thead><tbody>`;
                 
                 preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
-                    const p = partidosData.find(item => item.id === r.partido_id) || { local: '---', visita: '---' };
+                    // AQUÍ ESTÁ EL CAMBIO CLAVE:
+                    // Usamos r.nombre_local y r.nombre_visita que son los que traen el país real
+                    // Si no existen, mostramos el código técnico como último recurso.
+                    const nombreL = r.nombre_local || r.local || '---';
+                    const nombreV = r.nombre_visita || r.visita || '---';
                     
-                    // Aplicamos la mejora aquí:
-                    const localAMostrar = obtenerNombreReal(r.partido_id, p.local, true, r);
-                    const visitaAMostrar = obtenerNombreReal(r.partido_id, p.visita, false, r);
-
                     const des = (r.goles_desempate_local !== null) ? `${r.goles_desempate_local}-${r.goles_desempate_visita}` : "-";
                     html += `<tr>
                         <td>${r.partido_id}</td>
-                        <td class="col-equipo">${localAMostrar}</td>
+                        <td class="col-equipo">${nombreL}</td>
                         <td class="col-gol">${r.goles_local}</td>
                         <td class="col-gol">${r.goles_visita}</td>
-                        <td class="col-equipo">${visitaAMostrar}</td>
+                        <td class="col-equipo">${nombreV}</td>
                         <td class="col-pals">${des}</td>
                     </tr>`;
                 });
