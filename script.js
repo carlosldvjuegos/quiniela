@@ -619,13 +619,18 @@ async function generarReporteMaestro() {
                 
                 preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
                     const p = partidosData.find(item => item.id === r.partido_id) || { local: '---', visita: '---' };
+                    
+                    // MEJORA: Si la predicción tiene nombre guardado, lo usamos (así sale "Bélgica" y no "1G")
+                    const nombreLocal = r.nombre_local || p.local;
+                    const nombreVisita = r.nombre_visita || p.visita;
+                    
                     const des = (r.goles_desempate_local !== null) ? `${r.goles_desempate_local}-${r.goles_desempate_visita}` : "-";
                     html += `<tr>
                         <td>${r.partido_id}</td>
-                        <td class="col-equipo">${p.local}</td>
+                        <td class="col-equipo">${nombreLocal}</td>
                         <td class="col-gol">${r.goles_local}</td>
                         <td class="col-gol">${r.goles_visita}</td>
-                        <td class="col-equipo">${p.visita}</td>
+                        <td class="col-equipo">${nombreVisita}</td>
                         <td class="col-pals">${des}</td>
                     </tr>`;
                 });
