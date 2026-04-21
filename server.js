@@ -93,13 +93,12 @@ app.get('/obtener-resultados-db', async (req, res) => {
 app.post('/guardar', async (req, res) => {
     const { nombre, predicciones } = req.body;
     if (!nombre || !predicciones) return res.status(400).json({ error: "Faltan datos" });
-
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
         await client.query('DELETE FROM predicciones WHERE nombre_usuario = $1', [nombre]);
         for (let p of predicciones) {
-            // Agregamos nombre_local y nombre_visita a la lista de columnas y valores
+            // Se guardan: goles, penales Y nombres (nL, nV)
             await client.query(
                 `INSERT INTO predicciones 
                 (nombre_usuario, partido_id, goles_local, goles_visita, goles_desempate_local, goles_desempate_visita, nombre_local, nombre_visita) 
