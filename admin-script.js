@@ -334,11 +334,6 @@ function actualizarLogicaAdmin() {
         if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
     });
 
-    // LÓGICA PARA EL TERCER PUESTO (ID 103) - AGREGADA
-    if (document.getElementById(`N-L-103`)) document.getElementById(`N-L-103`).innerText = getPerdedor(101);
-    if (document.getElementById(`N-V-103`)) document.getElementById(`N-V-103`).innerText = getPerdedor(102);
-
-    // FINAL (ID 104)
     if (document.getElementById(`N-L-104`)) document.getElementById(`N-L-104`).innerText = getGanador(101);
     if (document.getElementById(`N-V-104`)) document.getElementById(`N-V-104`).innerText = getGanador(102);
 } // <--- AQUÍ CERRÉ LA FUNCIÓN actualizarLogicaAdmin
