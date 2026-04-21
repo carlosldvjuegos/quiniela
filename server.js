@@ -89,7 +89,7 @@ app.get('/obtener-resultados-db', async (req, res) => {
     }
 });
 
-// GUARDAR PREDICCIONES (MODIFICADO PARA GUARDAR NOMBRES)
+// GUARDAR PREDICCIONES (MODIFICADO SOLO PARA INCLUIR NOMBRES)
 app.post('/guardar', async (req, res) => {
     const { nombre, predicciones } = req.body;
     if (!nombre || !predicciones) return res.status(400).json({ error: "Faltan datos" });
@@ -99,7 +99,7 @@ app.post('/guardar', async (req, res) => {
         await client.query('BEGIN');
         await client.query('DELETE FROM predicciones WHERE nombre_usuario = $1', [nombre]);
         for (let p of predicciones) {
-            // Ahora insertamos también p.nL y p.nV que vienen del frontend
+            // Agregamos nombre_local y nombre_visita a la lista de columnas y valores
             await client.query(
                 `INSERT INTO predicciones 
                 (nombre_usuario, partido_id, goles_local, goles_visita, goles_desempate_local, goles_desempate_visita, nombre_local, nombre_visita) 
