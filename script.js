@@ -265,17 +265,23 @@ async function actualizarListaLinks() {
             susPreds.forEach(pred => {
                 const ofi = oficiales.find(o => o.id === pred.partido_id);
                 if (ofi) {
-                    // --- NUEVA VALIDACIÓN PARA ELIMINATORIAS EN RANKING ---
+                    // --- VALIDACIÓN PARA ELIMINATORIAS EN RANKING (MEJORADA) ---
                     const datosPartido = partidosData.find(p => p.id === pred.partido_id);
                     const esEliminatoria = datosPartido && datosPartido.fase !== "Grupos";
                     
                     if (esEliminatoria) {
-                        // Solo suma puntos si los nombres de los equipos coinciden con los reales
-                        if (pred.nombre_local === ofi.nombreLocal && pred.nombre_visita === ofi.nombreVisita) {
+                        // Limpiamos nombres para evitar errores de espacios o mayúsculas
+                        const localPred = (pred.nombre_local || "").trim().toLowerCase();
+                        const visitaPred = (pred.nombre_visita || "").trim().toLowerCase();
+                        const localOfi = (ofi.nombreLocal || "").trim().toLowerCase();
+                        const visitaOfi = (ofi.nombreVisita || "").trim().toLowerCase();
+
+                        // Solo suma puntos si los nombres coinciden realmente
+                        if (localPred === localOfi && visitaPred === visitaOfi) {
                             pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
                         }
                     } else {
-                        // En Grupos los nombres siempre coinciden, suma normal
+                        // En Grupos los nombres siempre coinciden
                         pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
                     }
                     // -------------------------------------------------------
