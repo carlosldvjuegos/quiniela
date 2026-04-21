@@ -369,6 +369,7 @@ async function cargarDesdeDB(nombre) {
     try {
         const inputN = document.getElementById('nombre-usuario');
         if (inputN) { inputN.value = nombre; inputN.readOnly = true; }
+        
         const btnSave = document.querySelector(".btn-save");
         if (btnSave) btnSave.style.display = "none";
 
@@ -393,6 +394,7 @@ async function cargarDesdeDB(nombre) {
         });
 
         actualizarTorneo();
+
         setTimeout(() => {
             resUser.forEach(p => {
                 const iL = document.getElementById(`L-${p.id}`);
@@ -406,12 +408,10 @@ async function cargarDesdeDB(nombre) {
                     
                     let coincide = true;
                     if (datosPart && datosPart.fase !== "Grupos") {
-                        // Comparamos con los nombres de resultados_oficiales (nombreLocal/nombreVisita)
                         const nL_user = (p.nombre_local || "").trim().toLowerCase();
                         const nV_user = (p.nombre_visita || "").trim().toLowerCase();
                         const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
                         const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
-
                         if (nL_user !== nL_ofi || nV_user !== nV_ofi) coincide = false;
                     }
 
@@ -420,7 +420,7 @@ async function cargarDesdeDB(nombre) {
                         div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
                     } else {
                         const pts = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
-                        // COLORES: Letras azul (#003366), número rojo
+                        // TEXTO AZUL, NÚMERO ROJO
                         div.style.color = "#003366";
                         div.innerHTML = `Puntos: <span style="color:red;">${pts}</span>`;
                     }
@@ -430,6 +430,7 @@ async function cargarDesdeDB(nombre) {
             document.querySelectorAll('.marcador-col input').forEach(i => i.disabled = true);
         }, 1200);
 
+        // --- LÓGICA DE BOTONES (ESTO ES LO QUE HACÍA FALTA) ---
         const btns = document.querySelectorAll('.btn-link');
         btns.forEach(b => {
             if (b.getAttribute('data-nombre-real') === nombre.toLowerCase().trim()) {
@@ -439,7 +440,21 @@ async function cargarDesdeDB(nombre) {
                 b.style.display = 'none';
             }
         });
-    } catch(e) { console.error(e); }
+
+        // REINSERCIÓN DEL BOTÓN "CAMBIAR USUARIO"
+        if (!document.getElementById('btn-volver-lista')) {
+            const br = document.createElement('button');
+            br.id = 'btn-volver-lista'; 
+            br.innerText = "✕ Cambiar Usuario";
+            br.className = "btn-link"; 
+            br.style.backgroundColor = "#ff4444"; 
+            br.style.color = "white";
+            br.style.marginTop = "20px";
+            br.onclick = () => window.location.href = window.location.origin + window.location.pathname + "?nomodal=1";
+            document.getElementById('links-container').appendChild(br);
+        }
+
+    } catch(e) { console.error("Error al cargar:", e); }
 }
 
 // 7. LÓGICA DE TORNEO (TERCER PUESTO ARREGLADO)
