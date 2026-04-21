@@ -460,15 +460,6 @@ async function cargarDesdeDB(nombre) {
     } catch(e) { console.error(e); }
 }
 
-        if (!document.getElementById('btn-volver-lista')) {
-            const br = document.createElement('button');
-            br.id = 'btn-volver-lista'; br.innerText = "✕ Cambiar Usuario";
-            br.className = "btn-link"; br.style.backgroundColor = "#ff4444"; br.style.color = "white";
-            br.onclick = () => window.location.href = window.location.origin + window.location.pathname + "?nomodal=1";
-            document.getElementById('links-container').appendChild(br);
-        }
-    } catch(e) { console.error(e); }
-}
 
 // 7. LÓGICA DE TORNEO (TERCER PUESTO ARREGLADO)
 function actualizarTorneo() {
