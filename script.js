@@ -413,13 +413,18 @@ async function cargarDesdeDB(nombre) {
                     div.className = 'puntos-obtenidos';
                     div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
                     
-                    // --- NUEVA VALIDACIÓN VISUAL DE EQUIPOS ---
+                    // --- VALIDACIÓN DE EQUIPOS MEJORADA (MÁS FLEXIBLE) ---
                     const esEliminatoria = datosPart && datosPart.fase !== "Grupos";
                     let coincide = true;
 
                     if (esEliminatoria) {
-                        // Comparamos nombres guardados en la predicción vs nombres reales en DB
-                        if (p.nombre_local !== ofi.nombreLocal || p.nombre_visita !== ofi.nombreVisita) {
+                        // Limpiamos los nombres de espacios y mayúsculas para que la comparación sea justa
+                        const localPred = (p.nombre_local || "").trim().toLowerCase();
+                        const visitaPred = (p.nombre_visita || "").trim().toLowerCase();
+                        const localReal = (ofi.nombreLocal || "").trim().toLowerCase();
+                        const visitaReal = (ofi.nombreVisita || "").trim().toLowerCase();
+
+                        if (localPred !== localReal || visitaPred !== visitaReal) {
                             coincide = false;
                         }
                     }
