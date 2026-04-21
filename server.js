@@ -12,13 +12,13 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
 
-// --- CONEXIÓN A NEON (Optimizado para evitar 502) ---
+// --- CONEXIÓN A NEON ---
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
-    max: 10, // Máximo de conexiones simultáneas
-    idleTimeoutMillis: 30000, // Cerrar conexiones inactivas
-    connectionTimeoutMillis: 2000, // Tiempo de espera para conectar
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
 });
 
 // --- INICIALIZACIÓN DE TABLAS ---
@@ -27,7 +27,7 @@ const inicializarDB = async () => {
     try {
         console.log("Verificando base de datos en Neon Tech...");
         
-        // Tabla de Predicciones
+        // Tabla de Predicciones (CON COLUMNAS DE NOMBRES AGREGADAS)
         await client.query(`
             CREATE TABLE IF NOT EXISTS predicciones (
                 id_fila SERIAL PRIMARY KEY,
@@ -37,11 +37,19 @@ const inicializarDB = async () => {
                 goles_visita INTEGER NOT NULL,
                 goles_desempate_local INTEGER,
                 goles_desempate_visita INTEGER,
+                nombre_local TEXT, 
+                nombre_visita TEXT,
                 fecha_registro TIMESTAMP WITH TIME ZONE DEFAULT now()
             );
         `);
 
-        // Tabla de Resultados Oficiales (CON COLUMNAS DE NOMBRES)
+        // Aseguramos que existan las columnas de nombres en predicciones por si la tabla es vieja
+        await client.query(`
+            ALTER TABLE predicciones ADD COLUMN IF NOT EXISTS nombre_local TEXT;
+            ALTER TABLE predicciones ADD COLUMN IF NOT EXISTS nombre_visita TEXT;
+        `);
+
+        // Tabla de Resultados Oficiales
         await client.query(`
             CREATE TABLE IF NOT EXISTS resultados_oficiales (
                 partido_id INTEGER PRIMARY KEY,
@@ -53,7 +61,6 @@ const inicializarDB = async () => {
             );
         `);
 
-        // Aseguramos que existan las columnas de nombres por si la tabla es vieja
         await client.query(`
             ALTER TABLE resultados_oficiales ADD COLUMN IF NOT EXISTS equipo_local TEXT;
             ALTER TABLE resultados_oficiales ADD COLUMN IF NOT EXISTS equipo_visitante TEXT;
@@ -68,12 +75,12 @@ const inicializarDB = async () => {
 };
 inicializarDB();
 
-// OBTENER RESULTADOS REALES (Verifica que los alias coincidan con el frontend)
+// OBTENER RESULTADOS REALES
 app.get('/obtener-resultados-db', async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT partido_id as id, goles_local as gl, goles_visita as gv, 
-            equipo_local as local, equipo_visitante as visita 
+            equipo_local as nombreLocal, equipo_visitante as nombreVisita 
             FROM resultados_oficiales
         `);
         res.json(result.rows);
@@ -82,7 +89,7 @@ app.get('/obtener-resultados-db', async (req, res) => {
     }
 });
 
-// GUARDAR PREDICCIONES
+// GUARDAR PREDICCIONES (MODIFICADO PARA GUARDAR NOMBRES)
 app.post('/guardar', async (req, res) => {
     const { nombre, predicciones } = req.body;
     if (!nombre || !predicciones) return res.status(400).json({ error: "Faltan datos" });
@@ -92,11 +99,12 @@ app.post('/guardar', async (req, res) => {
         await client.query('BEGIN');
         await client.query('DELETE FROM predicciones WHERE nombre_usuario = $1', [nombre]);
         for (let p of predicciones) {
+            // Ahora insertamos también p.nL y p.nV que vienen del frontend
             await client.query(
                 `INSERT INTO predicciones 
-                (nombre_usuario, partido_id, goles_local, goles_visita, goles_desempate_local, goles_desempate_visita) 
-                VALUES ($1, $2, $3, $4, $5, $6)`,
-                [nombre, p.id, p.gl, p.gv, p.dl, p.dv]
+                (nombre_usuario, partido_id, goles_local, goles_visita, goles_desempate_local, goles_desempate_visita, nombre_local, nombre_visita) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+                [nombre, p.id, p.gl, p.gv, p.dl, p.dv, p.nL, p.nV]
             );
         }
         await client.query('COMMIT');
@@ -109,21 +117,7 @@ app.post('/guardar', async (req, res) => {
     }
 });
 
-// OBTENER RESULTADOS REALES (Modificado para incluir nombres)
-app.get('/obtener-resultados-db', async (req, res) => {
-    try {
-        const result = await pool.query(`
-            SELECT partido_id as id, goles_local as gl, goles_visita as gv, 
-            equipo_local as local, equipo_visitante as visita 
-            FROM resultados_oficiales
-        `);
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// GUARDAR RESULTADOS REALES - ADMIN (Vital para la validación de fases)
+// GUARDAR RESULTADOS REALES - ADMIN
 app.post('/guardar-resultados-db', async (req, res) => {
     const resultados = req.body;
     try {
@@ -143,12 +137,13 @@ app.post('/guardar-resultados-db', async (req, res) => {
     }
 });
 
-// CARGAR QUINIELA USUARIO
+// CARGAR QUINIELA USUARIO (MODIFICADO PARA DEVOLVER NOMBRES)
 app.get('/cargar/:nombre', async (req, res) => {
     try {
         const result = await pool.query(
             `SELECT partido_id as id, goles_local as gl, goles_visita as gv, 
-             goles_desempate_local as dl, goles_desempate_visita as dv 
+             goles_desempate_local as dl, goles_desempate_visita as dv,
+             nombre_local as nombre_local, nombre_visita as nombre_visita 
              FROM predicciones WHERE nombre_usuario = $1`,
             [req.params.nombre]
         );
@@ -158,7 +153,7 @@ app.get('/cargar/:nombre', async (req, res) => {
     }
 });
 
-// RESTO DE RUTAS (Registros, Reporte Maestro, Reset)
+// REGISTROS
 app.get('/registros', async (req, res) => {
     try {
         const result = await pool.query('SELECT DISTINCT nombre_usuario FROM predicciones ORDER BY nombre_usuario');
@@ -166,9 +161,14 @@ app.get('/registros', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// OBTENER TODAS (MODIFICADO PARA EL RANKING)
 app.get('/obtener-todas-predicciones', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM predicciones ORDER BY nombre_usuario, partido_id');
+        const result = await pool.query(`
+            SELECT nombre_usuario, partido_id, goles_local, goles_visita, 
+            nombre_local, nombre_visita 
+            FROM predicciones ORDER BY nombre_usuario, partido_id
+        `);
         res.json(result.rows);
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
