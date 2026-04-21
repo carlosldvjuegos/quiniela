@@ -381,7 +381,7 @@ async function guardarQuinielaCompleta() {
 async function cargarDesdeDB(nombre) {
     try {
         const inputN = document.getElementById('nombre-usuario');
-        if (inputN) { inputN.value = nombre; inputN.readOnly = true; }
+        //if (inputN) { inputN.value = nombre; inputN.readOnly = true; }
         
         const btnSave = document.querySelector(".btn-save");
         //if (btnSave) btnSave.style.display = "none";
