@@ -383,7 +383,6 @@ async function cargarDesdeDB(nombre) {
     try {
         const inputN = document.getElementById('nombre-usuario');
         if (inputN) { inputN.value = nombre; inputN.readOnly = true; }
-        
         const btnSave = document.querySelector(".btn-save");
         if (btnSave) btnSave.style.display = "none";
 
@@ -419,32 +418,26 @@ async function cargarDesdeDB(nombre) {
                     div.className = 'puntos-obtenidos';
                     div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
                     
-                    // --- VALIDACIÓN DE EQUIPOS MEJORADA (MÁS FLEXIBLE) ---
-                    const esEliminatoria = datosPart && datosPart.fase !== "Grupos";
                     let coincide = true;
+                    if (datosPart && datosPart.fase !== "Grupos") {
+                        // Comparamos con los nombres de resultados_oficiales (nombreLocal/nombreVisita)
+                        const nL_user = (p.nombre_local || "").trim().toLowerCase();
+                        const nV_user = (p.nombre_visita || "").trim().toLowerCase();
+                        const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
+                        const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
 
-                    if (esEliminatoria) {
-                        // Limpiamos los nombres de espacios y mayúsculas para que la comparación sea justa
-                        const localPred = (p.nombre_local || "").trim().toLowerCase();
-                        const visitaPred = (p.nombre_visita || "").trim().toLowerCase();
-                        const localReal = (ofi.nombreLocal || "").trim().toLowerCase();
-                        const visitaReal = (ofi.nombreVisita || "").trim().toLowerCase();
-
-                        if (localPred !== localReal || visitaPred !== visitaReal) {
-                            coincide = false;
-                        }
+                        if (nL_user !== nL_ofi || nV_user !== nV_ofi) coincide = false;
                     }
 
                     if (!coincide) {
                         div.style.color = "red";
-                        div.innerHTML = `Equipos no coinciden <br> <span style="font-size:10px;">0 Puntos</span>`;
+                        div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
                     } else {
                         const pts = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
+                        // COLORES: Letras azul (#003366), número rojo
                         div.style.color = "#003366";
                         div.innerHTML = `Puntos: <span style="color:red;">${pts}</span>`;
                     }
-                    // ------------------------------------------
-                    
                     iL.closest('.marcador-col').appendChild(div);
                 }
             });
@@ -460,14 +453,6 @@ async function cargarDesdeDB(nombre) {
                 b.style.display = 'none';
             }
         });
-
-        if (!document.getElementById('btn-volver-lista')) {
-            const br = document.createElement('button');
-            br.id = 'btn-volver-lista'; br.innerText = "✕ Cambiar Usuario";
-            br.className = "btn-link"; br.style.backgroundColor = "#ff4444"; br.style.color = "white";
-            br.onclick = () => window.location.href = window.location.origin + window.location.pathname + "?nomodal=1";
-            document.getElementById('links-container').appendChild(br);
-        }
     } catch(e) { console.error(e); }
 }
 
