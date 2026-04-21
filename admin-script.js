@@ -234,7 +234,6 @@ function actualizarLogicaAdmin() {
             }
         });
 
-        // ORDEN FIFA: Puntos > Dif. Goles > Goles Favor > Ranking FIFA
         let ordenados = Object.values(tabla).sort((a, b) => 
             b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
         );
@@ -242,25 +241,19 @@ function actualizarLogicaAdmin() {
         clasificados[`1${g}`] = ordenados[0]?.nombre || `1${g}`;
         clasificados[`2${g}`] = ordenados[1]?.nombre || `2${g}`;
         
-        // Guardamos el tercero para el ranking global de terceros
         if (ordenados[2]) {
             todosLosTerceros.push(ordenados[2]);
         }
     });
 
-    // 2. CÁLCULO DE LOS 8 MEJORES TERCEROS
-    // Los ordenamos igual que a los grupos
     let mejoresTerceros = todosLosTerceros.sort((a, b) => 
         b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
     ).slice(0, 8);
 
-    // Asignamos a las llaves de terceros (3T1 al 3T8)
     mejoresTerceros.forEach((t, index) => {
         clasificados[`3T${index + 1}`] = t.nombre;
     });
 
-    // 3. MAPEO DE 16VOS (Ajustado a los IDs de tu partidosData)
-    // He ajustado las visitas para que busquen al 3T correspondiente
     const mapeo16vos = [
         { id: 73, l: clasificados['2A'], v: clasificados['2B'] },
         { id: 74, l: clasificados['1C'], v: clasificados['2F'] },
@@ -287,7 +280,7 @@ function actualizarLogicaAdmin() {
         if (lbV) lbV.innerText = m.v;
     });
 
-    // --- LÓGICA DE GANADORES (8vos en adelante) ---
+    // --- LÓGICA DE GANADORES Y PERDEDORES ---
     const getGanador = (id) => {
         const res = resultados[id];
         const txtL = document.getElementById(`N-L-${id}`)?.innerText || `Local ${id}`;
@@ -296,7 +289,15 @@ function actualizarLogicaAdmin() {
         return (res.gl > res.gv) ? txtL : txtV;
     };
 
-    // Actualizar 8vos
+    // ESTA ES LA FUNCIÓN NUEVA AGREGADA
+    const getPerdedor = (id) => {
+        const res = resultados[id];
+        const txtL = document.getElementById(`N-L-${id}`)?.innerText || `Local ${id}`;
+        const txtV = document.getElementById(`N-V-${id}`)?.innerText || `Visita ${id}`;
+        if (!res || res.gl === null || res.gv === null) return `L${id}`;
+        return (res.gl > res.gv) ? txtV : txtL;
+    };
+
     const mapeo8vos = [
         { id: 89, l: getGanador(73), v: getGanador(75) },
         { id: 90, l: getGanador(74), v: getGanador(77) },
@@ -313,7 +314,6 @@ function actualizarLogicaAdmin() {
         if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
     });
 
-    // ... (El resto de mapeo4tos, Semis y Finales se mantiene igual porque usan getGanador)
     const mapeo4tos = [
         { id: 97, l: getGanador(89), v: getGanador(90) },
         { id: 98, l: getGanador(93), v: getGanador(94) },
@@ -334,6 +334,11 @@ function actualizarLogicaAdmin() {
         if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
     });
 
+    // LÓGICA PARA EL TERCER PUESTO (ID 103) - AGREGADA
+    if (document.getElementById(`N-L-103`)) document.getElementById(`N-L-103`).innerText = getPerdedor(101);
+    if (document.getElementById(`N-V-103`)) document.getElementById(`N-V-103`).innerText = getPerdedor(102);
+
+    // FINAL (ID 104)
     if (document.getElementById(`N-L-104`)) document.getElementById(`N-L-104`).innerText = getGanador(101);
     if (document.getElementById(`N-V-104`)) document.getElementById(`N-V-104`).innerText = getGanador(102);
 } // <--- AQUÍ CERRÉ LA FUNCIÓN actualizarLogicaAdmin
