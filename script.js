@@ -460,7 +460,6 @@ async function cargarDesdeDB(nombre) {
     } catch(e) { console.error(e); }
 }
 
-
 // 7. LÓGICA DE TORNEO (TERCER PUESTO ARREGLADO)
 function actualizarTorneo() {
     const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
