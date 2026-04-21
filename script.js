@@ -325,7 +325,20 @@ async function guardarQuinielaCompleta() {
                     throw new Error("Validación desempate");
                 }
             }
-            predicciones.push({ id: p.id, gl: parseInt(gl), gv: parseInt(gv), dl: dl ? parseInt(dl) : null, dv: dv ? parseInt(dv) : null });
+            // Capturamos los nombres reales de la tarjeta HTML
+            const card = document.getElementById(`L-${p.id}`).closest('.partido-card');
+            const nL = card.querySelector('.local').innerText.trim();
+            const nV = card.querySelector('.visita').innerText.trim();
+            
+            predicciones.push({ 
+                id: p.id, 
+                gl: parseInt(gl), 
+                gv: parseInt(gv), 
+                dl: dl ? parseInt(dl) : null, 
+                dv: dv ? parseInt(dv) : null,
+                nL: nL, // <--- Enviamos nombre local
+                nV: nV  // <--- Enviamos nombre visita
+            });
         });
     } catch(e) { return; }
 
@@ -371,7 +384,7 @@ async function cargarDesdeDB(nombre) {
         if (inputN) { inputN.value = nombre; inputN.readOnly = true; }
         
         const btnSave = document.querySelector(".btn-save");
-        if (btnSave) btnSave.style.display = "none";
+        //if (btnSave) btnSave.style.display = "none";
 
         document.querySelectorAll('.marcador-col input').forEach(i => { i.value = ""; i.disabled = false; });
         document.querySelectorAll('.puntos-obtenidos').forEach(d => d.remove());
