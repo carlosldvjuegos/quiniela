@@ -377,14 +377,14 @@ async function guardarQuinielaCompleta() {
     }
 }
 
-// 6. CARGAR DESDE DB (OCULTA BOTÓN GUARDAR)
+// FUNCION CARGAR DESDE BD
 async function cargarDesdeDB(nombre) {
     try {
         const inputN = document.getElementById('nombre-usuario');
-        //if (inputN) { inputN.value = nombre; inputN.readOnly = true; }
+        if (inputN) { inputN.value = nombre; inputN.readOnly = true; }
         
         const btnSave = document.querySelector(".btn-save");
-        //if (btnSave) btnSave.style.display = "none";
+        if (btnSave) btnSave.style.display = "none";
 
         document.querySelectorAll('.marcador-col input').forEach(i => { i.value = ""; i.disabled = false; });
         document.querySelectorAll('.puntos-obtenidos').forEach(d => d.remove());
@@ -417,33 +417,41 @@ async function cargarDesdeDB(nombre) {
                 if (ofi && iL) {
                     const div = document.createElement('div');
                     div.className = 'puntos-obtenidos';
+                    // Mantenemos el estilo exacto de la fase de grupos
                     div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
                     
                     let coincide = true;
+                    // Solo validamos nombres en fases que NO sean de grupos
                     if (datosPart && datosPart.fase !== "Grupos") {
                         const nL_user = (p.nombre_local || "").trim().toLowerCase();
                         const nV_user = (p.nombre_visita || "").trim().toLowerCase();
                         const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
                         const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
-                        if (nL_user !== nL_ofi || nV_user !== nV_ofi) coincide = false;
+
+                        if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
+                            coincide = false;
+                        }
                     }
 
                     if (!coincide) {
+                        // Estilo para cuando NO coinciden los equipos
                         div.style.color = "red";
                         div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
                     } else {
+                        // Lógica normal de puntos (Igual a la fase de grupos)
                         const pts = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
-                        // TEXTO AZUL, NÚMERO ROJO
-                        div.style.color = "#003366";
+                        // Aplicamos tus colores: Letras en azul oscuro, puntos en rojo
+                        div.style.color = "#003366"; 
                         div.innerHTML = `Puntos: <span style="color:red;">${pts}</span>`;
                     }
                     iL.closest('.marcador-col').appendChild(div);
                 }
             });
+            // Bloqueamos los inputs para que no se pueda editar al consultar
             document.querySelectorAll('.marcador-col input').forEach(i => i.disabled = true);
         }, 1200);
 
-        // --- LÓGICA DE BOTONES (ESTO ES LO QUE HACÍA FALTA) ---
+        // Lógica de navegación de botones
         const btns = document.querySelectorAll('.btn-link');
         btns.forEach(b => {
             if (b.getAttribute('data-nombre-real') === nombre.toLowerCase().trim()) {
@@ -454,7 +462,7 @@ async function cargarDesdeDB(nombre) {
             }
         });
 
-        // REINSERCIÓN DEL BOTÓN "CAMBIAR USUARIO"
+        // Botón para regresar a la lista (Cambiar usuario)
         if (!document.getElementById('btn-volver-lista')) {
             const br = document.createElement('button');
             br.id = 'btn-volver-lista'; 
@@ -466,7 +474,6 @@ async function cargarDesdeDB(nombre) {
             br.onclick = () => window.location.href = window.location.origin + window.location.pathname + "?nomodal=1";
             document.getElementById('links-container').appendChild(br);
         }
-
     } catch(e) { console.error("Error al cargar:", e); }
 }
 
