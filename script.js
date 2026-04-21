@@ -258,12 +258,28 @@ async function actualizarListaLinks() {
             acc[p.nombre_usuario].push(p);
             return acc;
         }, {});
+        
         let ranking = usuarios.map(user => {
             let pts = 0;
             const susPreds = predPorUser[user.nombre_usuario] || [];
             susPreds.forEach(pred => {
                 const ofi = oficiales.find(o => o.id === pred.partido_id);
-                if (ofi) pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
+                if (ofi) {
+                    // --- NUEVA VALIDACIÓN PARA ELIMINATORIAS EN RANKING ---
+                    const datosPartido = partidosData.find(p => p.id === pred.partido_id);
+                    const esEliminatoria = datosPartido && datosPartido.fase !== "Grupos";
+                    
+                    if (esEliminatoria) {
+                        // Solo suma puntos si los nombres de los equipos coinciden con los reales
+                        if (pred.nombre_local === ofi.nombreLocal && pred.nombre_visita === ofi.nombreVisita) {
+                            pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
+                        }
+                    } else {
+                        // En Grupos los nombres siempre coinciden, suma normal
+                        pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
+                    }
+                    // -------------------------------------------------------
+                }
             });
             return { nombre: user.nombre_usuario, puntos: pts };
         });
@@ -362,7 +378,6 @@ async function cargarDesdeDB(nombre) {
         const inputN = document.getElementById('nombre-usuario');
         if (inputN) { inputN.value = nombre; inputN.readOnly = true; }
         
-        // OCULTAR BOTÓN GUARDAR AL VER UNA QUINIELA EXISTENTE
         const btnSave = document.querySelector(".btn-save");
         if (btnSave) btnSave.style.display = "none";
 
@@ -391,12 +406,34 @@ async function cargarDesdeDB(nombre) {
             resUser.forEach(p => {
                 const iL = document.getElementById(`L-${p.id}`);
                 const ofi = resOficiales.find(o => o.id === p.id);
+                const datosPart = partidosData.find(pd => pd.id === p.id);
+
                 if (ofi && iL) {
-                    const pts = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
                     const div = document.createElement('div');
                     div.className = 'puntos-obtenidos';
-                    div.style = "color: #003366; font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
-                    div.innerHTML = `Puntos: <span style="color:red;">${pts}</span>`;
+                    div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
+                    
+                    // --- NUEVA VALIDACIÓN VISUAL DE EQUIPOS ---
+                    const esEliminatoria = datosPart && datosPart.fase !== "Grupos";
+                    let coincide = true;
+
+                    if (esEliminatoria) {
+                        // Comparamos nombres guardados en la predicción vs nombres reales en DB
+                        if (p.nombre_local !== ofi.nombreLocal || p.nombre_visita !== ofi.nombreVisita) {
+                            coincide = false;
+                        }
+                    }
+
+                    if (!coincide) {
+                        div.style.color = "red";
+                        div.innerHTML = `Equipos no coinciden <br> <span style="font-size:10px;">0 Puntos</span>`;
+                    } else {
+                        const pts = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
+                        div.style.color = "#003366";
+                        div.innerHTML = `Puntos: <span style="color:red;">${pts}</span>`;
+                    }
+                    // ------------------------------------------
+                    
                     iL.closest('.marcador-col').appendChild(div);
                 }
             });
@@ -412,6 +449,16 @@ async function cargarDesdeDB(nombre) {
                 b.style.display = 'none';
             }
         });
+
+        if (!document.getElementById('btn-volver-lista')) {
+            const br = document.createElement('button');
+            br.id = 'btn-volver-lista'; br.innerText = "✕ Cambiar Usuario";
+            br.className = "btn-link"; br.style.backgroundColor = "#ff4444"; br.style.color = "white";
+            br.onclick = () => window.location.href = window.location.origin + window.location.pathname + "?nomodal=1";
+            document.getElementById('links-container').appendChild(br);
+        }
+    } catch(e) { console.error(e); }
+}
 
         if (!document.getElementById('btn-volver-lista')) {
             const br = document.createElement('button');
