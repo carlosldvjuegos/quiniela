@@ -422,8 +422,8 @@ async function cargarDesdeDB(nombre) {
         setTimeout(() => {
             resUser.forEach(p => {
                 const iL = document.getElementById(`L-${p.id}`);
-                // CORRECCIÓN 1: Usar partido_id según tu captura de Neon
-                const ofi = resOficiales.find(o => o.partido_id === p.id);
+                // Según tu servidor: el ID oficial llega como 'id'
+                const ofi = resOficiales.find(o => o.id === p.id);
                 const datosPart = partidosData.find(pd => pd.id === p.id);
 
                 if (ofi && iL) {
@@ -434,10 +434,11 @@ async function cargarDesdeDB(nombre) {
                     let coincide = true;
                     const norm = (t) => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 
+                    // VALIDACIÓN DE NOMBRES (Solo para eliminatorias)
                     if (datosPart && datosPart.fase !== "Grupos") {
-                        // CORRECCIÓN 2: equipo_local y equipo_visitante (de Neon) vs nombre_local y nombre_visita (de Neon)
-                        if (norm(p.nombre_local) !== norm(ofi.equipo_local) || norm(p.nombre_visita) !== norm(ofi.equipo_visitante)) {
-                            coincide = false;
+                        // Usamos 'nombreLocal' y 'nombreVisita' porque así los envía tu servidor en el SELECT
+                        if (norm(p.nombre_local) !== norm(ofi.nombreLocal) || norm(p.nombre_visita) !== norm(ofi.nombreVisita)) {
+                            coincide = false; 
                         }
                     }
 
@@ -445,8 +446,8 @@ async function cargarDesdeDB(nombre) {
                         div.style.color = "red";
                         div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
                     } else {
-                        // CORRECCIÓN 3: goles_local y goles_visita (de Neon)
-                        const pts = calcularLogicaPuntos(p.gl, p.gv, ofi.goles_local, ofi.goles_visita);
+                        // Usamos 'gl' y 'gv' porque así llegan del servidor
+                        const pts = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
                         div.style.color = "#003366";
                         div.innerHTML = `Puntos: <span style="color:red;">${pts}</span>`;
                     }
@@ -456,6 +457,7 @@ async function cargarDesdeDB(nombre) {
             document.querySelectorAll('.marcador-col input').forEach(i => i.disabled = true);
         }, 1200);
 
+        // ... resto del código de los botones intacto ...
         const btns = document.querySelectorAll('.btn-link');
         btns.forEach(b => {
             if (b.getAttribute('data-nombre-real') === nombre.toLowerCase().trim()) {
