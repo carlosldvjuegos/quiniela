@@ -250,6 +250,7 @@ async function actualizarListaLinks() {
             fetch(`${API_URL}/obtener-todas-predicciones`, { signal: controller.signal })
         ]);
         clearTimeout(timeoutId);
+        
         const usuarios = await resNombres.json();
         const oficiales = await resOficiales.json();
         const todasPred = await resTodasPred.json();
@@ -260,30 +261,28 @@ async function actualizarListaLinks() {
         }, {});
         
         let ranking = usuarios.map(user => {
-            let pts = 0;
+            let ptsTotal = 0;
             const susPreds = predPorUser[user.nombre_usuario] || [];
             susPreds.forEach(pred => {
                 const ofi = oficiales.find(o => o.id === pred.partido_id);
+                const datosPart = partidosData.find(p => p.id === pred.partido_id);
+                
                 if (ofi) {
-                    const datosPartido = partidosData.find(p => p.id === pred.partido_id);
-                    const esEliminatoria = datosPartido && datosPartido.fase !== "Grupos";
-                    
                     let coincide = true;
-                    if (esEliminatoria) {
-                        // LIMPIEZA PARA QUE EL RANKING SUME BIEN
-                        const uL = (pred.nombre_local || "").trim().toLowerCase();
-                        const uV = (pred.nombre_visita || "").trim().toLowerCase();
-                        const oL = (ofi.nombreLocal || "").trim().toLowerCase();
-                        const oV = (ofi.nombreVisita || "").trim().toLowerCase();
-                        if (uL !== oL || uV !== oV) coincide = false;
+                    const norm = (t) => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+
+                    if (datosPart && datosPart.fase !== "Grupos") {
+                        if (norm(pred.nombre_local) !== norm(ofi.nombreLocal) || norm(pred.nombre_visita) !== norm(ofi.nombreVisita)) {
+                            coincide = false;
+                        }
                     }
 
                     if (coincide) {
-                        pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
+                        ptsTotal += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
                     }
                 }
             });
-            return { nombre: user.nombre_usuario, puntos: pts };
+            return { nombre: user.nombre_usuario, puntos: ptsTotal };
         });
 
         ranking.sort((a, b) => b.puntos - a.puntos);
@@ -432,14 +431,11 @@ async function cargarDesdeDB(nombre) {
                     div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
                     
                     let coincide = true;
-                    if (datosPart && datosPart.fase !== "Grupos") {
-                        // LIMPIEZA DE NOMBRES PARA COMPARACIÓN REAL
-                        const userL = (p.nombre_local || "").trim().toLowerCase();
-                        const userV = (p.nombre_visita || "").trim().toLowerCase();
-                        const realL = (ofi.nombreLocal || "").trim().toLowerCase();
-                        const realV = (ofi.nombreVisita || "").trim().toLowerCase();
+                    // Normalización robusta para evitar errores por tildes o espacios
+                    const norm = (t) => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 
-                        if (userL !== realL || userV !== realV) {
+                    if (datosPart && datosPart.fase !== "Grupos") {
+                        if (norm(p.nombre_local) !== norm(ofi.nombreLocal) || norm(p.nombre_visita) !== norm(ofi.nombreVisita)) {
                             coincide = false;
                         }
                     }
@@ -449,7 +445,7 @@ async function cargarDesdeDB(nombre) {
                         div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
                     } else {
                         const pts = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
-                        // COLORES IGUAL A FASE DE GRUPOS (Azul oscuro para texto, número puede ir en rojo si así lo tenías)
+                        // Estilo solicitado: Texto azul oscuro, cifra en rojo
                         div.style.color = "#003366";
                         div.innerHTML = `Puntos: <span style="color:red;">${pts}</span>`;
                     }
