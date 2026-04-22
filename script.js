@@ -417,41 +417,36 @@ async function cargarDesdeDB(nombre) {
                 if (ofi && iL) {
                     const div = document.createElement('div');
                     div.className = 'puntos-obtenidos';
-                    // Mantenemos el estilo exacto de la fase de grupos
                     div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
                     
                     let coincide = true;
-                    // Solo validamos nombres en fases que NO sean de grupos
                     if (datosPart && datosPart.fase !== "Grupos") {
-                        const nL_user = (p.nombre_local || "").trim().toLowerCase();
-                        const nV_user = (p.nombre_visita || "").trim().toLowerCase();
-                        const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
-                        const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
+                        // LIMPIEZA DE NOMBRES PARA COMPARACIÓN REAL
+                        const userL = (p.nombre_local || "").trim().toLowerCase();
+                        const userV = (p.nombre_visita || "").trim().toLowerCase();
+                        const realL = (ofi.nombreLocal || "").trim().toLowerCase();
+                        const realV = (ofi.nombreVisita || "").trim().toLowerCase();
 
-                        if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
+                        if (userL !== realL || userV !== realV) {
                             coincide = false;
                         }
                     }
 
                     if (!coincide) {
-                        // Estilo para cuando NO coinciden los equipos
                         div.style.color = "red";
                         div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
                     } else {
-                        // Lógica normal de puntos (Igual a la fase de grupos)
                         const pts = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
-                        // Aplicamos tus colores: Letras en azul oscuro, puntos en rojo
-                        div.style.color = "#003366"; 
+                        // COLORES IGUAL A FASE DE GRUPOS (Azul oscuro para texto, número puede ir en rojo si así lo tenías)
+                        div.style.color = "#003366";
                         div.innerHTML = `Puntos: <span style="color:red;">${pts}</span>`;
                     }
                     iL.closest('.marcador-col').appendChild(div);
                 }
             });
-            // Bloqueamos los inputs para que no se pueda editar al consultar
             document.querySelectorAll('.marcador-col input').forEach(i => i.disabled = true);
         }, 1200);
 
-        // Lógica de navegación de botones
         const btns = document.querySelectorAll('.btn-link');
         btns.forEach(b => {
             if (b.getAttribute('data-nombre-real') === nombre.toLowerCase().trim()) {
@@ -462,19 +457,15 @@ async function cargarDesdeDB(nombre) {
             }
         });
 
-        // Botón para regresar a la lista (Cambiar usuario)
         if (!document.getElementById('btn-volver-lista')) {
             const br = document.createElement('button');
-            br.id = 'btn-volver-lista'; 
-            br.innerText = "✕ Cambiar Usuario";
-            br.className = "btn-link"; 
-            br.style.backgroundColor = "#ff4444"; 
-            br.style.color = "white";
+            br.id = 'btn-volver-lista'; br.innerText = "✕ Cambiar Usuario";
+            br.className = "btn-link"; br.style.backgroundColor = "#ff4444"; br.style.color = "white";
             br.style.marginTop = "20px";
             br.onclick = () => window.location.href = window.location.origin + window.location.pathname + "?nomodal=1";
             document.getElementById('links-container').appendChild(br);
         }
-    } catch(e) { console.error("Error al cargar:", e); }
+    } catch(e) { console.error(e); }
 }
 
 // 7. LÓGICA DE TORNEO (TERCER PUESTO ARREGLADO)
