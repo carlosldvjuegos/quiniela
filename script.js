@@ -242,15 +242,11 @@ async function actualizarListaLinks() {
     const container = document.getElementById('links-container');
     if (!container) return;
     try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
         const [resNombres, resOficiales, resTodasPred] = await Promise.all([
-            fetch(`${API_URL}/registros`, { signal: controller.signal }),
-            fetch(`${API_URL}/obtener-resultados-db`, { signal: controller.signal }),
-            fetch(`${API_URL}/obtener-todas-predicciones`, { signal: controller.signal })
+            fetch(`${API_URL}/registros`),
+            fetch(`${API_URL}/obtener-resultados-db`),
+            fetch(`${API_URL}/obtener-todas-predicciones`)
         ]);
-        clearTimeout(timeoutId);
-        
         const usuarios = await resNombres.json();
         const oficiales = await resOficiales.json();
         const todasPred = await resTodasPred.json();
@@ -259,32 +255,26 @@ async function actualizarListaLinks() {
             acc[p.nombre_usuario].push(p);
             return acc;
         }, {});
-        
+
         let ranking = usuarios.map(user => {
-            let ptsTotal = 0;
+            let pts = 0;
             const susPreds = predPorUser[user.nombre_usuario] || [];
             susPreds.forEach(pred => {
                 const ofi = oficiales.find(o => o.id === pred.partido_id);
-                const datosPart = partidosData.find(p => p.id === pred.partido_id);
-                
+                const datosP = partidosData.find(dp => dp.id === pred.partido_id);
                 if (ofi) {
                     let coincide = true;
-                    const norm = (t) => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
-
-                    if (datosPart && datosPart.fase !== "Grupos") {
-                        if (norm(pred.nombre_local) !== norm(ofi.nombreLocal) || norm(pred.nombre_visita) !== norm(ofi.nombreVisita)) {
+                    if (datosP && datosP.fase !== "Grupos") {
+                        if ((pred.nombre_local || "").trim().toLowerCase() !== (ofi.nombreLocal || "").trim().toLowerCase() ||
+                            (pred.nombre_visita || "").trim().toLowerCase() !== (ofi.nombreVisita || "").trim().toLowerCase()) {
                             coincide = false;
                         }
                     }
-
-                    if (coincide) {
-                        ptsTotal += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
-                    }
+                    if (coincide) pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
                 }
             });
-            return { nombre: user.nombre_usuario, puntos: ptsTotal };
+            return { nombre: user.nombre_usuario, puntos: pts };
         });
-
         ranking.sort((a, b) => b.puntos - a.puntos);
         container.innerHTML = "";
         ranking.forEach((u, i) => {
@@ -299,9 +289,8 @@ async function actualizarListaLinks() {
             btn.onclick = () => cargarDesdeDB(u.nombre);
             container.appendChild(btn);
         });
-    } catch (e) { container.innerHTML = "<p style='color:red;'>Error al cargar ranking.</p>"; }
+    } catch (e) { container.innerHTML = "<p>Error ranking</p>"; }
 }
-
 
 // 5. GUARDAR (CON VALIDACIONES RESTAURADAS)
 async function guardarQuinielaCompleta() {
@@ -422,42 +411,47 @@ async function cargarDesdeDB(nombre) {
         setTimeout(() => {
             resUser.forEach(p => {
                 const iL = document.getElementById(`L-${p.id}`);
-                // Según tu servidor: el ID oficial llega como 'id'
                 const ofi = resOficiales.find(o => o.id === p.id);
                 const datosPart = partidosData.find(pd => pd.id === p.id);
 
                 if (ofi && iL) {
                     const div = document.createElement('div');
                     div.className = 'puntos-obtenidos';
+                    // Mantenemos el estilo exacto de la fase de grupos
                     div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
                     
                     let coincide = true;
-                    const norm = (t) => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
-
-                    // VALIDACIÓN DE NOMBRES (Solo para eliminatorias)
+                    // Solo validamos nombres en fases que NO sean de grupos
                     if (datosPart && datosPart.fase !== "Grupos") {
-                        // Usamos 'nombreLocal' y 'nombreVisita' porque así los envía tu servidor en el SELECT
-                        if (norm(p.nombre_local) !== norm(ofi.nombreLocal) || norm(p.nombre_visita) !== norm(ofi.nombreVisita)) {
-                            coincide = false; 
+                        const nL_user = (p.nombre_local || "").trim().toLowerCase();
+                        const nV_user = (p.nombre_visita || "").trim().toLowerCase();
+                        const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
+                        const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
+
+                        if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
+                            coincide = false;
                         }
                     }
 
                     if (!coincide) {
+                        // Estilo para cuando NO coinciden los equipos
                         div.style.color = "red";
                         div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
                     } else {
-                        // Usamos 'gl' y 'gv' porque así llegan del servidor
+                        // Lógica normal de puntos (Igual a la fase de grupos)
                         const pts = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
-                        div.style.color = "#003366";
+                        // Aplicamos tus colores: Letras en azul oscuro, puntos en rojo
+                        div.style.color = "#003366"; 
                         div.innerHTML = `Puntos: <span style="color:red;">${pts}</span>`;
                     }
                     iL.closest('.marcador-col').appendChild(div);
                 }
             });
+            // Bloqueamos los inputs para que no se pueda editar al consultar
             document.querySelectorAll('.marcador-col input').forEach(i => i.disabled = true);
         }, 1200);
 
-        // ... resto del código de los botones intacto ...
+        // Lógica de navegación de botones
         const btns = document.querySelectorAll('.btn-link');
         btns.forEach(b => {
             if (b.getAttribute('data-nombre-real') === nombre.toLowerCase().trim()) {
@@ -468,15 +462,19 @@ async function cargarDesdeDB(nombre) {
             }
         });
 
+        // Botón para regresar a la lista (Cambiar usuario)
         if (!document.getElementById('btn-volver-lista')) {
             const br = document.createElement('button');
-            br.id = 'btn-volver-lista'; br.innerText = "✕ Cambiar Usuario";
-            br.className = "btn-link"; br.style.backgroundColor = "#ff4444"; br.style.color = "white";
+            br.id = 'btn-volver-lista'; 
+            br.innerText = "✕ Cambiar Usuario";
+            br.className = "btn-link"; 
+            br.style.backgroundColor = "#ff4444"; 
+            br.style.color = "white";
             br.style.marginTop = "20px";
             br.onclick = () => window.location.href = window.location.origin + window.location.pathname + "?nomodal=1";
             document.getElementById('links-container').appendChild(br);
         }
-    } catch(e) { console.error(e); }
+    } catch(e) { console.error("Error al cargar:", e); }
 }
 
 // 7. LÓGICA DE TORNEO (TERCER PUESTO ARREGLADO)
