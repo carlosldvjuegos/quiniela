@@ -422,7 +422,8 @@ async function cargarDesdeDB(nombre) {
         setTimeout(() => {
             resUser.forEach(p => {
                 const iL = document.getElementById(`L-${p.id}`);
-                const ofi = resOficiales.find(o => o.id === p.id);
+                // CORRECCIÓN 1: Usar partido_id según tu captura de Neon
+                const ofi = resOficiales.find(o => o.partido_id === p.id);
                 const datosPart = partidosData.find(pd => pd.id === p.id);
 
                 if (ofi && iL) {
@@ -431,11 +432,11 @@ async function cargarDesdeDB(nombre) {
                     div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
                     
                     let coincide = true;
-                    // Normalización robusta para evitar errores por tildes o espacios
                     const norm = (t) => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 
                     if (datosPart && datosPart.fase !== "Grupos") {
-                        if (norm(p.nombre_local) !== norm(ofi.nombreLocal) || norm(p.nombre_visita) !== norm(ofi.nombreVisita)) {
+                        // CORRECCIÓN 2: equipo_local y equipo_visitante (de Neon) vs nombre_local y nombre_visita (de Neon)
+                        if (norm(p.nombre_local) !== norm(ofi.equipo_local) || norm(p.nombre_visita) !== norm(ofi.equipo_visitante)) {
                             coincide = false;
                         }
                     }
@@ -444,8 +445,8 @@ async function cargarDesdeDB(nombre) {
                         div.style.color = "red";
                         div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
                     } else {
-                        const pts = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
-                        // Estilo solicitado: Texto azul oscuro, cifra en rojo
+                        // CORRECCIÓN 3: goles_local y goles_visita (de Neon)
+                        const pts = calcularLogicaPuntos(p.gl, p.gv, ofi.goles_local, ofi.goles_visita);
                         div.style.color = "#003366";
                         div.innerHTML = `Puntos: <span style="color:red;">${pts}</span>`;
                     }
