@@ -142,10 +142,6 @@ app.post('/guardar-resultados-db', async (req, res) => {
 });
 
 
-
-
-
-
 // CARGAR QUINIELA USUARIO (MODIFICADO PARA DEVOLVER NOMBRES)
 app.get('/cargar/:nombre', async (req, res) => {
     try {
