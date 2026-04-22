@@ -242,11 +242,14 @@ async function actualizarListaLinks() {
     const container = document.getElementById('links-container');
     if (!container) return;
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
         const [resNombres, resOficiales, resTodasPred] = await Promise.all([
-            fetch(`${API_URL}/registros`),
-            fetch(`${API_URL}/obtener-resultados-db`),
-            fetch(`${API_URL}/obtener-todas-predicciones`)
+            fetch(`${API_URL}/registros`, { signal: controller.signal }),
+            fetch(`${API_URL}/obtener-resultados-db`, { signal: controller.signal }),
+            fetch(`${API_URL}/obtener-todas-predicciones`, { signal: controller.signal })
         ]);
+        clearTimeout(timeoutId);
         const usuarios = await resNombres.json();
         const oficiales = await resOficiales.json();
         const todasPred = await resTodasPred.json();
@@ -255,26 +258,34 @@ async function actualizarListaLinks() {
             acc[p.nombre_usuario].push(p);
             return acc;
         }, {});
-
+        
         let ranking = usuarios.map(user => {
             let pts = 0;
             const susPreds = predPorUser[user.nombre_usuario] || [];
             susPreds.forEach(pred => {
                 const ofi = oficiales.find(o => o.id === pred.partido_id);
-                const datosP = partidosData.find(dp => dp.id === pred.partido_id);
                 if (ofi) {
+                    const datosPartido = partidosData.find(p => p.id === pred.partido_id);
+                    const esEliminatoria = datosPartido && datosPartido.fase !== "Grupos";
+                    
                     let coincide = true;
-                    if (datosP && datosP.fase !== "Grupos") {
-                        if ((pred.nombre_local || "").trim().toLowerCase() !== (ofi.nombreLocal || "").trim().toLowerCase() ||
-                            (pred.nombre_visita || "").trim().toLowerCase() !== (ofi.nombreVisita || "").trim().toLowerCase()) {
-                            coincide = false;
-                        }
+                    if (esEliminatoria) {
+                        // LIMPIEZA PARA QUE EL RANKING SUME BIEN
+                        const uL = (pred.nombre_local || "").trim().toLowerCase();
+                        const uV = (pred.nombre_visita || "").trim().toLowerCase();
+                        const oL = (ofi.nombreLocal || "").trim().toLowerCase();
+                        const oV = (ofi.nombreVisita || "").trim().toLowerCase();
+                        if (uL !== oL || uV !== oV) coincide = false;
                     }
-                    if (coincide) pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
+
+                    if (coincide) {
+                        pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
+                    }
                 }
             });
             return { nombre: user.nombre_usuario, puntos: pts };
         });
+
         ranking.sort((a, b) => b.puntos - a.puntos);
         container.innerHTML = "";
         ranking.forEach((u, i) => {
@@ -289,8 +300,9 @@ async function actualizarListaLinks() {
             btn.onclick = () => cargarDesdeDB(u.nombre);
             container.appendChild(btn);
         });
-    } catch (e) { container.innerHTML = "<p>Error ranking</p>"; }
+    } catch (e) { container.innerHTML = "<p style='color:red;'>Error al cargar ranking.</p>"; }
 }
+
 
 // 5. GUARDAR (CON VALIDACIONES RESTAURADAS)
 async function guardarQuinielaCompleta() {
