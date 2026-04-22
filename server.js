@@ -76,11 +76,16 @@ const inicializarDB = async () => {
 inicializarDB();
 
 // OBTENER RESULTADOS REALES
+// OBTENER RESULTADOS REALES (Corregido para que coincida con el frontend)
 app.get('/obtener-resultados-db', async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT partido_id as id, goles_local as gl, goles_visita as gv, 
-            equipo_local as nombreLocal, equipo_visitante as nombreVisita 
+            SELECT 
+                partido_id, 
+                goles_local, 
+                goles_visita, 
+                equipo_local, 
+                equipo_visitante 
             FROM resultados_oficiales
         `);
         res.json(result.rows);
@@ -136,13 +141,23 @@ app.post('/guardar-resultados-db', async (req, res) => {
     }
 });
 
+
+
+
+
+
 // CARGAR QUINIELA USUARIO (MODIFICADO PARA DEVOLVER NOMBRES)
 app.get('/cargar/:nombre', async (req, res) => {
     try {
         const result = await pool.query(
-            `SELECT partido_id as id, goles_local as gl, goles_visita as gv, 
-             goles_desempate_local as dl, goles_desempate_visita as dv,
-             nombre_local as nombre_local, nombre_visita as nombre_visita 
+            `SELECT 
+                partido_id as id, 
+                goles_local as gl, 
+                goles_visita as gv, 
+                goles_desempate_local as dl, 
+                goles_desempate_visita as dv,
+                nombre_local, 
+                nombre_visita 
              FROM predicciones WHERE nombre_usuario = $1`,
             [req.params.nombre]
         );
