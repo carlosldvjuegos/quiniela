@@ -259,7 +259,6 @@ async function actualizarListaLinks() {
             return acc;
         }, {});
 
-        // --- CORRECCIÓN AQUÍ: Cerramos bien el map y retornamos el objeto ---
         let ranking = usuarios.map(user => {
             let pts = 0;
             const susPreds = predPorUser[user.nombre_usuario] || [];
@@ -271,44 +270,42 @@ async function actualizarListaLinks() {
                 if (ofi) {
                     let coincide = true;
                     if (datosP && datosP.fase !== "Grupos") {
-                        const nL_user = (pred.nombre_local || "").trim().toLowerCase();
-                        const nV_user = (pred.nombre_visita || "").trim().toLowerCase();
-                        const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
-                        const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
+                        // Normalizamos nombres (quitar acentos y espacios)
+                        const norm = (t) => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+                        
+                        const nL_user = norm(pred.nombre_local);
+                        const nV_user = norm(pred.nombre_visita);
+                        const nL_ofi = norm(ofi.nombreLocal);
+                        const nV_ofi = norm(ofi.nombreVisita);
 
-                        if (nL_ofi !== "" && nV_ofi !== "") {
-                            if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
-                                coincide = false;
-                            }
+                        if (nL_ofi !== "" && (nL_user !== nL_ofi || nV_user !== nV_ofi)) {
+                            coincide = false;
                         }
                     }
                     if (coincide) {
                         pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
                     }
                 }
-            }); // Cierre del forEach interno
-            
-            return { nombre: user.nombre_usuario, puntos: pts }; // <--- IMPORTANTE: Retornar los datos
-        }); // <--- AQUÍ: Cierre correcto del .map()
+            });
+            return { nombre: user.nombre_usuario, puntos: pts };
+        });
 
         ranking.sort((a, b) => b.puntos - a.puntos);
-        
         container.innerHTML = "";
         ranking.forEach((u, i) => {
             const med = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : "•"));
             const btn = document.createElement('button');
             btn.className = "btn-link";
-            btn.innerHTML = `
-                <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                    <span>${med} <b>${u.nombre}</b></span>
-                    <span class="badge-puntos">${u.puntos} pts</span>
-                </div>`;
+            btn.innerHTML = `<div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                <span>${med} <b>${u.nombre}</b></span>
+                <span class="badge-puntos">${u.puntos} pts</span>
+            </div>`;
             btn.onclick = () => cargarDesdeDB(u.nombre);
             container.appendChild(btn);
         });
     } catch (e) { 
-        console.error("Error en ranking:", e);
-        container.innerHTML = "<p>Error ranking</p>"; 
+        console.error(e);
+        container.innerHTML = "<p>Error al cargar ranking</p>"; 
     }
 }
 
@@ -431,33 +428,41 @@ async function cargarDesdeDB(nombre) {
 
         setTimeout(() => {
             resUser.forEach(p => {
+    // IMPORTANTE: p.id es el partido_id según tu server.js
     const iL = document.getElementById(`L-${p.id}`);
     const ofi = resOficiales.find(o => parseInt(o.id) === parseInt(p.id));
     const datosPart = partidosData.find(pd => pd.id === p.id);
 
     if (ofi && iL) {
+        // Ponemos los goles que el usuario predijo en los inputs
+        iL.value = p.gl;
+        document.getElementById(`V-${p.id}`).value = p.gv;
+
+        let coincideNombres = true;
+        if (datosPart && datosPart.fase !== "Grupos") {
+            const norm = (t) => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+            if (norm(p.nombre_local) !== norm(ofi.nombreLocal) || norm(p.nombre_visita) !== norm(ofi.nombreVisita)) {
+                coincideNombres = false;
+            }
+        }
+
         const div = document.createElement('div');
         div.className = 'puntos-obtenidos';
         div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
 
-        let coincide = true;
-        if (datosPart && datosPart.fase !== "Grupos") {
-            const nL_user = (p.nombre_local || "").trim().toLowerCase();
-            const nV_user = (p.nombre_visita || "").trim().toLowerCase();
-            const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
-            const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
-            if (nL_ofi !== "" && (nL_user !== nL_ofi || nV_user !== nV_ofi)) coincide = false;
-        }
-
-        if (!coincide) {
+        if (!coincideNombres) {
             div.style.color = "#ff4444";
             div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
         } else {
             const puntosFinales = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
-            div.style.color = "#003366"; // Azul oscuro para "Puntos:"
+            div.style.color = "#003366";
             div.innerHTML = `Puntos: <span style="color:red; font-size:16px;">${puntosFinales}</span>`;
         }
-        iL.closest('.marcador-col').appendChild(div);
+        // Limpiamos si ya existía un div de puntos antes de agregar el nuevo
+        const contenedor = iL.closest('.marcador-col');
+        const previo = contenedor.querySelector('.puntos-obtenidos');
+        if (previo) previo.remove();
+        contenedor.appendChild(div);
     }
 });
             // Bloqueamos los inputs para que no se pueda editar al consultar
