@@ -265,31 +265,28 @@ async function actualizarListaLinks() {
             const susPreds = predPorUser[user.nombre_usuario] || [];
             
             susPreds.forEach(pred => {
-            const ofi = oficiales.find(o => parseInt(o.id) === parseInt(pred.partido_id));
-            const datosP = partidosData.find(dp => dp.id === pred.partido_id);
-        
-            if (ofi) {
-                let coincideNombres = true;
-        
-                // VALIDACIÓN ESTRICTA PARA ELIMINATORIAS
-                if (datosP && datosP.fase !== "Grupos") {
-                    const nL_user = (pred.nombre_local || "").trim().toLowerCase();
-                    const nV_user = (pred.nombre_visita || "").trim().toLowerCase();
-                    const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
-                    const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
-        
-                    // Si los nombres en la tabla oficial no coinciden con la predicción
-                    if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
-                        coincideNombres = false;
+                const ofi = oficiales.find(o => parseInt(o.id) === parseInt(pred.partido_id));
+                const datosP = partidosData.find(dp => dp.id === pred.partido_id);
+
+                if (ofi) {
+                    let coincide = true;
+                    if (datosP && datosP.fase !== "Grupos") {
+                        const nL_user = (pred.nombre_local || "").trim().toLowerCase();
+                        const nV_user = (pred.nombre_visita || "").trim().toLowerCase();
+                        const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
+                        const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
+
+                        if (nL_ofi !== "" && nV_ofi !== "") {
+                            if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
+                                coincide = false;
+                            }
+                        }
+                    }
+                    if (coincide) {
+                        pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
                     }
                 }
-        
-                // SOLO SUMA SI LOS NOMBRES COINCIDEN (O SI ES FASE DE GRUPOS)
-                if (coincideNombres) {
-                    pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
-                }
-            }
-        }); // Cierre del forEach interno
+            }); // Cierre del forEach interno
             
             return { nombre: user.nombre_usuario, puntos: pts }; // <--- IMPORTANTE: Retornar los datos
         }); // <--- AQUÍ: Cierre correcto del .map()
@@ -434,42 +431,35 @@ async function cargarDesdeDB(nombre) {
 
         setTimeout(() => {
             resUser.forEach(p => {
-                const iL = document.getElementById(`L-${p.id}`);
-                const ofi = resOficiales.find(o => parseInt(o.id) === parseInt(p.id));
-                const datosPart = partidosData.find(pd => pd.id === p.id);
-            
-                if (ofi && iL) {
-                    let coincideNombres = true;
-            
-                    // VALIDACIÓN PARA EL MENSAJE
-                    if (datosPart && datosPart.fase !== "Grupos") {
-                        const nL_user = (p.nombre_local || "").trim().toLowerCase();
-                        const nV_user = (p.nombre_visita || "").trim().toLowerCase();
-                        const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
-                        const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
-            
-                        if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
-                            coincideNombres = false;
-                        }
-                    }
-            
-                    const div = document.createElement('div');
-                    div.className = 'puntos-obtenidos';
-                    div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
-            
-                    if (!coincideNombres) {
-                        // MENSAJE DE ERROR QUE SOLICITASTE
-                        div.style.color = "#ff4444"; // Rojo
-                        div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
-                    } else {
-                        // CÁLCULO NORMAL SI LOS EQUIPOS SON CORRECTOS
-                        const puntosFinales = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
-                        div.style.color = "#003366"; // Azul oscuro
-                        div.innerHTML = `Puntos: <span style="color:red; font-size:16px;">${puntosFinales}</span>`;
-                    }
-                    iL.closest('.marcador-col').appendChild(div);
-                }
-            });
+    const iL = document.getElementById(`L-${p.id}`);
+    const ofi = resOficiales.find(o => parseInt(o.id) === parseInt(p.id));
+    const datosPart = partidosData.find(pd => pd.id === p.id);
+
+    if (ofi && iL) {
+        const div = document.createElement('div');
+        div.className = 'puntos-obtenidos';
+        div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
+
+        let coincide = true;
+        if (datosPart && datosPart.fase !== "Grupos") {
+            const nL_user = (p.nombre_local || "").trim().toLowerCase();
+            const nV_user = (p.nombre_visita || "").trim().toLowerCase();
+            const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
+            const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
+            if (nL_ofi !== "" && (nL_user !== nL_ofi || nV_user !== nV_ofi)) coincide = false;
+        }
+
+        if (!coincide) {
+            div.style.color = "#ff4444";
+            div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
+        } else {
+            const puntosFinales = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
+            div.style.color = "#003366"; // Azul oscuro para "Puntos:"
+            div.innerHTML = `Puntos: <span style="color:red; font-size:16px;">${puntosFinales}</span>`;
+        }
+        iL.closest('.marcador-col').appendChild(div);
+    }
+});
             // Bloqueamos los inputs para que no se pueda editar al consultar
             document.querySelectorAll('.marcador-col input').forEach(i => i.disabled = true);
         }, 1200);
