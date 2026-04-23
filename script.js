@@ -262,35 +262,18 @@ async function actualizarListaLinks() {
             let pts = 0;
             const susPreds = predPorUser[user.nombre_usuario] || [];
             susPreds.forEach(pred => {
-    // Buscamos el resultado oficial usando partido_id (como vimos en tu captura anterior)
-    const ofi = oficiales.find(o => o.partido_id === pred.partido_id);
-    const datosP = partidosData.find(dp => dp.id === pred.partido_id);
+    // IMPORTANTE: Buscamos en 'oficiales' comparando su 'partido_id' con el de la predicción
+    const ofi = oficiales.find(o => parseInt(o.partido_id) === parseInt(pred.partido_id));
+    
+    if (ofi) {
+        // Usamos los nombres exactos de tu tabla: goles_local y goles_visita
+        const rL = ofi.goles_local;
+        const rV = ofi.goles_visita;
 
-                if (ofi) {
-                    let coincide = true;
-                    
-                    // Mejora de validación de nombres para Eliminatorias
-                    if (datosP && datosP.fase !== "Grupos") {
-                        const nL_user = (pred.nombre_local || "").trim().toLowerCase();
-                        const nV_user = (pred.nombre_visita || "").trim().toLowerCase();
-                        // Usamos los nombres de columna exactos de tu tabla 'resultados_oficiales'
-                        const nL_ofi = (ofi.equipo_local || "").trim().toLowerCase();
-                        const nV_ofi = (ofi.equipo_visitante || "").trim().toLowerCase();
-            
-                        // Si los campos de equipo en la DB están vacíos, permitimos el cálculo
-                        if (nL_ofi !== "" && nV_ofi !== "") {
-                            if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
-                                coincide = false;
-                            }
-                        }
-                    }
-            
-                    if (coincide) {
-                        // Usamos goles_local y goles_visita de tu tabla resultados_oficiales
-                        pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.goles_local, ofi.goles_visita);
-                    }
-                }
-            });
+        // Calculamos puntos directamente (sin validar nombres por ahora para que no de 0)
+        pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, rL, rV);
+    }
+});
             return { nombre: user.nombre_usuario, puntos: pts };
         });
         ranking.sort((a, b) => b.puntos - a.puntos);
@@ -429,38 +412,26 @@ async function cargarDesdeDB(nombre) {
 
         setTimeout(() => {
             resUser.forEach(p => {
-                const iL = document.getElementById(`L-${p.id}`);
-                const ofi = resOficiales.find(o => o.id === p.id);
-                const datosPart = partidosData.find(pd => pd.id === p.id);
-
-                if (ofi && iL) {
-                    let coincide = true;
-                    if (datosPart && datosPart.fase !== "Grupos") {
-                        const nL_user = (p.nombre_local || "").trim().toLowerCase();
-                        const nV_user = (p.nombre_visita || "").trim().toLowerCase();
-                        const nL_ofi = (ofi.equipo_local || "").trim().toLowerCase();
-                        const nV_ofi = (ofi.equipo_visitante || "").trim().toLowerCase();
-                        
-                        if (nL_ofi !== "" && nV_ofi !== "") {
-                            if (nL_user !== nL_ofi || nV_user !== nV_ofi) coincide = false;
-                        }
-                    }
+            // 1. Buscamos el input en el HTML usando partido_id
+            const iL = document.getElementById(`L-${p.partido_id}`);
+            // 2. Buscamos el resultado oficial
+            const ofi = resOficiales.find(o => parseInt(o.partido_id) === parseInt(p.partido_id));
+        
+            if (ofi && iL) {
+                const div = document.createElement('div');
+                div.className = 'puntos-obtenidos';
+                div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
+        
+                // Calculamos los puntos con las columnas de tu DB
+                const puntosFinales = calcularLogicaPuntos(p.goles_local, p.goles_visita, ofi.goles_local, ofi.goles_visita);
                 
-                    const div = document.createElement('div');
-                    div.className = 'puntos-obtenidos';
-                    div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
+                // Estilo solicitado: Texto azul oscuro, puntos en rojo
+                div.style.color = "#003366"; 
+                div.innerHTML = `Puntos: <span style="color:red; font-size:16px;">${puntosFinales}</span>`;
                 
-                    if (!coincide) {
-                        div.style.color = "#ff4444";
-                        div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
-                    } else {
-                        const pts = calcularLogicaPuntos(p.goles_local, p.goles_visita, ofi.goles_local, ofi.goles_visita);
-                        div.style.color = "#003366"; // Azul oscuro para el texto
-                        div.innerHTML = `Puntos: <span style="color:red; font-size:16px;">${pts}</span>`; // Rojo para el número
-                    }
-                    iL.closest('.marcador-col').appendChild(div);
-                }   
-            });
+                iL.closest('.marcador-col').appendChild(div);
+            }
+        });
             // Bloqueamos los inputs para que no se pueda editar al consultar
             document.querySelectorAll('.marcador-col input').forEach(i => i.disabled = true);
         }, 1200);
