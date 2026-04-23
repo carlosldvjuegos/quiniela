@@ -252,59 +252,64 @@ async function actualizarListaLinks() {
         const usuarios = await resNombres.json();
         const oficiales = await resOficiales.json();
         const todasPred = await resTodasPred.json();
+
         const predPorUser = todasPred.reduce((acc, p) => {
             if (!acc[p.nombre_usuario]) acc[p.nombre_usuario] = [];
             acc[p.nombre_usuario].push(p);
             return acc;
         }, {});
 
+        // --- CORRECCIÓN AQUÍ: Cerramos bien el map y retornamos el objeto ---
         let ranking = usuarios.map(user => {
             let pts = 0;
             const susPreds = predPorUser[user.nombre_usuario] || [];
+            
             susPreds.forEach(pred => {
-    // El servidor envía 'id', así que comparamos con pred.partido_id
-    const ofi = oficiales.find(o => parseInt(o.id) === parseInt(pred.partido_id));
-    const datosP = partidosData.find(dp => dp.id === pred.partido_id);
+                const ofi = oficiales.find(o => parseInt(o.id) === parseInt(pred.partido_id));
+                const datosP = partidosData.find(dp => dp.id === pred.partido_id);
 
-    if (ofi) {
-        let coincide = true;
+                if (ofi) {
+                    let coincide = true;
+                    if (datosP && datosP.fase !== "Grupos") {
+                        const nL_user = (pred.nombre_local || "").trim().toLowerCase();
+                        const nV_user = (pred.nombre_visita || "").trim().toLowerCase();
+                        const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
+                        const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
 
-        // Validación de nombres para eliminatorias
-        if (datosP && datosP.fase !== "Grupos") {
-            const nL_user = (pred.nombre_local || "").trim().toLowerCase();
-            const nV_user = (pred.nombre_visita || "").trim().toLowerCase();
-            const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
-            const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
-
-            // Si los nombres oficiales existen y no coinciden con la predicción, 0 puntos
-            if (nL_ofi !== "" && nV_ofi !== "") {
-                if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
-                    coincide = false;
+                        if (nL_ofi !== "" && nV_ofi !== "") {
+                            if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
+                                coincide = false;
+                            }
+                        }
+                    }
+                    if (coincide) {
+                        pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
+                    }
                 }
-            }
-        }
+            }); // Cierre del forEach interno
+            
+            return { nombre: user.nombre_usuario, puntos: pts }; // <--- IMPORTANTE: Retornar los datos
+        }); // <--- AQUÍ: Cierre correcto del .map()
 
-        if (coincide) {
-            // Usamos ofi.gl y ofi.gv porque así lo definiste en app.get('/obtener-resultados-db')
-            pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
-        }
-    }
-});
         ranking.sort((a, b) => b.puntos - a.puntos);
+        
         container.innerHTML = "";
         ranking.forEach((u, i) => {
             const med = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : "•"));
             const btn = document.createElement('button');
             btn.className = "btn-link";
-            btn.setAttribute('data-nombre-real', u.nombre.toLowerCase().trim());
-            btn.innerHTML = `<div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                <span>${med} <b>${u.nombre}</b></span>
-                <span class="badge-puntos">${u.puntos} pts</span>
-            </div>`;
+            btn.innerHTML = `
+                <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                    <span>${med} <b>${u.nombre}</b></span>
+                    <span class="badge-puntos">${u.puntos} pts</span>
+                </div>`;
             btn.onclick = () => cargarDesdeDB(u.nombre);
             container.appendChild(btn);
         });
-    } catch (e) { container.innerHTML = "<p>Error ranking</p>"; }
+    } catch (e) { 
+        console.error("Error en ranking:", e);
+        container.innerHTML = "<p>Error ranking</p>"; 
+    }
 }
 
 // 5. GUARDAR (CON VALIDACIONES RESTAURADAS)
