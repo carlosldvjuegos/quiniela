@@ -638,9 +638,7 @@ async function generarReporteMaestro() {
             .col-id { width: 5mm; }
             .col-equipo { width: 25mm; text-align: left; font-weight: bold; }
             .col-gol { width: 6mm; background-color: #f5f5f5; }
-            /* Columnas de desempate sin color de fondo, solo el texto */
             .col-des { width: 6mm; font-weight: bold; color: #cc0000; }
-
             .no-print { text-align: center; padding: 10px; background: #333; }
             @media print { .no-print { display: none; } .report-container { margin: 0; } }
         </style></head><body>
@@ -667,10 +665,10 @@ async function generarReporteMaestro() {
                     const nL = r.nombre_local || r.local || p.local || '---';
                     const nV = r.nombre_visita || r.visita || p.visita || '---';
                     
-                    // Lógica 100% directa: Si es un número (incluido 0), se muestra. 
-                    // Si es null/undefined, se muestra vacío, NADA de guiones.
-                    const valL = (r.goles_desempate_local !== null && r.goles_desempate_local !== undefined) ? r.goles_desempate_local : "";
-                    const valV = (r.goles_desempate_visita !== null && r.goles_desempate_visita !== undefined) ? r.goles_desempate_visita : "";
+                    // LÓGICA DIRECTA: Si el valor es null o undefined, muestra celda vacía.
+                    // Si es 0, 1 o cualquier número, lo muestra tal cual.
+                    const valL = (r.goles_desempate_local ?? "");
+                    const valV = (r.goles_desempate_visita ?? "");
                     
                     html += `<tr>
                         <td>${r.partido_id}</td>
@@ -690,7 +688,6 @@ async function generarReporteMaestro() {
         const v = window.open('', '_blank'); v.document.write(html); v.document.close();
     } catch(e) { console.error(e); alert("Error al generar el reporte."); }
 }
-
 function cerrarMiModal() {
     const modal = document.getElementById('modal-informativo');
     if (modal) {
