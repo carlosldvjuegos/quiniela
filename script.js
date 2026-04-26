@@ -614,79 +614,114 @@ async function generarReporteMaestro() {
     try {
         const res = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await res.json();
-        if (!datos || !datos.length) return alert("No hay datos.");
-
+        if (!datos.length) return alert("No hay datos para generar el reporte.");
+        
         const agrupado = datos.reduce((acc, r) => { 
             (acc[r.nombre_usuario] = acc[r.nombre_usuario] || []).push(r); 
             return acc; 
         }, {});
 
-        let html = `<html><head><style>
+        let html = `<html><head><title>Reporte Maestro</title><style>
             @page { size: A4; margin: 0; }
-            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #ccc; }
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f0f0; }
+            
+            /* Botón de impresión fijo arriba */
+            .header-print {
+                position: fixed; top: 0; left: 0; width: 100%; 
+                background: #333; padding: 10px; text-align: center; z-index: 1000;
+            }
+            .header-print button {
+                padding: 10px 20px; cursor: pointer; font-weight: bold; background: #28a745; color: white; border: none; border-radius: 5px;
+            }
+
             .report-container { 
-                background: white; width: 210mm; height: 297mm; margin: 5mm auto;
-                padding: 10mm; box-sizing: border-box; page-break-after: always;
+                background: white; width: 210mm; min-height: 297mm; 
+                margin: 60px auto 20px auto; /* Espacio para el botón fijo */
+                padding: 5mm; box-sizing: border-box; page-break-after: always;
             }
-            h2 { text-align: center; color: #000; border-bottom: 2px solid #000; }
-            .grid-wrapper { display: flex; justify-content: space-between; }
-            table { border-collapse: collapse; width: 95mm; table-layout: fixed; }
+            
+            h2 { text-align: center; color: #01215b; margin: 0 0 10px 0; text-transform: uppercase; font-size: 16px; }
+            
+            /* Contenedor para las dos columnas de la quiniela */
+            .quiniela-grid { display: flex; justify-content: space-between; gap: 2mm; }
+            
+            table { border-collapse: collapse; width: 49%; table-layout: fixed; }
             th, td { 
-                border: 1px solid #000; text-align: center; font-size: 8px; 
-                height: 5mm; color: #000 !important; /* FORZAMOS COLOR NEGRO */
+                border: 0.5px solid #000; text-align: center; 
+                font-size: 7.5px; height: 5mm; padding: 0; overflow: hidden;
             }
-            th { background: #eee; }
-            .col-eq { width: 25mm; text-align: left; padding-left: 2px; font-weight: bold; }
-            /* Columnas de Desempate: Fondo amarillo suave para asegurar que se note el dato */
-            .col-data { background: #ffffd0; font-weight: bold; color: #000; width: 7mm; }
-            .no-print { text-align: center; padding: 20px; }
-            @media print { .no-print { display: none; } body { background: none; } .report-container { margin: 0; } }
+            th { background: #eee; font-weight: bold; }
+            
+            .col-id { width: 6mm; }
+            .col-team { width: 25mm; text-align: left; padding-left: 2px; font-weight: bold; white-space: nowrap; }
+            .col-score { width: 7mm; background: #f9f9f9; }
+            .col-des { width: 7mm; background: #fff0f0; color: #cc0000; font-weight: bold; }
+
+            @media print {
+                .header-print { display: none; }
+                body { background: none; }
+                .report-container { margin: 0; border: none; }
+            }
         </style></head><body>
-        <div class="no-print"><button onclick="window.print()">🖨️ IMPRIMIR</button></div>`;
+        
+        <div class="header-print">
+            <button onclick="window.print()">🖨️ IMPRIMIR REPORTE (A4)</button>
+        </div>`;
 
         for (const user in agrupado) {
-            html += `<div class="report-container"><h2>Quiniela: ${user}</h2><div class="grid-wrapper">`;
+            html += `<div class="report-container">
+                <h2>Quiniela: ${user}</h2>
+                <div class="quiniela-grid">`;
+            
             const preds = agrupado[user].sort((a, b) => a.partido_id - b.partido_id);
             const mitad = Math.ceil(preds.length / 2);
 
+            // Generar las dos tablas (Izquierda y Derecha)
             for (let i = 0; i < 2; i++) {
-                html += `<table><thead><tr>
-                    <th style="width:5mm">#</th>
-                    <th class="col-eq">Local</th>
-                    <th style="width:6mm">L</th>
-                    <th style="width:6mm">V</th>
-                    <th class="col-eq">Visita</th>
-                    <th class="col-data">DL</th>
-                    <th class="col-data">DV</th>
-                </tr></thead><tbody>`;
+                html += `<table>
+                    <thead>
+                        <tr>
+                            <th class="col-id">#</th>
+                            <th class="col-team">Local</th>
+                            <th class="col-score">L</th>
+                            <th class="col-score">V</th>
+                            <th class="col-team">Visita</th>
+                            <th class="col-des">DL</th>
+                            <th class="col-des">DV</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
                 
-                preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
-                    const p = (typeof partidosData !== 'undefined') ? partidosData.find(item => item.id === r.partido_id) : {};
-                    
-                    // 1. Esto nos dirá en la consola del navegador (F12) cómo se llaman los datos reales
-                    console.log("Datos de la fila:", r);
-                
-                    // 2. Intentamos capturar el dato de tres formas distintas por si la API cambió el nombre
-                    const dL = r.goles_desempate_local ?? r.desempate_local ?? r.dl ?? "";
-                    const dV = r.goles_desempate_visita ?? r.desempate_visita ?? r.dv ?? "";
+                const bloque = preds.slice(i * mitad, (i + 1) * mitad);
+                bloque.forEach(r => {
+                    // Si el valor es null/undefined se ve vacío, si es 0 se ve 0.
+                    const valDL = (r.goles_desempate_local ?? "");
+                    const valDV = (r.goles_desempate_visita ?? "");
                     
                     html += `<tr>
                         <td>${r.partido_id}</td>
-                        <td class="col-equipo">${r.nombre_local || r.local || p.local || '---'}</td>
-                        <td class="col-gol">${r.goles_local}</td>
-                        <td class="col-gol">${r.goles_visita}</td>
-                        <td class="col-equipo">${r.nombre_visita || r.visita || p.visita || '---'}</td>
-                        <td style="color: blue !important; font-weight: bold; background-color: #f0f0f0;">${dL}</td>
-                        <td style="color: blue !important; font-weight: bold; background-color: #f0f0f0;">${dV}</td>
+                        <td class="col-team">${r.nombre_local || r.local || '---'}</td>
+                        <td>${r.goles_local}</td>
+                        <td>${r.goles_visita}</td>
+                        <td class="col-team">${r.nombre_visita || r.visita || '---'}</td>
+                        <td class="col-des">${valDL}</td>
+                        <td class="col-des">${valDV}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
             }
             html += `</div></div>`;
         }
+        
         html += `</body></html>`;
-        const v = window.open('', '_blank'); v.document.write(html); v.document.close();
-    } catch(e) { console.error(e); alert("Error crítico."); }
+        const v = window.open('', '_blank');
+        v.document.write(html);
+        v.document.close();
+        
+    } catch(e) {
+        console.error(e);
+        alert("Error al generar el reporte.");
+    }
 }
 
 
