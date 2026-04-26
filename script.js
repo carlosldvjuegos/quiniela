@@ -452,19 +452,17 @@ async function cargarDesdeDB(nombre) {
                     div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
             
                     let coincide = true;
+                    // Función para limpiar texto y comparar sin errores por acentos
                     const norm = (t) => (t || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
             
+                    // COMPARACIÓN DE NOMBRES EN FASES DE CLASIFICACIÓN
                     if (datosPart && datosPart.fase !== "Grupos") {
-                        // Nombres que vienen de tu tabla PREDICCIONES
-                        const nL_user = norm(p.nombre_local);
-                        const nV_user = norm(p.nombre_visita);
-
-                        // Nombres que vienen de tu tabla RESULTADOS_OFICIALES (Cambiado a tus nombres reales)
-                        const nL_ofi = norm(ofi.equipo_local); 
-                        const nV_ofi = norm(ofi.equipo_visitante);
+                        const nL_user = norm(p.nombre_local);     // Tabla predicciones
+                        const nV_user = norm(p.nombre_visita);    // Tabla predicciones
+                        const nL_ofi = norm(ofi.equipo_local);    // Tabla resultados_oficiales
+                        const nV_ofi = norm(ofi.equipo_visitante);// Tabla resultados_oficiales
                         
                         if (nL_ofi !== "" && nL_ofi !== "---") {
-                            // Si el usuario puso Croacia y el oficial es Senegal, esto entrará aquí:
                             if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
                                 coincide = false;
                             }
@@ -472,10 +470,11 @@ async function cargarDesdeDB(nombre) {
                     }
             
                     if (!coincide) {
+                        // Si no concuerdan, no sumamos nada y dejamos el mensaje solicitado
                         div.style.color = "#ff4444";
-                        div.innerHTML = `Equipos incorrectos <br> <span style="font-size:10px;">0 Puntos</span>`;
-                        // IMPORTANTE: Aquí NO sumamos puntos a totalPuntos
+                        div.innerHTML = `Partido mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
                     } else {
+                        // Si concuerdan o es fase de grupos, sumamos puntos
                         const puntosFinales = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
                         totalPuntos += puntosFinales;
                         div.style.color = "#003366"; 
@@ -485,7 +484,7 @@ async function cargarDesdeDB(nombre) {
                 }
             });
             
-            // 3. Restaurar el nombre de la quiniela arriba del botón
+            // 3. Actualizar título con el puntaje real corregido
             const container = document.getElementById('links-container');
             if (container) {
                 let titulo = document.getElementById('titulo-quiniela-activa');
