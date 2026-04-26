@@ -614,8 +614,12 @@ async function generarReporteMaestro() {
     try {
         const res = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await res.json();
+        
         if (!datos.length) return alert("No hay datos para generar el reporte.");
         
+        // REVISIÓN TÉCNICA: Verificamos en la consola cómo vienen los datos realmente
+        console.log("Ejemplo de datos recibidos:", datos[0]);
+
         const agrupado = datos.reduce((acc, r) => { 
             (acc[r.nombre_usuario] = acc[r.nombre_usuario] || []).push(r); 
             return acc; 
@@ -623,49 +627,51 @@ async function generarReporteMaestro() {
 
         let html = `<html><head><title>Reporte Maestro</title><style>
             @page { size: A4; margin: 0; }
-            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f0f0; }
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #555; }
             
-            /* Botón de impresión fijo arriba */
-            .header-print {
-                position: fixed; top: 0; left: 0; width: 100%; 
-                background: #333; padding: 10px; text-align: center; z-index: 1000;
+            /* BOTÓN FIJO EN LA CABECERA */
+            .sticky-header {
+                position: fixed; top: 0; left: 0; width: 100%; height: 50px;
+                background: #222; display: flex; align-items: center; 
+                justify-content: center; z-index: 9999; box-shadow: 0 2px 10px rgba(0,0,0,0.5);
             }
-            .header-print button {
-                padding: 10px 20px; cursor: pointer; font-weight: bold; background: #28a745; color: white; border: none; border-radius: 5px;
+            .sticky-header button {
+                padding: 10px 25px; cursor: pointer; font-weight: bold; 
+                background: #28a745; color: white; border: none; border-radius: 4px; font-size: 14px;
             }
 
             .report-container { 
                 background: white; width: 210mm; min-height: 297mm; 
-                margin: 60px auto 20px auto; /* Espacio para el botón fijo */
-                padding: 5mm; box-sizing: border-box; page-break-after: always;
+                margin: 70px auto 20px auto; padding: 8mm; 
+                box-sizing: border-box; page-break-after: always;
             }
             
-            h2 { text-align: center; color: #01215b; margin: 0 0 10px 0; text-transform: uppercase; font-size: 16px; }
+            h2 { text-align: center; color: #000; margin: 0 0 10px 0; font-size: 16px; border-bottom: 2px solid #333; padding-bottom: 5px; }
             
-            /* Contenedor para las dos columnas de la quiniela */
             .quiniela-grid { display: flex; justify-content: space-between; gap: 2mm; }
             
-            table { border-collapse: collapse; width: 49%; table-layout: fixed; }
+            table { border-collapse: collapse; width: 49.5%; table-layout: fixed; }
             th, td { 
-                border: 0.5px solid #000; text-align: center; 
-                font-size: 7.5px; height: 5mm; padding: 0; overflow: hidden;
+                border: 1px solid #000; text-align: center; 
+                font-size: 7.5px; height: 5.2mm; padding: 0; color: #000 !important;
             }
-            th { background: #eee; font-weight: bold; }
+            th { background: #f0f0f0; font-weight: bold; }
             
-            .col-id { width: 6mm; }
-            .col-team { width: 25mm; text-align: left; padding-left: 2px; font-weight: bold; white-space: nowrap; }
-            .col-score { width: 7mm; background: #f9f9f9; }
-            .col-des { width: 7mm; background: #fff0f0; color: #cc0000; font-weight: bold; }
+            .col-id { width: 5mm; }
+            .col-team { width: 26mm; text-align: left; padding-left: 2px; font-weight: bold; }
+            .col-score { width: 6mm; background: #fafafa; }
+            /* COLUMNAS DE DESEMPATE CON COLOR PARA ASEGURAR VISIBILIDAD */
+            .col-des { width: 7mm; font-weight: bold; color: blue !important; background: #fffde7; }
 
             @media print {
-                .header-print { display: none; }
+                .sticky-header { display: none; }
                 body { background: none; }
-                .report-container { margin: 0; border: none; }
+                .report-container { margin: 0; padding: 5mm; }
             }
         </style></head><body>
         
-        <div class="header-print">
-            <button onclick="window.print()">🖨️ IMPRIMIR REPORTE (A4)</button>
+        <div class="sticky-header">
+            <button onclick="window.print()">🖨️ IMPRIMIR AHORA</button>
         </div>`;
 
         for (const user in agrupado) {
@@ -676,7 +682,6 @@ async function generarReporteMaestro() {
             const preds = agrupado[user].sort((a, b) => a.partido_id - b.partido_id);
             const mitad = Math.ceil(preds.length / 2);
 
-            // Generar las dos tablas (Izquierda y Derecha)
             for (let i = 0; i < 2; i++) {
                 html += `<table>
                     <thead>
@@ -694,9 +699,10 @@ async function generarReporteMaestro() {
                 
                 const bloque = preds.slice(i * mitad, (i + 1) * mitad);
                 bloque.forEach(r => {
-                    // Si el valor es null/undefined se ve vacío, si es 0 se ve 0.
-                    const valDL = (r.goles_desempate_local ?? "");
-                    const valDV = (r.goles_desempate_visita ?? "");
+                    // BUSQUEDA MULTIPLE: Si el nombre largo falla, intenta con otros posibles nombres
+                    // Esto evita que si la base de datos manda el dato con otro nombre, se pierda.
+                    const dl = r.goles_desempate_local ?? r.desempate_local ?? r.dl ?? (r.goles_local_desempate !== undefined ? r.goles_local_desempate : "");
+                    const dv = r.goles_desempate_visita ?? r.desempate_visita ?? r.dv ?? (r.goles_visita_desempate !== undefined ? r.goles_visita_desempate : "");
                     
                     html += `<tr>
                         <td>${r.partido_id}</td>
@@ -704,8 +710,8 @@ async function generarReporteMaestro() {
                         <td>${r.goles_local}</td>
                         <td>${r.goles_visita}</td>
                         <td class="col-team">${r.nombre_visita || r.visita || '---'}</td>
-                        <td class="col-des">${valDL}</td>
-                        <td class="col-des">${valDV}</td>
+                        <td class="col-des">${dl}</td>
+                        <td class="col-des">${dv}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
@@ -720,7 +726,7 @@ async function generarReporteMaestro() {
         
     } catch(e) {
         console.error(e);
-        alert("Error al generar el reporte.");
+        alert("Error al generar el reporte. Revisa la consola (F12).");
     }
 }
 
