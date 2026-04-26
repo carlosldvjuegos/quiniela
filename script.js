@@ -622,19 +622,15 @@ async function generarReporteMaestro() {
             return acc; 
         }, {});
 
-        // IMPORTANTE: El html DEBE empezar con <!DOCTYPE html> para evitar el Quirks Mode
         let html = `<!DOCTYPE html>
         <html lang="es">
         <head>
             <meta charset="UTF-8">
-            <title>Reporte Maestro Quiniela</title>
             <style>
-                /* Evitamos que el navegador use reglas antiguas */
                 * { box-sizing: border-box; }
                 @page { size: A4; margin: 0; }
                 body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #444; }
                 
-                /* Botón de impresión SIEMPRE arriba */
                 .print-header {
                     position: fixed; top: 0; left: 0; width: 100%; 
                     background: #222; padding: 10px; text-align: center; z-index: 9999;
@@ -646,14 +642,11 @@ async function generarReporteMaestro() {
 
                 .page-container { 
                     background: white; width: 210mm; min-height: 297mm; 
-                    margin: 60px auto 20px auto; padding: 10mm; 
+                    margin: 60px auto 20px auto; padding: 8mm; 
                     box-sizing: border-box; page-break-after: always;
-                    box-shadow: 0 0 10px rgba(0,0,0,0.5);
                 }
                 
-                .user-title { text-align: center; font-size: 18px; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
-                
-                /* Dos columnas para los 104 juegos */
+                .user-title { text-align: center; font-size: 18px; margin-bottom: 10px; border-bottom: 2px solid #000; }
                 .tables-flex { display: flex; justify-content: space-between; gap: 4mm; }
                 
                 table { border-collapse: collapse; width: 49%; table-layout: fixed; border: 1px solid #000; }
@@ -666,19 +659,19 @@ async function generarReporteMaestro() {
                 .col-id { width: 6mm; }
                 .col-name { width: 25mm; text-align: left; padding-left: 2px; font-weight: bold; }
                 .col-score { width: 7mm; background: #f0f0f0; }
-                /* Desempate en Azul fuerte para que se vea sí o sí */
-                .col-des { width: 7mm; font-weight: bold; color: blue !important; background: #fffde7; }
+                /* Color azul y fondo crema para asegurar que el dato resalte */
+                .col-des { width: 7mm; font-weight: bold; color: #0000FF !important; background: #FFFDE7; }
 
                 @media print {
                     .print-header { display: none; }
                     body { background: none; }
-                    .page-container { margin: 0; box-shadow: none; }
+                    .page-container { margin: 0; }
                 }
             </style>
         </head>
         <body>
             <div class="print-header">
-                <button onclick="window.print()">🖨️ IMPRIMIR QUINIELAS</button>
+                <button onclick="window.print()">🖨️ IMPRIMIR REPORTE</button>
             </div>`;
 
         for (const user in agrupado) {
@@ -706,9 +699,10 @@ async function generarReporteMaestro() {
                 
                 const bloque = preds.slice(i * mitad, (i + 1) * mitad);
                 bloque.forEach(r => {
-                    // Si el valor es 0, lo muestra. Si es nulo, queda vacío.
-                    const dL = (r.goles_desempate_local !== null && r.goles_desempate_local !== undefined) ? r.goles_desempate_local : "";
-                    const dV = (r.goles_desempate_visita !== null && r.goles_desempate_visita !== undefined) ? r.goles_desempate_visita : "";
+                    // SEGURIDAD: Intentamos obtener el valor por nombre largo, corto o alternativo
+                    // Si el valor es 0 (como en Marruecos), el operador ?? permite que se muestre.
+                    const dL = r.goles_desempate_local ?? r.desempate_l ?? r.dl ?? "";
+                    const dV = r.goles_desempate_visita ?? r.desempate_v ?? r.dv ?? "";
                     
                     html += `<tr>
                         <td>${r.partido_id}</td>
@@ -732,10 +726,9 @@ async function generarReporteMaestro() {
         
     } catch(e) {
         console.error(e);
-        alert("Error técnico al generar el reporte.");
+        alert("Error al generar el reporte.");
     }
 }
-
 
 function cerrarMiModal() {
     const modal = document.getElementById('modal-informativo');
