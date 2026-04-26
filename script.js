@@ -687,7 +687,7 @@ async function generarReporteMaestro() {
                 }
             </style>
         </head><body>
-            <div class="header-fijo"><button onclick="window.print()">🖨️ IMPRIMIR TODO (A4)</button></div>`;
+            <div class="header-fijo"><button onclick="window.print()">🖨️ IMPRIMIR REPORTE </button></div>`;
 
         for (const user in agrupado) {
             html += `<div class="hoja-a4">
