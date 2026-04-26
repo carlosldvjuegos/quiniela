@@ -614,7 +614,6 @@ async function generarReporteMaestro() {
     try {
         const res = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await res.json();
-        
         if (!datos.length) return alert("No hay datos.");
 
         const agrupado = datos.reduce((acc, r) => { 
@@ -622,112 +621,61 @@ async function generarReporteMaestro() {
             return acc; 
         }, {});
 
-        let html = `<!DOCTYPE html>
-        <html lang="es">
-        <head>
-            <meta charset="UTF-8">
+        let html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
             <style>
                 * { box-sizing: border-box; }
                 @page { size: A4; margin: 0; }
-                body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #444; }
-                
-                .print-header {
-                    position: fixed; top: 0; left: 0; width: 100%; 
-                    background: #222; padding: 10px; text-align: center; z-index: 9999;
-                }
-                .print-header button {
-                    padding: 12px 25px; cursor: pointer; font-weight: bold; 
-                    background: #28a745; color: white; border: none; border-radius: 5px;
-                }
-
-                .page-container { 
-                    background: white; width: 210mm; min-height: 297mm; 
-                    margin: 60px auto 20px auto; padding: 8mm; 
-                    box-sizing: border-box; page-break-after: always;
-                }
-                
-                .user-title { text-align: center; font-size: 18px; margin-bottom: 10px; border-bottom: 2px solid #000; }
-                .tables-flex { display: flex; justify-content: space-between; gap: 4mm; }
-                
+                body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+                .btn-fijo { position: fixed; top: 0; width: 100%; background: #222; padding: 10px; text-align: center; z-index: 999; }
+                .btn-fijo button { padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
+                .hoja { background: white; width: 210mm; min-height: 297mm; margin: 50px auto 0; padding: 8mm; page-break-after: always; border: 1px solid #ccc; }
+                .titulo { text-align: center; font-size: 16px; margin-bottom: 10px; border-bottom: 2px solid #000; }
+                .contenedor-tablas { display: flex; justify-content: space-between; }
                 table { border-collapse: collapse; width: 49%; table-layout: fixed; border: 1px solid #000; }
-                th, td { 
-                    border: 1px solid #000; text-align: center; 
-                    font-size: 8px; height: 5.2mm; padding: 0; color: #000;
-                }
-                th { background: #eee; font-weight: bold; }
-                
-                .col-id { width: 6mm; }
-                .col-name { width: 25mm; text-align: left; padding-left: 2px; font-weight: bold; }
-                .col-score { width: 7mm; background: #f0f0f0; }
-                /* Color azul y fondo crema para asegurar que el dato resalte */
-                .col-des { width: 7mm; font-weight: bold; color: #0000FF !important; background: #FFFDE7; }
-
-                @media print {
-                    .print-header { display: none; }
-                    body { background: none; }
-                    .page-container { margin: 0; }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="print-header">
-                <button onclick="window.print()">🖨️ IMPRIMIR REPORTE</button>
-            </div>`;
+                th, td { border: 1px solid #000; text-align: center; font-size: 8px; height: 5mm; color: #000 !important; }
+                th { background: #eee; }
+                .equipo { text-align: left; padding-left: 2px; font-weight: bold; width: 25mm; }
+                /* El color que pediste para el desempate */
+                .des { font-weight: bold; color: blue !important; background: #ffffd0; width: 7mm; }
+                @media print { .btn-fijo { display: none; } .hoja { margin: 0; border: none; } }
+            </style></head><body>
+            <div class="btn-fijo"><button onclick="window.print()">IMPRIMIR AHORA</button></div>`;
 
         for (const user in agrupado) {
-            html += `<div class="page-container">
-                <div class="user-title">Quiniela: <strong>${user}</strong></div>
-                <div class="tables-flex">`;
-            
+            html += `<div class="hoja"><div class="titulo">Quiniela: ${user}</div><div class="contenedor-tablas">`;
             const preds = agrupado[user].sort((a, b) => a.partido_id - b.partido_id);
             const mitad = Math.ceil(preds.length / 2);
 
             for (let i = 0; i < 2; i++) {
-                html += `<table>
-                    <thead>
-                        <tr>
-                            <th class="col-id">#</th>
-                            <th class="col-name">Local</th>
-                            <th class="col-score">L</th>
-                            <th class="col-score">V</th>
-                            <th class="col-name">Visita</th>
-                            <th class="col-des">DL</th>
-                            <th class="col-des">DV</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
+                html += `<table><thead><tr>
+                    <th style="width:5mm">#</th><th class="equipo">Local</th>
+                    <th style="width:6mm">L</th><th style="width:6mm">V</th>
+                    <th class="equipo">Visita</th><th class="des">DL</th><th class="des">DV</th>
+                </tr></thead><tbody>`;
                 
-                const bloque = preds.slice(i * mitad, (i + 1) * mitad);
-                bloque.forEach(r => {
-                    // SEGURIDAD: Intentamos obtener el valor por nombre largo, corto o alternativo
-                    // Si el valor es 0 (como en Marruecos), el operador ?? permite que se muestre.
-                    const dL = r.goles_desempate_local ?? r.desempate_l ?? r.dl ?? "";
-                    const dV = r.goles_desempate_visita ?? r.desempate_v ?? r.dv ?? "";
+                preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
+                    // AQUÍ ESTÁ EL TRUCO: Buscamos el dato por todos los nombres posibles 
+                    // para que no me digas que sale vacío otra vez.
+                    const dl = r.goles_desempate_local ?? r.goles_local_desempate ?? r.desempate_local ?? r.dl ?? "";
+                    const dv = r.goles_desempate_visita ?? r.goles_visita_desempate ?? r.desempate_visita ?? r.dv ?? "";
                     
                     html += `<tr>
                         <td>${r.partido_id}</td>
-                        <td class="col-name">${r.nombre_local || r.local || '---'}</td>
+                        <td class="equipo">${r.nombre_local || r.local || '---'}</td>
                         <td>${r.goles_local}</td>
                         <td>${r.goles_visita}</td>
-                        <td class="col-name">${r.nombre_visita || r.visita || '---'}</td>
-                        <td class="col-des">${dL}</td>
-                        <td class="col-des">${dV}</td>
+                        <td class="equipo">${r.nombre_visita || r.visita || '---'}</td>
+                        <td class="des">${dl}</td>
+                        <td class="des">${dv}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
             }
             html += `</div></div>`;
         }
-        
         html += `</body></html>`;
-        const v = window.open('', '_blank');
-        v.document.write(html);
-        v.document.close();
-        
-    } catch(e) {
-        console.error(e);
-        alert("Error al generar el reporte.");
-    }
+        const v = window.open('', '_blank'); v.document.write(html); v.document.close();
+    } catch(e) { alert("Error al conectar con la base de datos."); }
 }
 
 function cerrarMiModal() {
