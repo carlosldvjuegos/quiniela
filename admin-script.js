@@ -289,7 +289,6 @@ function actualizarLogicaAdmin() {
         return (res.gl > res.gv) ? txtL : txtV;
     };
 
-    // ESTA ES LA FUNCIÓN NUEVA AGREGADA
     const getPerdedor = (id) => {
         const res = resultados[id];
         const txtL = document.getElementById(`N-L-${id}`)?.innerText || `Local ${id}`;
@@ -334,14 +333,14 @@ function actualizarLogicaAdmin() {
         if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
     });
 
-    // LÓGICA PARA EL TERCER PUESTO (ID 103) - AGREGADA
+    // LÓGICA PARA EL TERCER PUESTO (ID 103)
     if (document.getElementById(`N-L-103`)) document.getElementById(`N-L-103`).innerText = getPerdedor(101);
     if (document.getElementById(`N-V-103`)) document.getElementById(`N-V-103`).innerText = getPerdedor(102);
 
     // FINAL (ID 104)
     if (document.getElementById(`N-L-104`)) document.getElementById(`N-L-104`).innerText = getGanador(101);
     if (document.getElementById(`N-V-104`)) document.getElementById(`N-V-104`).innerText = getGanador(102);
-} // <--- AQUÍ CERRÉ LA FUNCIÓN actualizarLogicaAdmin
+}
 
 // --- 5. CARGAR RESULTADOS DESDE LA DB ---
 async function cargarResultadosExistentes() {
@@ -353,19 +352,13 @@ async function cargarResultadosExistentes() {
         const resultadosDB = await response.json();
 
         if (resultadosDB && resultadosDB.length > 0) {
-            // --- FUNCIÓN DE LIMPIEZA INTERNA ---
-            const limpiar = (txt) => txt ? txt.trim().toLowerCase().replace(/\s+/g, ' ') : "";
-            // -----------------------------------
-
             resultadosDB.forEach(res => {
-                // IMPORTANTE: res.gl y res.gv son los nombres que vienen de tu servidor
                 const inputL = document.getElementById(`R-L-${res.id}`);
                 const inputV = document.getElementById(`R-V-${res.id}`);
                 
                 if (inputL && inputV) {
-                    // Aplicamos la limpieza para asegurar que la comparación posterior sea perfecta
-                    inputL.value = res.gl; // Cambiado de realL a gl
-                    inputV.value = res.gv; // Cambiado de realV a gv
+                    inputL.value = res.gl !== null ? res.gl : "";
+                    inputV.value = res.gv !== null ? res.gv : "";
                 }
             });
             
@@ -378,15 +371,16 @@ async function cargarResultadosExistentes() {
     }
 }
 
-
 async function guardarResultadosOficiales() {
+    // IMPORTANTE: Forzamos la actualización de la lógica antes de capturar nombres
+    actualizarLogicaAdmin();
+
     const resultadosEnvio = [];
     
     partidosData.forEach(p => {
         const inputL = document.getElementById(`R-L-${p.id}`);
         const inputV = document.getElementById(`R-V-${p.id}`);
         
-        // Obtenemos los elementos de texto de los nombres
         const elNombreL = document.getElementById(`N-L-${p.id}`);
         const elNombreV = document.getElementById(`N-V-${p.id}`);
 
@@ -394,10 +388,8 @@ async function guardarResultadosOficiales() {
             const gl = inputL.value.trim();
             const gv = inputV.value.trim();
 
-            // Solo procesamos si ambos campos de goles tienen valor
             if (gl !== "" && gv !== "") {
-                // Capturamos el nombre: Si el elemento existe, tomamos el texto; 
-                // si no (por error de ID), enviamos un string vacío para evitar el NULL
+                // Aquí capturamos el nombre real que el DOM tiene ahora mismo
                 const nombreLocal = elNombreL ? elNombreL.innerText.trim() : "";
                 const nombreVisita = elNombreV ? elNombreV.innerText.trim() : "";
 
@@ -434,9 +426,8 @@ async function guardarResultadosOficiales() {
     }
 }
 
-
 // ARRANQUE
 document.addEventListener("DOMContentLoaded", async () => {
-    renderizarPartidosAdmin(); // Dibuja la estructura
-    await cargarResultadosExistentes(); // Trae los datos de Neon y llena los huecos
+    renderizarPartidosAdmin();
+    await cargarResultadosExistentes();
 });
