@@ -423,6 +423,7 @@ async function cargarDesdeDB(nombre) {
             fetch(`${API_URL}/cargar/${nombre}`).then(r => r.json())
         ]);
 
+        // 1. Cargar datos en los inputs
         resUser.forEach(p => {
             const iL = document.getElementById(`L-${p.id}`);
             const iV = document.getElementById(`V-${p.id}`);
@@ -437,53 +438,55 @@ async function cargarDesdeDB(nombre) {
 
         actualizarTorneo();
 
+        // 2. Mostrar puntos y validaciones
         setTimeout(() => {
             let totalPuntos = 0;
             resUser.forEach(p => {
                 const iL = document.getElementById(`L-${p.id}`);
                 const ofi = resOficiales.find(o => parseInt(o.id) === parseInt(p.id));
                 const datosPart = partidosData.find(pd => pd.id === p.id);
-                
-                if (ofi && iL) {
-                    let coincide = true;
-                
-                    // Solo validamos nombres si NO es fase de grupos
-                    if (datosPart && datosPart.fase !== "Grupos") {
-                        // Nombres de la quiniela del usuario (Tabla predicciones)
-                        const userL = limpiarTexto(p.nombre_local);
-                        const userV = limpiarTexto(p.nombre_visita);
-                
-                        // Nombres del servidor (Ruta /obtener-resultados-db)
-                        const ofiL = limpiarTexto(ofi.nombre_local); 
-                        const ofiV = limpiarTexto(ofi.nombre_visita);
-                        
-                        // Si el resultado oficial ya tiene nombres asignados
-                        if (ofiL !== "" && ofiL !== "---") {
-                            // Comparamos. Si uno no coincide, el pronóstico es inválido
-                            if (userL !== ofiL || userV !== ofiV) {
-                                coincide = false;
-                            }
-                        }
-                    }
-                
-                    const div = document.createElement('div');
-                    div.className = 'puntos-obtenidos';
-                    div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
-                
-                    if (!coincide) {
-                        div.style.color = "#ff4444";
-                        div.innerHTML = `Partido mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
-                        // NO sumamos puntos aquí
-                    } else {
-                        const puntosFinales = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
-                        totalPuntos += puntosFinales; // AQUÍ sumamos los puntos
-                        div.style.color = "#003366"; 
-                        div.innerHTML = `Puntos: <span style="color:red; font-size:16px;">${puntosFinales}</span>`;
-                    }
-                    iL.closest('.marcador-col').appendChild(div);
-                }
-                            });
             
+                if (ofi && iL) {
+    const div = document.createElement('div');
+    div.className = 'puntos-obtenidos';
+    div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
+
+    let coincide = true;
+    const norm = (t) => (t || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+
+    if (datosPart && datosPart.fase !== "Grupos") {
+        // Nombres de la quiniela del usuario (Tabla predicciones)
+        const nL_user = norm(p.nombre_local);
+        const nV_user = norm(p.nombre_visita);
+
+        // Nombres que vienen del SERVIDOR (Ruta /obtener-resultados-db)
+        // Tu servidor los renombra como 'nombre_local' y 'nombre_visita'
+        const nL_ofi = norm(ofi.nombre_local); 
+        const nV_ofi = norm(ofi.nombre_visita);
+        
+        if (nL_ofi !== "" && nL_ofi !== "---") {
+            // AQUÍ ESdonde se detecta que Croacia !== Senegal
+            if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
+                coincide = false;
+                }
+            }
+        }
+    
+        if (!coincide) {
+            div.style.color = "#ff4444";
+            div.innerHTML = `Partido mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
+            // IMPORTANTE: Aquí NO se suma al totalPuntos, por eso bajará de 507 a 442
+        } else {
+            const puntosFinales = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
+            totalPuntos += puntosFinales;
+            div.style.color = "#003366"; 
+            div.innerHTML = `Puntos: <span style="color:red; font-size:16px;">${puntosFinales}</span>`;
+        }
+                iL.closest('.marcador-col').appendChild(div);
+            }
+         });
+            
+            // 3. Actualizar título con el puntaje real corregido
             const container = document.getElementById('links-container');
             if (container) {
                 let titulo = document.getElementById('titulo-quiniela-activa');
@@ -499,7 +502,7 @@ async function cargarDesdeDB(nombre) {
             document.querySelectorAll('.marcador-col input').forEach(i => i.disabled = true);
         }, 500);
 
-        // Lógica de botones... (se mantiene igual)
+        // 4. Lógica de navegación
         const btns = document.querySelectorAll('.btn-link');
         btns.forEach(b => {
             if (b.getAttribute('data-nombre-real') === nombre.toLowerCase().trim()) {
