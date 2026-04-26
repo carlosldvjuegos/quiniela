@@ -407,7 +407,6 @@ async function cargarDesdeDB(nombre) {
         const btnSave = document.querySelector(".btn-save");
         if (btnSave) btnSave.style.display = "none";
 
-        // Limpiamos previos sin romper la estructura
         document.querySelectorAll('.marcador-col input').forEach(i => { i.value = ""; i.disabled = false; });
         document.querySelectorAll('.puntos-obtenidos').forEach(d => d.remove());
 
@@ -416,7 +415,7 @@ async function cargarDesdeDB(nombre) {
             fetch(`${API_URL}/cargar/${nombre}`).then(r => r.json())
         ]);
 
-        // RELLENAR INPUTS (Tu lógica original intacta)
+        // 1. Cargar datos en los inputs (Tu lógica original)
         resUser.forEach(p => {
             const iL = document.getElementById(`L-${p.id}`);
             const iV = document.getElementById(`V-${p.id}`);
@@ -426,12 +425,14 @@ async function cargarDesdeDB(nombre) {
             if (iV) iV.value = p.gv;
             if (iDL && p.dl !== null) iDL.value = p.dl;
             if (iDV && p.dv !== null) iDV.value = p.dv;
-            if (typeof gestionarDesempate === "function") gestionarDesempate(p.id);
+            gestionarDesempate(p.id);
         });
 
-        if (typeof actualizarTorneo === "function") actualizarTorneo();
+        actualizarTorneo();
 
+        // 2. Mostrar puntos y validaciones
         setTimeout(() => {
+            let totalPuntos = 0;
             resUser.forEach(p => {
                 const iL = document.getElementById(`L-${p.id}`);
                 const ofi = resOficiales.find(o => parseInt(o.id) === parseInt(p.id));
@@ -442,36 +443,49 @@ async function cargarDesdeDB(nombre) {
                     div.className = 'puntos-obtenidos';
                     div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
 
-                    // COMPARTIVA DE NOMBRES (Mejora solicitada)
                     let coincide = true;
                     if (datosPart && datosPart.fase !== "Grupos") {
-                        const nL_user = (p.nombre_local || "").trim().toLowerCase();
-                        const nV_user = (p.nombre_visita || "").trim().toLowerCase();
-                        const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
-                        const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
+                        // Normalización para que "México" y "mexico" coincidan
+                        const norm = (t) => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+                        const nL_user = norm(p.nombre_local);
+                        const nV_user = norm(p.nombre_visita);
+                        const nL_ofi = norm(ofi.nombreLocal);
+                        const nV_ofi = norm(ofi.nombreVisita);
                         
-                        // Si no coinciden los equipos que pasaron
-                        if (nL_ofi !== "" && (nL_user !== nL_ofi || nV_user !== nV_ofi)) {
-                            coincide = false;
-                        }
+                        if (nL_ofi !== "" && (nL_user !== nL_ofi || nV_user !== nV_ofi)) coincide = false;
                     }
 
                     if (!coincide) {
-                        // Formato: Texto azul, puntos en rojo, mensaje arriba
                         div.style.color = "#ff4444";
-                        div.innerHTML = `Juego mal pronosticado <br> <span style="color:#003366;">Puntos: </span><span style="color:red; font-size:16px;">0</span>`;
+                        div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
                     } else {
                         const puntosFinales = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
-                        div.style.color = "#003366"; // Azul oscuro para "Puntos:"
+                        totalPuntos += puntosFinales;
+                        div.style.color = "#003366"; 
                         div.innerHTML = `Puntos: <span style="color:red; font-size:16px;">${puntosFinales}</span>`;
                     }
                     iL.closest('.marcador-col').appendChild(div);
                 }
             });
+
+            // 3. Restaurar el nombre de la quiniela arriba del botón (Como estaba antes)
+            const container = document.getElementById('links-container');
+            if (container) {
+                // Buscamos si ya existe el título para no duplicarlo
+                let titulo = document.getElementById('titulo-quiniela-activa');
+                if (!titulo) {
+                    titulo = document.createElement('div');
+                    titulo.id = 'titulo-quiniela-activa';
+                    titulo.style = "background: #003366; color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; text-align: center; font-weight: bold; display: flex; justify-content: space-between; align-items: center;";
+                    container.prepend(titulo);
+                }
+                titulo.innerHTML = `<span>🏆 ${nombre.toUpperCase()}</span> <span style="background: white; color: #003366; padding: 2px 8px; border-radius: 4px;">${totalPuntos} PTS</span>`;
+            }
+
             document.querySelectorAll('.marcador-col input').forEach(i => i.disabled = true);
         }, 1200);
 
-        // NAVEGACIÓN Y BOTONES (Tu lógica original intacta)
+        // 4. Lógica de navegación (Tu lógica original)
         const btns = document.querySelectorAll('.btn-link');
         btns.forEach(b => {
             if (b.getAttribute('data-nombre-real') === nombre.toLowerCase().trim()) {
