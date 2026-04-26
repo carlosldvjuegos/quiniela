@@ -483,7 +483,7 @@ async function cargarDesdeDB(nombre) {
             }
 
             document.querySelectorAll('.marcador-col input').forEach(i => i.disabled = true);
-        }, 1200);
+        }, 500);
 
         // 4. Lógica de navegación (Tu lógica original)
         const btns = document.querySelectorAll('.btn-link');
@@ -609,7 +609,7 @@ function ponerNombreEnCard(id, lado, nombre) {
     if (el) { el.closest('.partido-card').querySelector(lado === 'L' ? '.local' : '.visita').innerText = nombre; }
 }
 
-// 8. REPORTE MAESTRO (FORMATO A4 + IMPRESIÓN)
+// 8. REPORTE MAESTRO (FORMATO A4 + IMPRESIÓN) - CORREGIDO
 async function generarReporteMaestro() {
     try {
         const res = await fetch(`${API_URL}/obtener-todas-predicciones`);
@@ -622,42 +622,50 @@ async function generarReporteMaestro() {
         }, {});
 
         let html = `<html><head><title>Reporte Maestro</title><style>
-            @page { size: A4; margin: 0; }
+            @page { size: A4; margin: 10mm; }
             body { 
                 font-family: 'Segoe UI', Arial, sans-serif; 
-                margin: 0; padding: 0; 
+                margin: 0; padding: 0; background-color: #f0f0f0;
             }
             .report-container { 
-                background: white; width: 210mm; height: 297mm; margin: 0 auto;
-                padding: 8mm; box-sizing: border-box; page-break-after: always;
-                display: flex; flex-direction: column;
+                background: white; width: 210mm; min-height: 297mm; margin: 0 auto;
+                padding: 10mm; box-sizing: border-box; page-break-after: always;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
             }
             h2 { 
-                border-bottom: 2px solid #01215b; text-align: center; color: #01215b; 
-                margin: 0 0 5px 0; font-size: 14px; text-transform: uppercase;
+                border-bottom: 3px solid #01215b; text-align: center; color: #01215b; 
+                margin: 0 0 10px 0; font-size: 18px; text-transform: uppercase;
             }
             .grid-wrapper { 
-                display: flex; justify-content: center; gap: 5mm; flex-grow: 1;
+                display: flex; justify-content: space-between; gap: 4mm;
             }
             table { 
-                border-collapse: collapse; table-layout: fixed; width: 95mm; 
+                border-collapse: collapse; table-layout: fixed; width: 48%; 
             }
             th, td { 
-                border: 0.5px solid #333; padding: 1px 2px; text-align: center; 
-                font-size: 7.2px; height: 4.8mm; overflow: hidden;
+                border: 1px solid #000; padding: 3px 2px; text-align: center; 
+                font-size: 8.5px; height: 6mm; overflow: hidden;
                 white-space: nowrap; text-overflow: ellipsis;
             }
-            th { background: #01215b; color: white; font-weight: bold; }
+            th { background: #01215b; color: white; font-weight: bold; text-transform: uppercase; }
             
-            .col-id { width: 6mm; }
-            .col-equipo { width: 30mm; text-align: left; font-weight: bold; }
-            .col-gol { width: 7mm; background-color: #f5f5f5; }
-            .col-pals { width: 10mm; font-size: 6px; }
+            .col-id { width: 8mm; }
+            .col-equipo { width: 32mm; text-align: left; font-weight: bold; padding-left: 3px; }
+            .col-gol { width: 8mm; background-color: #f9f9f9; font-weight: bold; }
+            .col-fase { width: 14mm; font-size: 7.5px; color: #555; font-weight: bold; }
 
-            .no-print { text-align: center; padding: 10px; background: #333; }
-            @media print { .no-print { display: none; } .report-container { margin: 0; } }
+            .no-print { text-align: center; padding: 20px; background: #333; position: sticky; top: 0; z-index: 100; }
+            .btn-print { 
+                padding: 12px 25px; cursor: pointer; background: #28a745; color: white; 
+                border: none; border-radius: 5px; font-weight: bold; font-size: 16px;
+            }
+            @media print { 
+                .no-print { display: none; } 
+                body { background: white; }
+                .report-container { margin: 0; box-shadow: none; border: none; width: 100%; } 
+            }
         </style></head><body>
-        <div class="no-print"><button onclick="window.print()" style="padding:10px; cursor:pointer;">🖨️ IMPRIMIR REPORTE</button></div>`;
+        <div class="no-print"><button class="btn-print" onclick="window.print()">🖨️ CONFIRMAR IMPRESIÓN (FORMATO A4)</button></div>`;
 
         for (const user in agrupado) {
             html += `<div class="report-container"><h2>Quiniela: ${user}</h2><div class="grid-wrapper">`;
@@ -672,28 +680,24 @@ async function generarReporteMaestro() {
                     <th class="col-gol">L</th>
                     <th class="col-gol">V</th>
                     <th class="col-equipo">Visita</th>
-                    <th class="col-pals">Pals</th>
+                    <th class="col-fase">Fase</th>
                 </tr></thead><tbody>`;
                 
                 preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
-                    const p = partidosData.find(item => item.id === r.partido_id) || {};
+                    // Buscamos la fase en partidosData usando el ID
+                    const p = (typeof partidosData !== 'undefined') ? partidosData.find(item => item.id === r.partido_id) : null;
+                    const faseTexto = p ? p.fase : "---";
                     
-                    // Lógica robusta para nombres:
-                    // 1. Busca nombre guardado en la predicción (nombre_local)
-                    // 2. Si no, busca el nombre que viene en el registro (local)
-                    // 3. Si no, busca en el archivo base (p.local)
-                    const nL = r.nombre_local || r.local || p.local || '---';
-                    const nV = r.nombre_visita || r.visita || p.visita || '---';
-                    
-                    const des = (r.goles_desempate_local !== null) ? `${r.goles_desempate_local}-${r.goles_desempate_visita}` : "-";
+                    const nL = r.nombre_local || r.local || (p ? p.local : '---');
+                    const nV = r.nombre_visita || r.visita || (p ? p.visita : '---');
                     
                     html += `<tr>
                         <td>${r.partido_id}</td>
                         <td class="col-equipo">${nL}</td>
-                        <td>${r.goles_local}</td>
-                        <td>${r.goles_visita}</td>
+                        <td class="col-gol">${r.goles_local}</td>
+                        <td class="col-gol">${r.goles_visita}</td>
                         <td class="col-equipo">${nV}</td>
-                        <td class="col-pals">${des}</td>
+                        <td class="col-fase">${faseTexto}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
