@@ -638,7 +638,6 @@ async function generarReporteMaestro() {
             .col-id { width: 5mm; }
             .col-equipo { width: 25mm; text-align: left; font-weight: bold; }
             .col-gol { width: 6mm; background-color: #f5f5f5; }
-            /* Columnas de desempate idénticas a las de goles normales */
             .col-des { width: 6mm; font-weight: bold; color: #cc0000; background-color: #fffafa; }
 
             .no-print { text-align: center; padding: 10px; background: #333; }
@@ -653,13 +652,10 @@ async function generarReporteMaestro() {
 
             for (let i = 0; i < 2; i++) {
                 html += `<table><thead><tr>
-                    <th class="col-id">#</th>
-                    <th class="col-equipo">Local</th>
-                    <th class="col-gol">L</th>
-                    <th class="col-gol">V</th>
+                    <th class="col-id">#</th><th class="col-equipo">Local</th>
+                    <th class="col-gol">L</th><th class="col-gol">V</th>
                     <th class="col-equipo">Visita</th>
-                    <th class="col-des">DL</th>
-                    <th class="col-des">DV</th>
+                    <th class="col-des">DL</th><th class="col-des">DV</th>
                 </tr></thead><tbody>`;
                 
                 preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
@@ -667,17 +663,19 @@ async function generarReporteMaestro() {
                     const nL = r.nombre_local || r.local || p.local || '---';
                     const nV = r.nombre_visita || r.visita || p.visita || '---';
                     
-                    // PASO 100% DIRECTO: Si la base de datos tiene un valor, se muestra.
-                    // Si tiene un 0, se mostrará el 0.
-                    // No usamos IFs, ni validaciones, nada.
+                    // PASO ULTRA-DIRECTO: Convertimos a String para que el 0 no se pierda.
+                    // Si el valor es null/undefined de verdad, ponemos espacio vacío.
+                    const dL = (r.goles_desempate_local !== null && r.goles_desempate_local !== undefined) ? String(r.goles_desempate_local) : "";
+                    const dV = (r.goles_desempate_visita !== null && r.goles_desempate_visita !== undefined) ? String(r.goles_desempate_visita) : "";
+                    
                     html += `<tr>
                         <td>${r.partido_id}</td>
                         <td class="col-equipo">${nL}</td>
                         <td class="col-gol">${r.goles_local}</td>
                         <td class="col-gol">${r.goles_visita}</td>
                         <td class="col-equipo">${nV}</td>
-                        <td class="col-des">${r.goles_desempate_local}</td>
-                        <td class="col-des">${r.goles_desempate_visita}</td>
+                        <td class="col-des">${dL}</td>
+                        <td class="col-des">${dV}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
