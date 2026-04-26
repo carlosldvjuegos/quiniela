@@ -161,15 +161,26 @@ app.get('/registros', async (req, res) => {
 });
 
 // OBTENER TODAS (MODIFICADO PARA EL RANKING)
+// OBTENER TODAS (CORREGIDO PARA EL REPORTE MAESTRO)
 app.get('/obtener-todas-predicciones', async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT nombre_usuario, partido_id, goles_local, goles_visita, 
-            nombre_local, nombre_visita 
-            FROM predicciones ORDER BY nombre_usuario, partido_id
+            SELECT 
+                nombre_usuario, 
+                partido_id, 
+                goles_local, 
+                goles_visita, 
+                goles_desempate_local, 
+                goles_desempate_visita, 
+                nombre_local, 
+                nombre_visita 
+            FROM predicciones 
+            ORDER BY nombre_usuario, partido_id
         `);
         res.json(result.rows);
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) { 
+        res.status(500).json({ error: err.message }); 
+    }
 });
 
 app.delete('/reset-db', async (req, res) => {
