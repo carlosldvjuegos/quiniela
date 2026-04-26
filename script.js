@@ -609,7 +609,7 @@ function ponerNombreEnCard(id, lado, nombre) {
     if (el) { el.closest('.partido-card').querySelector(lado === 'L' ? '.local' : '.visita').innerText = nombre; }
 }
 
-// 8. REPORTE MAESTRO (FORMATO A4 + IMPRESIÓN) - CORREGIDO
+// 8. REPORTE MAESTRO (FORMATO A4 + IMPRESIÓN) - CON DESEMPATE/PENALES
 async function generarReporteMaestro() {
     try {
         const res = await fetch(`${API_URL}/obtener-todas-predicciones`);
@@ -630,7 +630,6 @@ async function generarReporteMaestro() {
             .report-container { 
                 background: white; width: 210mm; min-height: 297mm; margin: 0 auto;
                 padding: 10mm; box-sizing: border-box; page-break-after: always;
-                box-shadow: 0 0 10px rgba(0,0,0,0.1);
             }
             h2 { 
                 border-bottom: 3px solid #01215b; text-align: center; color: #01215b; 
@@ -647,25 +646,22 @@ async function generarReporteMaestro() {
                 font-size: 8.5px; height: 6mm; overflow: hidden;
                 white-space: nowrap; text-overflow: ellipsis;
             }
-            th { background: #01215b; color: white; font-weight: bold; text-transform: uppercase; }
+            th { background: #01215b; color: white; font-weight: bold; }
             
             .col-id { width: 8mm; }
             .col-equipo { width: 32mm; text-align: left; font-weight: bold; padding-left: 3px; }
             .col-gol { width: 8mm; background-color: #f9f9f9; font-weight: bold; }
-            .col-fase { width: 14mm; font-size: 7.5px; color: #555; font-weight: bold; }
+            /* Estilo para la columna de penales/desempate */
+            .col-pen { width: 14mm; font-size: 8px; color: #d9534f; font-weight: bold; }
 
-            .no-print { text-align: center; padding: 20px; background: #333; position: sticky; top: 0; z-index: 100; }
+            .no-print { text-align: center; padding: 20px; background: #333; }
             .btn-print { 
                 padding: 12px 25px; cursor: pointer; background: #28a745; color: white; 
-                border: none; border-radius: 5px; font-weight: bold; font-size: 16px;
+                border: none; border-radius: 5px; font-weight: bold;
             }
-            @media print { 
-                .no-print { display: none; } 
-                body { background: white; }
-                .report-container { margin: 0; box-shadow: none; border: none; width: 100%; } 
-            }
+            @media print { .no-print { display: none; } body { background: white; } }
         </style></head><body>
-        <div class="no-print"><button class="btn-print" onclick="window.print()">🖨️ CONFIRMAR IMPRESIÓN (FORMATO A4)</button></div>`;
+        <div class="no-print"><button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR QUINIELAS (A4)</button></div>`;
 
         for (const user in agrupado) {
             html += `<div class="report-container"><h2>Quiniela: ${user}</h2><div class="grid-wrapper">`;
@@ -680,16 +676,20 @@ async function generarReporteMaestro() {
                     <th class="col-gol">L</th>
                     <th class="col-gol">V</th>
                     <th class="col-equipo">Visita</th>
-                    <th class="col-fase">Fase</th>
+                    <th class="col-pen">Pen</th>
                 </tr></thead><tbody>`;
                 
                 preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
-                    // Buscamos la fase en partidosData usando el ID
                     const p = (typeof partidosData !== 'undefined') ? partidosData.find(item => item.id === r.partido_id) : null;
-                    const faseTexto = p ? p.fase : "---";
                     
                     const nL = r.nombre_local || r.local || (p ? p.local : '---');
                     const nV = r.nombre_visita || r.visita || (p ? p.visita : '---');
+
+                    // LÓGICA DE DESEMPATE: Si es NULL o vacío, pone "-", si hay datos pone "L-V"
+                    let desempateTexto = "-";
+                    if (r.goles_desempate_local !== null && r.goles_desempate_visita !== null) {
+                        desempateTexto = `${r.goles_desempate_local}-${r.goles_desempate_visita}`;
+                    }
                     
                     html += `<tr>
                         <td>${r.partido_id}</td>
@@ -697,7 +697,7 @@ async function generarReporteMaestro() {
                         <td class="col-gol">${r.goles_local}</td>
                         <td class="col-gol">${r.goles_visita}</td>
                         <td class="col-equipo">${nV}</td>
-                        <td class="col-fase">${faseTexto}</td>
+                        <td class="col-pen">${desempateTexto}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
