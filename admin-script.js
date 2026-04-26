@@ -380,13 +380,16 @@ async function cargarResultadosExistentes() {
 
 
 async function guardarResultadosOficiales() {
+    // 1. Forzamos que se calculen los nombres (Marruecos, Colombia, etc.) antes de leerlos
+    actualizarLogicaAdmin();
+
     const resultadosEnvio = [];
     
     partidosData.forEach(p => {
         const inputL = document.getElementById(`R-L-${p.id}`);
         const inputV = document.getElementById(`R-V-${p.id}`);
         
-        // Obtenemos los elementos de texto de los nombres
+        // Elementos donde el script escribe los nombres calculados
         const elNombreL = document.getElementById(`N-L-${p.id}`);
         const elNombreV = document.getElementById(`N-V-${p.id}`);
 
@@ -394,10 +397,9 @@ async function guardarResultadosOficiales() {
             const gl = inputL.value.trim();
             const gv = inputV.value.trim();
 
-            // Solo procesamos si ambos campos de goles tienen valor
+            // Solo enviamos si el admin puso goles
             if (gl !== "" && gv !== "") {
-                // Capturamos el nombre: Si el elemento existe, tomamos el texto; 
-                // si no (por error de ID), enviamos un string vacío para evitar el NULL
+                // Capturamos el texto visible (aquí ya dirá "Marruecos" en vez de "L101")
                 const nombreLocal = elNombreL ? elNombreL.innerText.trim() : "";
                 const nombreVisita = elNombreV ? elNombreV.innerText.trim() : "";
 
@@ -424,13 +426,13 @@ async function guardarResultadosOficiales() {
         const data = await response.json();
         
         if (response.ok) {
-            alert("¡Éxito!: " + (data.mensaje || "Resultados guardados correctamente."));
+            alert("¡Éxito!: Resultados guardados con nombres reales.");
         } else {
-            alert("Error del servidor: " + (data.error || "No se pudo guardar."));
+            alert("Error: " + (data.error || "No se pudo guardar."));
         }
     } catch (e) {
-        console.error("Error en la petición:", e);
-        alert("Error de conexión al intentar guardar.");
+        console.error("Error:", e);
+        alert("Error de conexión.");
     }
 }
 
