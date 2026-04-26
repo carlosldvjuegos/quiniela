@@ -79,13 +79,18 @@ inicializarDB();
 app.get('/obtener-resultados-db', async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT partido_id as id, goles_local as gl, goles_visita as gv, 
-            equipo_local as nombreLocal, equipo_visitante as nombreVisita 
+            SELECT 
+                partido_id AS id, 
+                goles_local AS gl, 
+                goles_visita AS gv, 
+                equipo_local AS nombre_local,      /* Cambiado para coincidir con predicciones */
+                equipo_visitante AS nombre_visita  /* Cambiado para coincidir con predicciones */
             FROM resultados_oficiales
         `);
         res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error(err);
+        res.status(500).send("Error al obtener resultados");
     }
 });
 
