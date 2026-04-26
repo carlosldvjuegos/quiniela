@@ -634,7 +634,6 @@ async function generarReporteMaestro() {
         
         if (!datos || datos.length === 0) return alert("No hay datos disponibles.");
 
-        // Agrupamos por usuario
         const agrupado = datos.reduce((acc, r) => { 
             (acc[r.nombre_usuario] = acc[r.nombre_usuario] || []).push(r); 
             return acc; 
@@ -646,7 +645,6 @@ async function generarReporteMaestro() {
                 @page { size: A4; margin: 0; }
                 body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f0f0; }
                 
-                /* BOTÓN FIJO ARRIBA */
                 .header-fijo { 
                     position: fixed; top: 0; left: 0; width: 100%; 
                     background: #333; padding: 10px; text-align: center; z-index: 1000; 
@@ -657,31 +655,30 @@ async function generarReporteMaestro() {
                 }
 
                 .hoja-a4 { 
-                    background: white; width: 210mm; min-height: 297mm; 
-                    margin: 60px auto 20px auto; padding: 10mm; 
-                    box-sizing: border-box; page-break-after: always; 
+                    background: white; width: 210mm; height: 297mm; 
+                    margin: 60px auto 20px auto; padding: 5mm 8mm; 
+                    box-sizing: border-box; page-break-after: always;
+                    overflow: hidden;
                 }
                 
                 .titulo-quiniela { 
-                    text-align: center; font-size: 18px; font-weight: bold; 
-                    margin-bottom: 10px; border-bottom: 2px solid #000; 
+                    text-align: center; font-size: 16px; font-weight: bold; 
+                    margin-bottom: 5px; border-bottom: 2px solid #000; 
                 }
                 
-                /* CONTENEDOR PARA LAS DOS COLUMNAS */
-                .columnas-container { display: flex; justify-content: space-between; gap: 5mm; }
+                .columnas-container { display: flex; justify-content: space-between; gap: 3mm; }
                 
-                table { border-collapse: collapse; width: 48%; table-layout: fixed; border: 1px solid #000; }
+                table { border-collapse: collapse; width: 49%; table-layout: fixed; border: 1px solid #000; }
                 th, td { 
                     border: 1px solid #000; text-align: center; 
-                    font-size: 8px; height: 5.5mm; padding: 0; color: #000 !important;
+                    font-size: 7.5px; height: 5.0mm; padding: 0; color: #000 !important;
                 }
-                th { background: #eee; font-weight: bold; }
+                th { background: #eee; font-weight: bold; height: 6mm; }
                 
-                .col-id { width: 6mm; }
-                .col-team { width: 26mm; text-align: left; padding-left: 2px; font-weight: bold; overflow: hidden; }
-                .col-score { width: 7mm; background: #fafafa; }
-                /* Columna de desempate en azul para que se vea el 0 */
-                .col-des { width: 7mm; font-weight: bold; color: blue !important; background: #fffde7; }
+                .col-id { width: 5mm; }
+                .col-team { width: 27mm; text-align: left; padding-left: 2px; font-weight: bold; overflow: hidden; white-space: nowrap; }
+                .col-score { width: 6mm; background: #fafafa; }
+                .col-des { width: 6mm; font-weight: bold; color: blue !important; background: #fffde7; }
 
                 @media print {
                     .header-fijo { display: none; }
@@ -697,7 +694,6 @@ async function generarReporteMaestro() {
                 <div class="titulo-quiniela">Quiniela: ${user}</div>
                 <div class="columnas-container">`;
             
-            // Ordenamos por partido_id y dividimos en dos para las columnas
             const p = agrupado[user].sort((a, b) => a.partido_id - b.partido_id);
             const mitad = Math.ceil(p.length / 2);
 
@@ -718,7 +714,6 @@ async function generarReporteMaestro() {
                 
                 const bloque = p.slice(i * mitad, (i + 1) * mitad);
                 bloque.forEach(r => {
-                    // Ahora que el servidor manda los datos, usamos ?? para que el 0 sea visible
                     const valDL = r.goles_desempate_local ?? "";
                     const valDV = r.goles_desempate_visita ?? "";
                     
@@ -743,7 +738,7 @@ async function generarReporteMaestro() {
         v.document.close();
         
     } catch(e) {
-        alert("Error al generar reporte. Asegúrate de que el servidor esté activo.");
+        alert("Error al generar reporte.");
     }
 }
 
