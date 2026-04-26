@@ -610,12 +610,12 @@ function ponerNombreEnCard(id, lado, nombre) {
 }
 
 // 8. REPORTE MAESTRO (FORMATO A4 + IMPRESIÓN) - CON DESEMPATE/PENALES
-// 8. REPORTE MAESTRO (FORMATO A4 + IMPRESIÓN) - CORRECCIÓN DE VALORES CERO
+// 8. REPORTE MAESTRO (FORMATO A4 + IMPRESIÓN)
 async function generarReporteMaestro() {
     try {
         const res = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await res.json();
-        if (!datos.length) return alert("No hay datos para generar el reporte.");
+        if (!datos || !datos.length) return alert("No hay datos para generar el reporte.");
         
         const agrupado = datos.reduce((acc, r) => { 
             (acc[r.nombre_usuario] = acc[r.nombre_usuario] || []).push(r); 
@@ -629,15 +629,15 @@ async function generarReporteMaestro() {
                 background: white; width: 210mm; min-height: 297mm; margin: 0 auto;
                 padding: 10mm; box-sizing: border-box; page-break-after: always;
             }
-            h2 { border-bottom: 3px solid #01215b; text-align: center; color: #01215b; margin-bottom: 10px; font-size: 18px; }
+            h2 { border-bottom: 3px solid #01215b; text-align: center; color: #01215b; margin-bottom: 10px; font-size: 18px; text-transform: uppercase; }
             .grid-wrapper { display: flex; justify-content: space-between; gap: 4mm; }
-            table { border-collapse: collapse; table-layout: fixed; width: 48%; }
-            th, td { border: 1px solid #000; padding: 2px; text-align: center; font-size: 8.5px; height: 6mm; }
+            table { border-collapse: collapse; table-layout: fixed; width: 49%; }
+            th, td { border: 1px solid #000; padding: 2px; text-align: center; font-size: 8px; height: 6mm; }
             th { background: #01215b; color: white; }
-            .col-equipo { width: 32mm; text-align: left; font-weight: bold; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-left: 3px; }
-            .col-id { width: 7mm; }
-            .col-gol { width: 7mm; background: #f2f2f2; font-weight: bold; }
-            .col-des { width: 15mm; font-weight: bold; color: #cc0000; font-size: 8px; }
+            .col-equipo { width: 30mm; text-align: left; font-weight: bold; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-left: 2px; }
+            .col-id { width: 6mm; }
+            .col-gol { width: 6mm; background: #f2f2f2; font-weight: bold; }
+            .col-des { width: 14mm; font-weight: bold; color: #cc0000; }
 
             .no-print { text-align: center; padding: 15px; background: #333; }
             .btn-print { padding: 10px 20px; cursor: pointer; background: #28a745; color: white; border: none; font-weight: bold; border-radius: 4px; }
@@ -664,12 +664,15 @@ async function generarReporteMaestro() {
                     const nL = r.nombre_local || r.local || '---';
                     const nV = r.nombre_visita || r.visita || '---';
 
-                    // --- LÓGICA CORREGIDA PARA DESEMPATE ---
-                    // Usamos Number.isInteger para que el número 0 sea válido y se muestre
-                    let desempateVal = "-";
-                    if (Number.isInteger(r.goles_desempate_local) && Number.isInteger(r.goles_desempate_visita)) {
-                        desempateVal = `${r.goles_desempate_local} - ${r.goles_desempate_visita}`;
-                    }
+                    // LÓGICA DIRECTA: 
+                    // Si el valor no es null ni undefined, lo muestra.
+                    // Esto permite que el número 0 se muestre correctamente.
+                    let dL = r.goles_desempate_local;
+                    let dV = r.goles_desempate_visita;
+                    
+                    let desempateVal = (dL !== null && dL !== undefined && dV !== null && dV !== undefined) 
+                                       ? `${dL} - ${dV}` 
+                                       : "-";
 
                     html += `<tr>
                         <td>${r.partido_id}</td>
@@ -686,7 +689,10 @@ async function generarReporteMaestro() {
         }
         html += `</body></html>`;
         const v = window.open('', '_blank'); v.document.write(html); v.document.close();
-    } catch(e) { console.error(e); alert("Error al generar el reporte."); }
+    } catch(e) { 
+        console.error("Error detallado:", e); 
+        alert("Error al generar el reporte. Revisa la consola."); 
+    }
 }
 
 function cerrarMiModal() {
