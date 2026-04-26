@@ -614,9 +614,10 @@ async function generarReporteMaestro() {
     try {
         const res = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await res.json();
-        alert("Copia y pégame este texto: " + JSON.stringify(datos[0]));
-        if (!datos.length) return alert("No hay datos.");
+        
+        if (!datos || datos.length === 0) return alert("No hay datos disponibles.");
 
+        // Agrupamos por usuario
         const agrupado = datos.reduce((acc, r) => { 
             (acc[r.nombre_usuario] = acc[r.nombre_usuario] || []).push(r); 
             return acc; 
@@ -626,57 +627,107 @@ async function generarReporteMaestro() {
             <style>
                 * { box-sizing: border-box; }
                 @page { size: A4; margin: 0; }
-                body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-                .btn-fijo { position: fixed; top: 0; width: 100%; background: #222; padding: 10px; text-align: center; z-index: 999; }
-                .btn-fijo button { padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
-                .hoja { background: white; width: 210mm; min-height: 297mm; margin: 50px auto 0; padding: 8mm; page-break-after: always; border: 1px solid #ccc; }
-                .titulo { text-align: center; font-size: 16px; margin-bottom: 10px; border-bottom: 2px solid #000; }
-                .contenedor-tablas { display: flex; justify-content: space-between; }
-                table { border-collapse: collapse; width: 49%; table-layout: fixed; border: 1px solid #000; }
-                th, td { border: 1px solid #000; text-align: center; font-size: 8px; height: 5mm; color: #000 !important; }
-                th { background: #eee; }
-                .equipo { text-align: left; padding-left: 2px; font-weight: bold; width: 25mm; }
-                /* El color que pediste para el desempate */
-                .des { font-weight: bold; color: blue !important; background: #ffffd0; width: 7mm; }
-                @media print { .btn-fijo { display: none; } .hoja { margin: 0; border: none; } }
-            </style></head><body>
-            <div class="btn-fijo"><button onclick="window.print()">IMPRIMIR AHORA</button></div>`;
+                body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f0f0; }
+                
+                /* BOTÓN FIJO ARRIBA */
+                .header-fijo { 
+                    position: fixed; top: 0; left: 0; width: 100%; 
+                    background: #333; padding: 10px; text-align: center; z-index: 1000; 
+                }
+                .header-fijo button { 
+                    padding: 10px 20px; background: #28a745; color: white; 
+                    border: none; border-radius: 5px; cursor: pointer; font-weight: bold; 
+                }
+
+                .hoja-a4 { 
+                    background: white; width: 210mm; min-height: 297mm; 
+                    margin: 60px auto 20px auto; padding: 10mm; 
+                    box-sizing: border-box; page-break-after: always; 
+                }
+                
+                .titulo-quiniela { 
+                    text-align: center; font-size: 18px; font-weight: bold; 
+                    margin-bottom: 10px; border-bottom: 2px solid #000; 
+                }
+                
+                /* CONTENEDOR PARA LAS DOS COLUMNAS */
+                .columnas-container { display: flex; justify-content: space-between; gap: 5mm; }
+                
+                table { border-collapse: collapse; width: 48%; table-layout: fixed; border: 1px solid #000; }
+                th, td { 
+                    border: 1px solid #000; text-align: center; 
+                    font-size: 8px; height: 5.5mm; padding: 0; color: #000 !important;
+                }
+                th { background: #eee; font-weight: bold; }
+                
+                .col-id { width: 6mm; }
+                .col-team { width: 26mm; text-align: left; padding-left: 2px; font-weight: bold; overflow: hidden; }
+                .col-score { width: 7mm; background: #fafafa; }
+                /* Columna de desempate en azul para que se vea el 0 */
+                .col-des { width: 7mm; font-weight: bold; color: blue !important; background: #fffde7; }
+
+                @media print {
+                    .header-fijo { display: none; }
+                    body { background: none; }
+                    .hoja-a4 { margin: 0; border: none; }
+                }
+            </style>
+        </head><body>
+            <div class="header-fijo"><button onclick="window.print()">🖨️ IMPRIMIR TODO (A4)</button></div>`;
 
         for (const user in agrupado) {
-            html += `<div class="hoja"><div class="titulo">Quiniela: ${user}</div><div class="contenedor-tablas">`;
-            const preds = agrupado[user].sort((a, b) => a.partido_id - b.partido_id);
-            const mitad = Math.ceil(preds.length / 2);
+            html += `<div class="hoja-a4">
+                <div class="titulo-quiniela">Quiniela: ${user}</div>
+                <div class="columnas-container">`;
+            
+            // Ordenamos por partido_id y dividimos en dos para las columnas
+            const p = agrupado[user].sort((a, b) => a.partido_id - b.partido_id);
+            const mitad = Math.ceil(p.length / 2);
 
             for (let i = 0; i < 2; i++) {
-                html += `<table><thead><tr>
-                    <th style="width:5mm">#</th><th class="equipo">Local</th>
-                    <th style="width:6mm">L</th><th style="width:6mm">V</th>
-                    <th class="equipo">Visita</th><th class="des">DL</th><th class="des">DV</th>
-                </tr></thead><tbody>`;
+                html += `<table>
+                    <thead>
+                        <tr>
+                            <th class="col-id">#</th>
+                            <th class="col-team">Local</th>
+                            <th class="col-score">L</th>
+                            <th class="col-score">V</th>
+                            <th class="col-team">Visita</th>
+                            <th class="col-des">DL</th>
+                            <th class="col-des">DV</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
                 
-                preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
-                    // AQUÍ ESTÁ EL TRUCO: Buscamos el dato por todos los nombres posibles 
-                    // para que no me digas que sale vacío otra vez.
-                    const dl = r.goles_desempate_local ?? r.goles_local_desempate ?? r.desempate_local ?? r.dl ?? "";
-                    const dv = r.goles_desempate_visita ?? r.goles_visita_desempate ?? r.desempate_visita ?? r.dv ?? "";
+                const bloque = p.slice(i * mitad, (i + 1) * mitad);
+                bloque.forEach(r => {
+                    // Ahora que el servidor manda los datos, usamos ?? para que el 0 sea visible
+                    const valDL = r.goles_desempate_local ?? "";
+                    const valDV = r.goles_desempate_visita ?? "";
                     
                     html += `<tr>
                         <td>${r.partido_id}</td>
-                        <td class="equipo">${r.nombre_local || r.local || '---'}</td>
+                        <td class="col-team">${r.nombre_local || '---'}</td>
                         <td>${r.goles_local}</td>
                         <td>${r.goles_visita}</td>
-                        <td class="equipo">${r.nombre_visita || r.visita || '---'}</td>
-                        <td class="des">${dl}</td>
-                        <td class="des">${dv}</td>
+                        <td class="col-team">${r.nombre_visita || '---'}</td>
+                        <td class="col-des">${valDL}</td>
+                        <td class="col-des">${valDV}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
             }
             html += `</div></div>`;
         }
+        
         html += `</body></html>`;
-        const v = window.open('', '_blank'); v.document.write(html); v.document.close();
-    } catch(e) { alert("Error al conectar con la base de datos."); }
+        const v = window.open('', '_blank');
+        v.document.write(html);
+        v.document.close();
+        
+    } catch(e) {
+        alert("Error al generar reporte. Asegúrate de que el servidor esté activo.");
+    }
 }
 
 function cerrarMiModal() {
