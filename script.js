@@ -631,15 +631,17 @@ async function generarReporteMaestro() {
                 display: flex; flex-direction: column;
             }
             h2 { border-bottom: 2px solid #01215b; text-align: center; color: #01215b; margin: 0 0 5px 0; font-size: 14px; text-transform: uppercase; }
-            .grid-wrapper { display: flex; justify-content: center; gap: 3mm; flex-grow: 1; }
-            table { border-collapse: collapse; table-layout: fixed; width: 98mm; }
+            .grid-wrapper { display: flex; justify-content: center; gap: 2mm; flex-grow: 1; }
+            table { border-collapse: collapse; table-layout: fixed; width: 99mm; }
             th, td { border: 0.5px solid #333; padding: 1px 2px; text-align: center; font-size: 7px; height: 4.8mm; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
             th { background: #01215b; color: white; font-weight: bold; }
+            
             .col-id { width: 5mm; }
-            .col-equipo { width: 25mm; text-align: left; font-weight: bold; }
+            .col-equipo { width: 24mm; text-align: left; font-weight: bold; }
             .col-gol { width: 6mm; background-color: #f5f5f5; }
-            /* Columnas de desempate iguales a las de goles normal */
+            /* Columnas de desempate idénticas a las de goles visita */
             .col-des { width: 6mm; font-weight: bold; color: #cc0000; }
+
             .no-print { text-align: center; padding: 10px; background: #333; }
             @media print { .no-print { display: none; } .report-container { margin: 0; } }
         </style></head><body>
@@ -666,16 +668,19 @@ async function generarReporteMaestro() {
                     const nL = r.nombre_local || r.local || p.local || '---';
                     const nV = r.nombre_visita || r.visita || p.visita || '---';
                     
-                    // PASO DE INFORMACIÓN NORMAL (Igual que goles_local y goles_visita)
-                    // Si en la DB hay un 0, se pasa el 0. Si hay NULL, se verá vacío.
+                    // PASO DIRECTO: Sin condiciones, sin guiones, igual que los goles normales.
+                    // Si la DB tiene un 0, pone 0. Si tiene NULL, la celda queda limpia.
+                    const dl = (r.goles_desempate_local !== null) ? r.goles_desempate_local : "";
+                    const dv = (r.goles_desempate_visita !== null) ? r.goles_desempate_visita : "";
+                    
                     html += `<tr>
                         <td>${r.partido_id}</td>
                         <td class="col-equipo">${nL}</td>
                         <td>${r.goles_local}</td>
                         <td>${r.goles_visita}</td>
                         <td class="col-equipo">${nV}</td>
-                        <td class="col-des">${r.goles_desempate_local}</td>
-                        <td class="col-des">${r.goles_desempate_visita}</td>
+                        <td class="col-des">${dl}</td>
+                        <td class="col-des">${dv}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
