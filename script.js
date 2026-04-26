@@ -610,7 +610,7 @@ function ponerNombreEnCard(id, lado, nombre) {
 }
 
 // 8. REPORTE MAESTRO (FORMATO A4 + IMPRESIÓN) - CON DESEMPATE/PENALES
-// 8. REPORTE MAESTRO (FORMATO A4 + IMPRESIÓN) - REVISIÓN FINAL
+// 8. REPORTE MAESTRO (FORMATO A4 + IMPRESIÓN) - CORRECCIÓN DE VALORES CERO
 async function generarReporteMaestro() {
     try {
         const res = await fetch(`${API_URL}/obtener-todas-predicciones`);
@@ -634,14 +634,13 @@ async function generarReporteMaestro() {
             table { border-collapse: collapse; table-layout: fixed; width: 48%; }
             th, td { border: 1px solid #000; padding: 2px; text-align: center; font-size: 8.5px; height: 6mm; }
             th { background: #01215b; color: white; }
-            .col-equipo { width: 32mm; text-align: left; font-weight: bold; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+            .col-equipo { width: 32mm; text-align: left; font-weight: bold; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-left: 3px; }
             .col-id { width: 7mm; }
             .col-gol { width: 7mm; background: #f2f2f2; font-weight: bold; }
-            /* Estilo para la columna DESEMPATE */
             .col-des { width: 15mm; font-weight: bold; color: #cc0000; font-size: 8px; }
 
             .no-print { text-align: center; padding: 15px; background: #333; }
-            .btn-print { padding: 10px 20px; cursor: pointer; background: #28a745; color: white; border: none; font-weight: bold; }
+            .btn-print { padding: 10px 20px; cursor: pointer; background: #28a745; color: white; border: none; font-weight: bold; border-radius: 4px; }
             @media print { .no-print { display: none; } }
         </style></head><body>
         <div class="no-print"><button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR REPORTE A4</button></div>`;
@@ -662,16 +661,14 @@ async function generarReporteMaestro() {
                 </tr></thead><tbody>`;
 
                 preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
-                    // --- Lógica de Seguridad para Nombres ---
                     const nL = r.nombre_local || r.local || '---';
                     const nV = r.nombre_visita || r.visita || '---';
 
-                    // --- Lógica de Seguridad para Desempate (Basado en tu DB) ---
-                    // Verificamos si los campos existen y no son NULL ni indefinidos
+                    // --- LÓGICA CORREGIDA PARA DESEMPATE ---
+                    // Usamos Number.isInteger para que el número 0 sea válido y se muestre
                     let desempateVal = "-";
-                    if (r.goles_desempate_local !== null && r.goles_desempate_local !== undefined && 
-                        r.goles_desempate_visita !== null && r.goles_desempate_visita !== undefined) {
-                        desempateVal = `${r.goles_desempate_local}-${r.goles_desempate_visita}`;
+                    if (Number.isInteger(r.goles_desempate_local) && Number.isInteger(r.goles_desempate_visita)) {
+                        desempateVal = `${r.goles_desempate_local} - ${r.goles_desempate_visita}`;
                     }
 
                     html += `<tr>
