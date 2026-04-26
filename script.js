@@ -638,6 +638,7 @@ async function generarReporteMaestro() {
             .col-id { width: 5mm; }
             .col-equipo { width: 25mm; text-align: left; font-weight: bold; }
             .col-gol { width: 6mm; background-color: #f5f5f5; }
+            /* Columnas de desempate iguales a las de goles normal */
             .col-des { width: 6mm; font-weight: bold; color: #cc0000; }
             .no-print { text-align: center; padding: 10px; background: #333; }
             @media print { .no-print { display: none; } .report-container { margin: 0; } }
@@ -665,19 +666,16 @@ async function generarReporteMaestro() {
                     const nL = r.nombre_local || r.local || p.local || '---';
                     const nV = r.nombre_visita || r.visita || p.visita || '---';
                     
-                    // LÓGICA DIRECTA: Si el valor es null o undefined, muestra celda vacía.
-                    // Si es 0, 1 o cualquier número, lo muestra tal cual.
-                    const valL = (r.goles_desempate_local ?? "");
-                    const valV = (r.goles_desempate_visita ?? "");
-                    
+                    // PASO DE INFORMACIÓN NORMAL (Igual que goles_local y goles_visita)
+                    // Si en la DB hay un 0, se pasa el 0. Si hay NULL, se verá vacío.
                     html += `<tr>
                         <td>${r.partido_id}</td>
                         <td class="col-equipo">${nL}</td>
                         <td>${r.goles_local}</td>
                         <td>${r.goles_visita}</td>
                         <td class="col-equipo">${nV}</td>
-                        <td class="col-des">${valL}</td>
-                        <td class="col-des">${valV}</td>
+                        <td class="col-des">${r.goles_desempate_local}</td>
+                        <td class="col-des">${r.goles_desempate_visita}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
@@ -688,6 +686,8 @@ async function generarReporteMaestro() {
         const v = window.open('', '_blank'); v.document.write(html); v.document.close();
     } catch(e) { console.error(e); alert("Error al generar el reporte."); }
 }
+
+
 function cerrarMiModal() {
     const modal = document.getElementById('modal-informativo');
     if (modal) {
