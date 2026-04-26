@@ -259,7 +259,9 @@ async function actualizarListaLinks() {
             return acc;
         }, {});
 
-        // --- CORRECCIÓN AQUÍ: Cerramos bien el map y retornamos el objeto ---
+        // Función de normalización interna para comparar sin errores
+        const norm = (t) => (t || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+
         let ranking = usuarios.map(user => {
             let pts = 0;
             const susPreds = predPorUser[user.nombre_usuario] || [];
@@ -270,26 +272,29 @@ async function actualizarListaLinks() {
 
                 if (ofi) {
                     let coincide = true;
+                    // Solo comparamos nombres si NO es fase de grupos
                     if (datosP && datosP.fase !== "Grupos") {
-                        const nL_user = (pred.nombre_local || "").trim().toLowerCase();
-                        const nV_user = (pred.nombre_visita || "").trim().toLowerCase();
-                        const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
-                        const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
+                        const nL_user = norm(pred.nombre_local);
+                        const nV_user = norm(pred.nombre_visita);
+                        const nL_ofi = norm(ofi.nombreLocal);
+                        const nV_ofi = norm(ofi.nombreVisita);
 
-                        if (nL_ofi !== "" && nV_ofi !== "") {
+                        // Si el resultado oficial ya tiene equipos definidos, comparamos
+                        if (nL_ofi !== "" && nL_ofi !== "---") {
                             if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
                                 coincide = false;
                             }
                         }
                     }
+                    
                     if (coincide) {
                         pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
                     }
                 }
-            }); // Cierre del forEach interno
+            });
             
-            return { nombre: user.nombre_usuario, puntos: pts }; // <--- IMPORTANTE: Retornar los datos
-        }); // <--- AQUÍ: Cierre correcto del .map()
+            return { nombre: user.nombre_usuario, puntos: pts };
+        });
 
         ranking.sort((a, b) => b.puntos - a.puntos);
         
@@ -437,27 +442,31 @@ async function cargarDesdeDB(nombre) {
                 const iL = document.getElementById(`L-${p.id}`);
                 const ofi = resOficiales.find(o => parseInt(o.id) === parseInt(p.id));
                 const datosPart = partidosData.find(pd => pd.id === p.id);
-
+            
                 if (ofi && iL) {
                     const div = document.createElement('div');
                     div.className = 'puntos-obtenidos';
                     div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
-
+            
                     let coincide = true;
+                    const norm = (t) => (t || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+            
                     if (datosPart && datosPart.fase !== "Grupos") {
-                        // Normalización para que "México" y "mexico" coincidan
-                        const norm = (t) => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
                         const nL_user = norm(p.nombre_local);
                         const nV_user = norm(p.nombre_visita);
                         const nL_ofi = norm(ofi.nombreLocal);
                         const nV_ofi = norm(ofi.nombreVisita);
                         
-                        if (nL_ofi !== "" && (nL_user !== nL_ofi || nV_user !== nV_ofi)) coincide = false;
+                        if (nL_ofi !== "" && nL_ofi !== "---") {
+                            if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
+                                coincide = false;
+                            }
+                        }
                     }
-
+            
                     if (!coincide) {
                         div.style.color = "#ff4444";
-                        div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
+                        div.innerHTML = `Equipos incorrectos <br> <span style="font-size:10px;">0 Puntos</span>`;
                     } else {
                         const puntosFinales = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
                         totalPuntos += puntosFinales;
@@ -467,7 +476,7 @@ async function cargarDesdeDB(nombre) {
                     iL.closest('.marcador-col').appendChild(div);
                 }
             });
-
+            
             // 3. Restaurar el nombre de la quiniela arriba del botón (Como estaba antes)
             const container = document.getElementById('links-container');
             if (container) {
