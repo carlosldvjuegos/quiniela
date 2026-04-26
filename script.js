@@ -447,42 +447,44 @@ async function cargarDesdeDB(nombre) {
                 const datosPart = partidosData.find(pd => pd.id === p.id);
             
                 if (ofi && iL) {
-                    const div = document.createElement('div');
-                    div.className = 'puntos-obtenidos';
-                    div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
-            
-                    let coincide = true;
-                    // Función para limpiar texto y comparar sin errores por acentos
-                    const norm = (t) => (t || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
-            
-                    // COMPARACIÓN DE NOMBRES EN FASES DE CLASIFICACIÓN
-                    if (datosPart && datosPart.fase !== "Grupos") {
-                        const nL_user = norm(p.nombre_local);     // Tabla predicciones
-                        const nV_user = norm(p.nombre_visita);    // Tabla predicciones
-                        const nL_ofi = norm(ofi.equipo_local);    // Tabla resultados_oficiales
-                        const nV_ofi = norm(ofi.equipo_visitante);// Tabla resultados_oficiales
-                        
-                        if (nL_ofi !== "" && nL_ofi !== "---") {
-                            if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
-                                coincide = false;
-                            }
-                        }
-                    }
-            
-                    if (!coincide) {
-                        // Si no concuerdan, no sumamos nada y dejamos el mensaje solicitado
-                        div.style.color = "#ff4444";
-                        div.innerHTML = `Partido mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
-                    } else {
-                        // Si concuerdan o es fase de grupos, sumamos puntos
-                        const puntosFinales = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
-                        totalPuntos += puntosFinales;
-                        div.style.color = "#003366"; 
-                        div.innerHTML = `Puntos: <span style="color:red; font-size:16px;">${puntosFinales}</span>`;
-                    }
-                    iL.closest('.marcador-col').appendChild(div);
+    const div = document.createElement('div');
+    div.className = 'puntos-obtenidos';
+    div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
+
+    let coincide = true;
+    const norm = (t) => (t || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+
+    if (datosPart && datosPart.fase !== "Grupos") {
+        // Nombres de la quiniela del usuario (Tabla predicciones)
+        const nL_user = norm(p.nombre_local);
+        const nV_user = norm(p.nombre_visita);
+
+        // Nombres que vienen del SERVIDOR (Ruta /obtener-resultados-db)
+        // Tu servidor los renombra como 'nombre_local' y 'nombre_visita'
+        const nL_ofi = norm(ofi.nombre_local); 
+        const nV_ofi = norm(ofi.nombre_visita);
+        
+        if (nL_ofi !== "" && nL_ofi !== "---") {
+            // AQUÍ ESdonde se detecta que Croacia !== Senegal
+            if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
+                coincide = false;
                 }
-            });
+            }
+        }
+    
+        if (!coincide) {
+            div.style.color = "#ff4444";
+            div.innerHTML = `Partido mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
+            // IMPORTANTE: Aquí NO se suma al totalPuntos, por eso bajará de 507 a 442
+        } else {
+            const puntosFinales = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
+            totalPuntos += puntosFinales;
+            div.style.color = "#003366"; 
+            div.innerHTML = `Puntos: <span style="color:red; font-size:16px;">${puntosFinales}</span>`;
+        }
+                iL.closest('.marcador-col').appendChild(div);
+            }
+         });
             
             // 3. Actualizar título con el puntaje real corregido
             const container = document.getElementById('links-container');
