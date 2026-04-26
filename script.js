@@ -624,37 +624,22 @@ async function generarReporteMaestro() {
 
         let html = `<html><head><title>Reporte Maestro</title><style>
             @page { size: A4; margin: 0; }
-            body { 
-                font-family: 'Segoe UI', Arial, sans-serif; 
-                margin: 0; padding: 0; 
-            }
+            body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; }
             .report-container { 
                 background: white; width: 210mm; height: 297mm; margin: 0 auto;
                 padding: 8mm; box-sizing: border-box; page-break-after: always;
                 display: flex; flex-direction: column;
             }
-            h2 { 
-                border-bottom: 2px solid #01215b; text-align: center; color: #01215b; 
-                margin: 0 0 5px 0; font-size: 14px; text-transform: uppercase;
-            }
-            .grid-wrapper { 
-                display: flex; justify-content: center; gap: 3mm; flex-grow: 1;
-            }
-            table { 
-                border-collapse: collapse; table-layout: fixed; width: 98mm; 
-            }
-            th, td { 
-                border: 0.5px solid #333; padding: 1px 2px; text-align: center; 
-                font-size: 7px; height: 4.8mm; overflow: hidden;
-                white-space: nowrap; text-overflow: ellipsis;
-            }
+            h2 { border-bottom: 2px solid #01215b; text-align: center; color: #01215b; margin: 0 0 5px 0; font-size: 14px; text-transform: uppercase; }
+            .grid-wrapper { display: flex; justify-content: center; gap: 3mm; flex-grow: 1; }
+            table { border-collapse: collapse; table-layout: fixed; width: 98mm; }
+            th, td { border: 0.5px solid #333; padding: 1px 2px; text-align: center; font-size: 7px; height: 4.8mm; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
             th { background: #01215b; color: white; font-weight: bold; }
-            
             .col-id { width: 5mm; }
-            .col-equipo { width: 26mm; text-align: left; font-weight: bold; }
+            .col-equipo { width: 25mm; text-align: left; font-weight: bold; }
             .col-gol { width: 6mm; background-color: #f5f5f5; }
-            /* Estilo para las columnas de desempate separadas */
-            .col-des { width: 6mm; background-color: #fff0f0; color: #cc0000; font-weight: bold; }
+            /* Columnas de desempate sin color de fondo, solo el texto */
+            .col-des { width: 6mm; font-weight: bold; color: #cc0000; }
 
             .no-print { text-align: center; padding: 10px; background: #333; }
             @media print { .no-print { display: none; } .report-container { margin: 0; } }
@@ -663,10 +648,9 @@ async function generarReporteMaestro() {
 
         for (const user in agrupado) {
             html += `<div class="report-container"><h2>Quiniela: ${user}</h2><div class="grid-wrapper">`;
-            const preds = agrupado[user];
-            preds.sort((a, b) => a.partido_id - b.partido_id);
-            
+            const preds = agrupado[user].sort((a, b) => a.partido_id - b.partido_id);
             const mitad = Math.ceil(preds.length / 2);
+
             for (let i = 0; i < 2; i++) {
                 html += `<table><thead><tr>
                     <th class="col-id">#</th>
@@ -680,14 +664,13 @@ async function generarReporteMaestro() {
                 
                 preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
                     const p = (typeof partidosData !== 'undefined') ? partidosData.find(item => item.id === r.partido_id) : {};
-                    
                     const nL = r.nombre_local || r.local || p.local || '---';
                     const nV = r.nombre_visita || r.visita || p.visita || '---';
                     
-                    // MOSTRAR EXACTAMENTE LO QUE TIENEN LAS COLUMNAS
-                    // Usamos Number.isInteger para que el 0 se muestre y no se ignore.
-                    const valL = (Number.isInteger(r.goles_desempate_local)) ? r.goles_desempate_local : "-";
-                    const valV = (Number.isInteger(r.goles_desempate_visita)) ? r.goles_desempate_visita : "-";
+                    // Lógica 100% directa: Si es un número (incluido 0), se muestra. 
+                    // Si es null/undefined, se muestra vacío, NADA de guiones.
+                    const valL = (r.goles_desempate_local !== null && r.goles_desempate_local !== undefined) ? r.goles_desempate_local : "";
+                    const valV = (r.goles_desempate_visita !== null && r.goles_desempate_visita !== undefined) ? r.goles_desempate_visita : "";
                     
                     html += `<tr>
                         <td>${r.partido_id}</td>
