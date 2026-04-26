@@ -152,7 +152,7 @@ const partidosData = [
 function calcularLogicaPuntos(pL, pV, rL, rV) {
     pL = parseInt(pL); pV = parseInt(pV);
     rL = parseInt(rL); rV = parseInt(rV);
-    if (isNaN(rL) || isNaN(rV)) return 0; 
+    if (isNaN(rL) || isNaN(rV)) return 0; // Si no hay resultado real, 0 puntos
     
     if (pL === rL && pV === rV) return 5;
     if (rL === rV) {
@@ -259,6 +259,7 @@ async function actualizarListaLinks() {
             return acc;
         }, {});
 
+        // --- CORRECCIÓN AQUÍ: Cerramos bien el map y retornamos el objeto ---
         let ranking = usuarios.map(user => {
             let pts = 0;
             const susPreds = predPorUser[user.nombre_usuario] || [];
@@ -270,35 +271,45 @@ async function actualizarListaLinks() {
                 if (ofi) {
                     let coincide = true;
                     if (datosP && datosP.fase !== "Grupos") {
-                        const norm = (t) => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
-                        const nL_user = norm(pred.nombre_local);
-                        const nV_user = norm(pred.nombre_visita);
-                        const nL_ofi = norm(ofi.nombreLocal);
-                        const nV_ofi = norm(ofi.nombreVisita);
-                        if (nL_ofi !== "" && (nL_user !== nL_ofi || nV_user !== nV_ofi)) coincide = false;
+                        const nL_user = (pred.nombre_local || "").trim().toLowerCase();
+                        const nV_user = (pred.nombre_visita || "").trim().toLowerCase();
+                        const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
+                        const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
+
+                        if (nL_ofi !== "" && nV_ofi !== "") {
+                            if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
+                                coincide = false;
+                            }
+                        }
                     }
                     if (coincide) {
                         pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
                     }
                 }
-            });
-            return { nombre: user.nombre_usuario, puntos: pts };
-        });
+            }); // Cierre del forEach interno
+            
+            return { nombre: user.nombre_usuario, puntos: pts }; // <--- IMPORTANTE: Retornar los datos
+        }); // <--- AQUÍ: Cierre correcto del .map()
 
         ranking.sort((a, b) => b.puntos - a.puntos);
+        
         container.innerHTML = "";
         ranking.forEach((u, i) => {
             const med = i === 0 ? "🥇" : (i === 1 ? "🥈" : (i === 2 ? "🥉" : "•"));
             const btn = document.createElement('button');
             btn.className = "btn-link";
-            btn.innerHTML = `<div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                <span>${med} <b>${u.nombre}</b></span>
-                <span class="badge-puntos">${u.puntos} pts</span>
-            </div>`;
+            btn.innerHTML = `
+                <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                    <span>${med} <b>${u.nombre}</b></span>
+                    <span class="badge-puntos">${u.puntos} pts</span>
+                </div>`;
             btn.onclick = () => cargarDesdeDB(u.nombre);
             container.appendChild(btn);
         });
-    } catch (e) { console.error("Error en ranking:", e); }
+    } catch (e) { 
+        console.error("Error en ranking:", e);
+        container.innerHTML = "<p>Error ranking</p>"; 
+    }
 }
 
 // 5. GUARDAR (CON VALIDACIONES RESTAURADAS)
@@ -392,6 +403,7 @@ async function cargarDesdeDB(nombre) {
     try {
         const inputN = document.getElementById('nombre-usuario');
         if (inputN) { inputN.value = nombre; inputN.readOnly = true; }
+        
         const btnSave = document.querySelector(".btn-save");
         if (btnSave) btnSave.style.display = "none";
 
@@ -403,6 +415,7 @@ async function cargarDesdeDB(nombre) {
             fetch(`${API_URL}/cargar/${nombre}`).then(r => r.json())
         ]);
 
+        // 1. Cargar datos en los inputs (Tu lógica original)
         resUser.forEach(p => {
             const iL = document.getElementById(`L-${p.id}`);
             const iV = document.getElementById(`V-${p.id}`);
@@ -417,6 +430,7 @@ async function cargarDesdeDB(nombre) {
 
         actualizarTorneo();
 
+        // 2. Mostrar puntos y validaciones
         setTimeout(() => {
             let totalPuntos = 0;
             resUser.forEach(p => {
@@ -430,18 +444,20 @@ async function cargarDesdeDB(nombre) {
                     div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
 
                     let coincide = true;
-                    if (datosPart && datosPart.fase !== "Groups") {
+                    if (datosPart && datosPart.fase !== "Grupos") {
+                        // Normalización para que "México" y "mexico" coincidan
                         const norm = (t) => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
                         const nL_user = norm(p.nombre_local);
                         const nV_user = norm(p.nombre_visita);
                         const nL_ofi = norm(ofi.nombreLocal);
                         const nV_ofi = norm(ofi.nombreVisita);
+                        
                         if (nL_ofi !== "" && (nL_user !== nL_ofi || nV_user !== nV_ofi)) coincide = false;
                     }
 
                     if (!coincide) {
                         div.style.color = "#ff4444";
-                        div.innerHTML = `Juego mal pronosticado <br><span style="font-size:10px;">0 Puntos</span>`;
+                        div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
                     } else {
                         const puntosFinales = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
                         totalPuntos += puntosFinales;
@@ -452,8 +468,10 @@ async function cargarDesdeDB(nombre) {
                 }
             });
 
+            // 3. Restaurar el nombre de la quiniela arriba del botón (Como estaba antes)
             const container = document.getElementById('links-container');
             if (container) {
+                // Buscamos si ya existe el título para no duplicarlo
                 let titulo = document.getElementById('titulo-quiniela-activa');
                 if (!titulo) {
                     titulo = document.createElement('div');
@@ -463,20 +481,29 @@ async function cargarDesdeDB(nombre) {
                 }
                 titulo.innerHTML = `<span>🏆 ${nombre.toUpperCase()}</span> <span style="background: white; color: #003366; padding: 2px 8px; border-radius: 4px;">${totalPuntos} PTS</span>`;
             }
+
             document.querySelectorAll('.marcador-col input').forEach(i => i.disabled = true);
         }, 1200);
 
-        // Lógica de navegación y botón volver
+        // 4. Lógica de navegación (Tu lógica original)
         const btns = document.querySelectorAll('.btn-link');
         btns.forEach(b => {
-            if (b.innerText.toLowerCase().includes(nombre.toLowerCase())) b.classList.add('quiniela-activa');
-            else if (b.id !== 'btn-volver-lista') b.style.display = 'none';
+            if (b.getAttribute('data-nombre-real') === nombre.toLowerCase().trim()) {
+                b.style.display = 'flex';
+                b.classList.add('quiniela-activa');
+            } else if (b.id !== 'btn-volver-lista') {
+                b.style.display = 'none';
+            }
         });
 
         if (!document.getElementById('btn-volver-lista')) {
             const br = document.createElement('button');
-            br.id = 'btn-volver-lista'; br.innerText = "✕ Cambiar de Quiniela";
-            br.className = "btn-link"; br.style.backgroundColor = "#ff4444"; br.style.color = "white"; br.style.marginTop = "20px";
+            br.id = 'btn-volver-lista'; 
+            br.innerText = "✕ Cambiar de Quiniela";
+            br.className = "btn-link"; 
+            br.style.backgroundColor = "#ff4444"; 
+            br.style.color = "white";
+            br.style.marginTop = "20px";
             br.onclick = () => window.location.href = window.location.origin + window.location.pathname + "?nomodal=1";
             document.getElementById('links-container').appendChild(br);
         }
@@ -517,7 +544,6 @@ function actualizarTorneo() {
     terceros.slice(0, 8).forEach((t, i) => clasificados[`3T${i+1}`] = t.nombre);
 
         actualizarFasesEliminatorias(clasificados);
-        procesarAvance();
 }
 
 function actualizarFasesEliminatorias(clasificados) {
@@ -532,16 +558,19 @@ function actualizarFasesEliminatorias(clasificados) {
         ponerNombreEnCard(m.id, 'V', clasificados[m.V] || m.V); 
     });
 
-   function procesarAvance() {
     const avance = [
         { de: 73, a: 89, pos: 'L', tipo: 'ganador' }, { de: 75, a: 89, pos: 'V', tipo: 'ganador' },
         { de: 74, a: 90, pos: 'L', tipo: 'ganador' }, { de: 77, a: 90, pos: 'V', tipo: 'ganador' },
         { de: 76, a: 91, pos: 'L', tipo: 'ganador' }, { de: 78, a: 91, pos: 'V', tipo: 'ganador' },
         { de: 79, a: 92, pos: 'L', tipo: 'ganador' }, { de: 80, a: 92, pos: 'V', tipo: 'ganador' },
+        
+        // CORRECCIÓN IDS 93 Y 94 (Ruta Admin)
         { de: 83, a: 93, pos: 'L', tipo: 'ganador' }, { de: 84, a: 93, pos: 'V', tipo: 'ganador' },
         { de: 81, a: 94, pos: 'L', tipo: 'ganador' }, { de: 82, a: 94, pos: 'V', tipo: 'ganador' },
+        
         { de: 86, a: 95, pos: 'L', tipo: 'ganador' }, { de: 88, a: 95, pos: 'V', tipo: 'ganador' },
         { de: 85, a: 96, pos: 'L', tipo: 'ganador' }, { de: 87, a: 96, pos: 'V', tipo: 'ganador' },
+        
         { de: 89, a: 97, pos: 'L', tipo: 'ganador' }, { de: 90, a: 97, pos: 'V', tipo: 'ganador' },
         { de: 93, a: 98, pos: 'L', tipo: 'ganador' }, { de: 94, a: 98, pos: 'V', tipo: 'ganador' },
         { de: 91, a: 99, pos: 'L', tipo: 'ganador' }, { de: 92, a: 99, pos: 'V', tipo: 'ganador' },
@@ -549,6 +578,8 @@ function actualizarFasesEliminatorias(clasificados) {
         { de: 97, a: 101, pos: 'L', tipo: 'ganador' }, { de: 98, a: 101, pos: 'V', tipo: 'ganador' },
         { de: 99, a: 102, pos: 'L', tipo: 'ganador' }, { de: 100, a: 102, pos: 'V', tipo: 'ganador' },
         { de: 101, a: 104, pos: 'L', tipo: 'ganador' }, { de: 102, a: 104, pos: 'V', tipo: 'ganador' },
+        
+        // TERCER PUESTO (ARREGLADO PARA MOSTRAR PERDEDORES)
         { de: 101, a: 103, pos: 'L', tipo: 'perdedor' }, { de: 102, a: 103, pos: 'V', tipo: 'perdedor' }
     ];
     procesarAvanceFutbol(avance);
@@ -578,26 +609,53 @@ function ponerNombreEnCard(id, lado, nombre) {
     if (el) { el.closest('.partido-card').querySelector(lado === 'L' ? '.local' : '.visita').innerText = nombre; }
 }
 
-// 8. REPORTE MAESTRO (Sin cambios, respetando tu estructura)
+// 8. REPORTE MAESTRO (FORMATO A4 + IMPRESIÓN)
 async function generarReporteMaestro() {
     try {
         const res = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await res.json();
         if (!datos.length) return alert("No hay datos para generar el reporte.");
-        const agrupado = datos.reduce((acc, r) => { (acc[r.nombre_usuario] = acc[r.nombre_usuario] || []).push(r); return acc; }, {});
+        
+        const agrupado = datos.reduce((acc, r) => { 
+            (acc[r.nombre_usuario] = acc[r.nombre_usuario] || []).push(r); 
+            return acc; 
+        }, {});
 
         let html = `<html><head><title>Reporte Maestro</title><style>
             @page { size: A4; margin: 0; }
-            body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; }
-            .report-container { background: white; width: 210mm; height: 297mm; margin: 0 auto; padding: 8mm; box-sizing: border-box; page-break-after: always; display: flex; flex-direction: column; }
-            h2 { border-bottom: 2px solid #01215b; text-align: center; color: #01215b; margin: 0 0 5px 0; font-size: 14px; text-transform: uppercase; }
-            .grid-wrapper { display: flex; justify-content: center; gap: 5mm; flex-grow: 1; }
-            table { border-collapse: collapse; table-layout: fixed; width: 95mm; }
-            th, td { border: 0.5px solid #333; padding: 1px 2px; text-align: center; font-size: 7.2px; height: 4.8mm; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+            body { 
+                font-family: 'Segoe UI', Arial, sans-serif; 
+                margin: 0; padding: 0; 
+            }
+            .report-container { 
+                background: white; width: 210mm; height: 297mm; margin: 0 auto;
+                padding: 8mm; box-sizing: border-box; page-break-after: always;
+                display: flex; flex-direction: column;
+            }
+            h2 { 
+                border-bottom: 2px solid #01215b; text-align: center; color: #01215b; 
+                margin: 0 0 5px 0; font-size: 14px; text-transform: uppercase;
+            }
+            .grid-wrapper { 
+                display: flex; justify-content: center; gap: 5mm; flex-grow: 1;
+            }
+            table { 
+                border-collapse: collapse; table-layout: fixed; width: 95mm; 
+            }
+            th, td { 
+                border: 0.5px solid #333; padding: 1px 2px; text-align: center; 
+                font-size: 7.2px; height: 4.8mm; overflow: hidden;
+                white-space: nowrap; text-overflow: ellipsis;
+            }
             th { background: #01215b; color: white; font-weight: bold; }
+            
+            .col-id { width: 6mm; }
             .col-equipo { width: 30mm; text-align: left; font-weight: bold; }
+            .col-gol { width: 7mm; background-color: #f5f5f5; }
+            .col-pals { width: 10mm; font-size: 6px; }
+
             .no-print { text-align: center; padding: 10px; background: #333; }
-            @media print { .no-print { display: none; } }
+            @media print { .no-print { display: none; } .report-container { margin: 0; } }
         </style></head><body>
         <div class="no-print"><button onclick="window.print()" style="padding:10px; cursor:pointer;">🖨️ IMPRIMIR REPORTE</button></div>`;
 
@@ -605,15 +663,38 @@ async function generarReporteMaestro() {
             html += `<div class="report-container"><h2>Quiniela: ${user}</h2><div class="grid-wrapper">`;
             const preds = agrupado[user];
             preds.sort((a, b) => a.partido_id - b.partido_id);
+            
             const mitad = Math.ceil(preds.length / 2);
             for (let i = 0; i < 2; i++) {
-                html += `<table><thead><tr><th>#</th><th class="col-equipo">Local</th><th>L</th><th>V</th><th class="col-equipo">Visita</th><th>Pals</th></tr></thead><tbody>`;
+                html += `<table><thead><tr>
+                    <th class="col-id">#</th>
+                    <th class="col-equipo">Local</th>
+                    <th class="col-gol">L</th>
+                    <th class="col-gol">V</th>
+                    <th class="col-equipo">Visita</th>
+                    <th class="col-pals">Pals</th>
+                </tr></thead><tbody>`;
+                
                 preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
                     const p = partidosData.find(item => item.id === r.partido_id) || {};
+                    
+                    // Lógica robusta para nombres:
+                    // 1. Busca nombre guardado en la predicción (nombre_local)
+                    // 2. Si no, busca el nombre que viene en el registro (local)
+                    // 3. Si no, busca en el archivo base (p.local)
                     const nL = r.nombre_local || r.local || p.local || '---';
                     const nV = r.nombre_visita || r.visita || p.visita || '---';
+                    
                     const des = (r.goles_desempate_local !== null) ? `${r.goles_desempate_local}-${r.goles_desempate_visita}` : "-";
-                    html += `<tr><td>${r.partido_id}</td><td class="col-equipo">${nL}</td><td>${r.goles_local}</td><td>${r.goles_visita}</td><td class="col-equipo">${nV}</td><td>${des}</td></tr>`;
+                    
+                    html += `<tr>
+                        <td>${r.partido_id}</td>
+                        <td class="col-equipo">${nL}</td>
+                        <td>${r.goles_local}</td>
+                        <td>${r.goles_visita}</td>
+                        <td class="col-equipo">${nV}</td>
+                        <td class="col-pals">${des}</td>
+                    </tr>`;
                 });
                 html += `</tbody></table>`;
             }
@@ -621,12 +702,15 @@ async function generarReporteMaestro() {
         }
         html += `</body></html>`;
         const v = window.open('', '_blank'); v.document.write(html); v.document.close();
-    } catch(e) { console.error(e); }
+    } catch(e) { console.error(e); alert("Error al generar el reporte."); }
 }
 
 function cerrarMiModal() {
     const modal = document.getElementById('modal-informativo');
-    if (modal) modal.style.setProperty('display', 'none', 'important');
+    if (modal) {
+        // Esta línea es la que "rompe" el bloqueo y permite que tu botón cierre la ventana
+        modal.style.setProperty('display', 'none', 'important');
+    }
 }
 
 // 9. INICIO
