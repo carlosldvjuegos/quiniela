@@ -614,6 +614,7 @@ async function generarReporteMaestro() {
     try {
         const res = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await res.json();
+        alert("Copia y pégame este texto: " + JSON.stringify(datos[0]));
         if (!datos.length) return alert("No hay datos.");
 
         const agrupado = datos.reduce((acc, r) => { 
