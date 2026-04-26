@@ -610,6 +610,7 @@ function ponerNombreEnCard(id, lado, nombre) {
 }
 
 // 8. REPORTE MAESTRO (FORMATO A4 + IMPRESIÓN) - CON DESEMPATE/PENALES
+// 8. REPORTE MAESTRO (FORMATO A4 + IMPRESIÓN) - REVISIÓN FINAL
 async function generarReporteMaestro() {
     try {
         const res = await fetch(`${API_URL}/obtener-todas-predicciones`);
@@ -623,52 +624,33 @@ async function generarReporteMaestro() {
 
         let html = `<html><head><title>Reporte Maestro</title><style>
             @page { size: A4; margin: 10mm; }
-            body { 
-                font-family: 'Segoe UI', Arial, sans-serif; 
-                margin: 0; padding: 0; background-color: #f0f0f0;
-            }
+            body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
             .report-container { 
                 background: white; width: 210mm; min-height: 297mm; margin: 0 auto;
                 padding: 10mm; box-sizing: border-box; page-break-after: always;
             }
-            h2 { 
-                border-bottom: 3px solid #01215b; text-align: center; color: #01215b; 
-                margin: 0 0 10px 0; font-size: 18px; text-transform: uppercase;
-            }
-            .grid-wrapper { 
-                display: flex; justify-content: space-between; gap: 4mm;
-            }
-            table { 
-                border-collapse: collapse; table-layout: fixed; width: 48%; 
-            }
-            th, td { 
-                border: 1px solid #000; padding: 3px 2px; text-align: center; 
-                font-size: 8.5px; height: 6mm; overflow: hidden;
-                white-space: nowrap; text-overflow: ellipsis;
-            }
-            th { background: #01215b; color: white; font-weight: bold; }
-            
-            .col-id { width: 8mm; }
-            .col-equipo { width: 32mm; text-align: left; font-weight: bold; padding-left: 3px; }
-            .col-gol { width: 8mm; background-color: #f9f9f9; font-weight: bold; }
-            /* Estilo para la columna de penales/desempate */
-            .col-pen { width: 14mm; font-size: 8px; color: #d9534f; font-weight: bold; }
+            h2 { border-bottom: 3px solid #01215b; text-align: center; color: #01215b; margin-bottom: 10px; font-size: 18px; }
+            .grid-wrapper { display: flex; justify-content: space-between; gap: 4mm; }
+            table { border-collapse: collapse; table-layout: fixed; width: 48%; }
+            th, td { border: 1px solid #000; padding: 2px; text-align: center; font-size: 8.5px; height: 6mm; }
+            th { background: #01215b; color: white; }
+            .col-equipo { width: 32mm; text-align: left; font-weight: bold; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+            .col-id { width: 7mm; }
+            .col-gol { width: 7mm; background: #f2f2f2; font-weight: bold; }
+            /* Estilo para la columna DESEMPATE */
+            .col-des { width: 15mm; font-weight: bold; color: #cc0000; font-size: 8px; }
 
-            .no-print { text-align: center; padding: 20px; background: #333; }
-            .btn-print { 
-                padding: 12px 25px; cursor: pointer; background: #28a745; color: white; 
-                border: none; border-radius: 5px; font-weight: bold;
-            }
-            @media print { .no-print { display: none; } body { background: white; } }
+            .no-print { text-align: center; padding: 15px; background: #333; }
+            .btn-print { padding: 10px 20px; cursor: pointer; background: #28a745; color: white; border: none; font-weight: bold; }
+            @media print { .no-print { display: none; } }
         </style></head><body>
-        <div class="no-print"><button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR QUINIELAS (A4)</button></div>`;
+        <div class="no-print"><button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR REPORTE A4</button></div>`;
 
         for (const user in agrupado) {
-            html += `<div class="report-container"><h2>Quiniela: ${user}</h2><div class="grid-wrapper">`;
-            const preds = agrupado[user];
-            preds.sort((a, b) => a.partido_id - b.partido_id);
-            
+            html += `<div class="report-container"><h2>QUINIELA: ${user}</h2><div class="grid-wrapper">`;
+            const preds = agrupado[user].sort((a, b) => a.partido_id - b.partido_id);
             const mitad = Math.ceil(preds.length / 2);
+
             for (let i = 0; i < 2; i++) {
                 html += `<table><thead><tr>
                     <th class="col-id">#</th>
@@ -676,28 +658,29 @@ async function generarReporteMaestro() {
                     <th class="col-gol">L</th>
                     <th class="col-gol">V</th>
                     <th class="col-equipo">Visita</th>
-                    <th class="col-pen">Pen</th>
+                    <th class="col-des">DESEMPATE</th>
                 </tr></thead><tbody>`;
-                
-                preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
-                    const p = (typeof partidosData !== 'undefined') ? partidosData.find(item => item.id === r.partido_id) : null;
-                    
-                    const nL = r.nombre_local || r.local || (p ? p.local : '---');
-                    const nV = r.nombre_visita || r.visita || (p ? p.visita : '---');
 
-                    // LÓGICA DE DESEMPATE: Si es NULL o vacío, pone "-", si hay datos pone "L-V"
-                    let desempateTexto = "-";
-                    if (r.goles_desempate_local !== null && r.goles_desempate_visita !== null) {
-                        desempateTexto = `${r.goles_desempate_local}-${r.goles_desempate_visita}`;
+                preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
+                    // --- Lógica de Seguridad para Nombres ---
+                    const nL = r.nombre_local || r.local || '---';
+                    const nV = r.nombre_visita || r.visita || '---';
+
+                    // --- Lógica de Seguridad para Desempate (Basado en tu DB) ---
+                    // Verificamos si los campos existen y no son NULL ni indefinidos
+                    let desempateVal = "-";
+                    if (r.goles_desempate_local !== null && r.goles_desempate_local !== undefined && 
+                        r.goles_desempate_visita !== null && r.goles_desempate_visita !== undefined) {
+                        desempateVal = `${r.goles_desempate_local}-${r.goles_desempate_visita}`;
                     }
-                    
+
                     html += `<tr>
                         <td>${r.partido_id}</td>
                         <td class="col-equipo">${nL}</td>
                         <td class="col-gol">${r.goles_local}</td>
                         <td class="col-gol">${r.goles_visita}</td>
                         <td class="col-equipo">${nV}</td>
-                        <td class="col-pen">${desempateTexto}</td>
+                        <td class="col-des">${desempateVal}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
