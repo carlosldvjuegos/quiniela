@@ -661,19 +661,22 @@ async function generarReporteMaestro() {
                 </tr></thead><tbody>`;
                 
                 preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
-                    // LLAMADA DIRECTA A LAS COLUMNAS DE LA BASE DE DATOS
-                    // Usamos String() para que el 0 se vuelva texto y NO desaparezca.
-                    const dL = (r.goles_desempate_local !== null && r.goles_desempate_local !== undefined) ? String(r.goles_desempate_local) : "";
-                    const dV = (r.goles_desempate_visita !== null && r.goles_desempate_visita !== undefined) ? String(r.goles_desempate_visita) : "";
-
+                    const p = (typeof partidosData !== 'undefined') ? partidosData.find(item => item.id === r.partido_id) : {};
+                    const nL = r.nombre_local || r.local || p.local || '---';
+                    const nV = r.nombre_visita || r.visita || p.visita || '---';
+                    
+                    // LAS DOS LÍNEAS CAMBIADAS:
+                    const dL = (r.goles_desempate_local ?? "");
+                    const dV = (r.goles_desempate_visita ?? "");
+                    
                     html += `<tr>
                         <td>${r.partido_id}</td>
-                        <td class="col-eq">${r.nombre_local || r.local || '---'}</td>
-                        <td>${r.goles_local}</td>
-                        <td>${r.goles_visita}</td>
-                        <td class="col-eq">${r.nombre_visita || r.visita || '---'}</td>
-                        <td class="col-data">${dL}</td>
-                        <td class="col-data">${dV}</td>
+                        <td class="col-equipo">${nL}</td>
+                        <td class="col-gol">${r.goles_local}</td>
+                        <td class="col-gol">${r.goles_visita}</td>
+                        <td class="col-equipo">${nV}</td>
+                        <td class="col-des" style="color:black; font-weight:bold;">${dL}</td>
+                        <td class="col-des" style="color:black; font-weight:bold;">${dV}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
