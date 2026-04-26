@@ -269,24 +269,25 @@ async function actualizarListaLinks() {
             susPreds.forEach(pred => {
                 const ofi = oficiales.find(o => parseInt(o.id) === parseInt(pred.partido_id));
                 const datosP = partidosData.find(dp => dp.id === pred.partido_id);
-
+                
                 if (ofi) {
                     let coincide = true;
-                    // Solo comparamos nombres si NO es fase de grupos
+                
+                    // En eliminatorias, validamos que los equipos sean los mismos
                     if (datosP && datosP.fase !== "Grupos") {
-                        const nL_user = norm(pred.nombre_local);
+                        const nL_user = norm(pred.nombre_local); // De tabla predicciones
                         const nV_user = norm(pred.nombre_visita);
-                        const nL_ofi = norm(ofi.nombreLocal);
-                        const nV_ofi = norm(ofi.nombreVisita);
-
-                        // Si el resultado oficial ya tiene equipos definidos, comparamos
+                        const nL_ofi = norm(ofi.nombre_local);  // Ahora viene así desde el servidor
+                        const nV_ofi = norm(ofi.nombre_visita);
+                
+                        // Si el resultado oficial ya tiene equipos (no está vacío o con ---)
                         if (nL_ofi !== "" && nL_ofi !== "---") {
                             if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
-                                coincide = false;
+                                coincide = false; // Si no coinciden los nombres, 0 puntos
                             }
                         }
                     }
-                    
+                
                     if (coincide) {
                         pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
                     }
