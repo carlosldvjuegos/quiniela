@@ -3,6 +3,8 @@ const API_URL = (window.location.hostname === "localhost" || window.location.hos
     ? window.location.origin
     : "https://quiniela-pcas.onrender.com";
 
+const norm = (t) => (t || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+
 const rankingFIFA = {
     "México": 15, "Sudáfrica": 60, "Rep. Corea": 22, "Rep. Checa": 30,
     "Canadá": 40, "Bosnia y Herzegovina": 55, "Catar": 35, "Suiza": 12,
@@ -421,7 +423,7 @@ async function cargarDesdeDB(nombre) {
             fetch(`${API_URL}/cargar/${nombre}`).then(r => r.json())
         ]);
 
-        // 1. Cargar datos en los inputs (Tu lógica original)
+        // 1. Cargar datos en los inputs
         resUser.forEach(p => {
             const iL = document.getElementById(`L-${p.id}`);
             const iV = document.getElementById(`V-${p.id}`);
@@ -453,12 +455,16 @@ async function cargarDesdeDB(nombre) {
                     const norm = (t) => (t || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
             
                     if (datosPart && datosPart.fase !== "Grupos") {
+                        // Nombres que vienen de tu tabla PREDICCIONES
                         const nL_user = norm(p.nombre_local);
                         const nV_user = norm(p.nombre_visita);
-                        const nL_ofi = norm(ofi.nombreLocal);
-                        const nV_ofi = norm(ofi.nombreVisita);
+
+                        // Nombres que vienen de tu tabla RESULTADOS_OFICIALES (Cambiado a tus nombres reales)
+                        const nL_ofi = norm(ofi.equipo_local); 
+                        const nV_ofi = norm(ofi.equipo_visitante);
                         
                         if (nL_ofi !== "" && nL_ofi !== "---") {
+                            // Si el usuario puso Croacia y el oficial es Senegal, esto entrará aquí:
                             if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
                                 coincide = false;
                             }
@@ -468,6 +474,7 @@ async function cargarDesdeDB(nombre) {
                     if (!coincide) {
                         div.style.color = "#ff4444";
                         div.innerHTML = `Equipos incorrectos <br> <span style="font-size:10px;">0 Puntos</span>`;
+                        // IMPORTANTE: Aquí NO sumamos puntos a totalPuntos
                     } else {
                         const puntosFinales = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
                         totalPuntos += puntosFinales;
@@ -478,10 +485,9 @@ async function cargarDesdeDB(nombre) {
                 }
             });
             
-            // 3. Restaurar el nombre de la quiniela arriba del botón (Como estaba antes)
+            // 3. Restaurar el nombre de la quiniela arriba del botón
             const container = document.getElementById('links-container');
             if (container) {
-                // Buscamos si ya existe el título para no duplicarlo
                 let titulo = document.getElementById('titulo-quiniela-activa');
                 if (!titulo) {
                     titulo = document.createElement('div');
@@ -495,7 +501,7 @@ async function cargarDesdeDB(nombre) {
             document.querySelectorAll('.marcador-col input').forEach(i => i.disabled = true);
         }, 500);
 
-        // 4. Lógica de navegación (Tu lógica original)
+        // 4. Lógica de navegación
         const btns = document.querySelectorAll('.btn-link');
         btns.forEach(b => {
             if (b.getAttribute('data-nombre-real') === nombre.toLowerCase().trim()) {
