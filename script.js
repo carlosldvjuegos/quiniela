@@ -631,15 +631,15 @@ async function generarReporteMaestro() {
             }
             h2 { border-bottom: 2px solid #01215b; text-align: center; color: #01215b; margin: 0 0 5px 0; font-size: 14px; text-transform: uppercase; }
             .grid-wrapper { display: flex; justify-content: center; gap: 2mm; flex-grow: 1; }
-            table { border-collapse: collapse; table-layout: fixed; width: 99mm; }
+            table { border-collapse: collapse; table-layout: fixed; width: 100mm; }
             th, td { border: 0.5px solid #333; padding: 1px 2px; text-align: center; font-size: 7px; height: 4.8mm; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
             th { background: #01215b; color: white; font-weight: bold; }
             
             .col-id { width: 5mm; }
-            .col-equipo { width: 24mm; text-align: left; font-weight: bold; }
+            .col-equipo { width: 25mm; text-align: left; font-weight: bold; }
             .col-gol { width: 6mm; background-color: #f5f5f5; }
             /* Columnas de desempate idénticas a las de goles normales */
-            .col-des { width: 6mm; font-weight: bold; color: #cc0000; }
+            .col-des { width: 6mm; font-weight: bold; color: #cc0000; background-color: #fffafa; }
 
             .no-print { text-align: center; padding: 10px; background: #333; }
             @media print { .no-print { display: none; } .report-container { margin: 0; } }
@@ -667,19 +667,17 @@ async function generarReporteMaestro() {
                     const nL = r.nombre_local || r.local || p.local || '---';
                     const nV = r.nombre_visita || r.visita || p.visita || '---';
                     
-                    // PASO DIRECTO: Sin validaciones, solo mostramos el valor.
-                    // Si es NULL o undefined en la DB, se mostrará vacío para no ensuciar.
-                    const dl = (r.goles_desempate_local !== null && r.goles_desempate_local !== undefined) ? r.goles_desempate_local : "";
-                    const dv = (r.goles_desempate_visita !== null && r.goles_desempate_visita !== undefined) ? r.goles_desempate_visita : "";
-                    
+                    // PASO 100% DIRECTO: Si la base de datos tiene un valor, se muestra.
+                    // Si tiene un 0, se mostrará el 0.
+                    // No usamos IFs, ni validaciones, nada.
                     html += `<tr>
                         <td>${r.partido_id}</td>
                         <td class="col-equipo">${nL}</td>
                         <td class="col-gol">${r.goles_local}</td>
                         <td class="col-gol">${r.goles_visita}</td>
                         <td class="col-equipo">${nV}</td>
-                        <td class="col-des">${dl}</td>
-                        <td class="col-des">${dv}</td>
+                        <td class="col-des">${r.goles_desempate_local}</td>
+                        <td class="col-des">${r.goles_desempate_visita}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
@@ -690,7 +688,6 @@ async function generarReporteMaestro() {
         const v = window.open('', '_blank'); v.document.write(html); v.document.close();
     } catch(e) { console.error(e); alert("Error al generar el reporte."); }
 }
-
 
 function cerrarMiModal() {
     const modal = document.getElementById('modal-informativo');
