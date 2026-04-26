@@ -651,9 +651,9 @@ async function generarReporteMaestro() {
             th { background: #01215b; color: white; font-weight: bold; }
             
             .col-id { width: 5mm; }
-            .col-equipo { width: 25mm; text-align: left; font-weight: bold; }
+            .col-equipo { width: 26mm; text-align: left; font-weight: bold; }
             .col-gol { width: 6mm; background-color: #f5f5f5; }
-            /* Columnas de desempate individuales */
+            /* Estilo para las columnas de desempate separadas */
             .col-des { width: 6mm; background-color: #fff0f0; color: #cc0000; font-weight: bold; }
 
             .no-print { text-align: center; padding: 10px; background: #333; }
@@ -684,9 +684,10 @@ async function generarReporteMaestro() {
                     const nL = r.nombre_local || r.local || p.local || '---';
                     const nV = r.nombre_visita || r.visita || p.visita || '---';
                     
-                    // Mostramos directamente el valor o un guion si es NULL/Undefined
-                    const dL = (r.goles_desempate_local !== null && r.goles_desempate_local !== undefined) ? r.goles_desempate_local : "-";
-                    const dV = (r.goles_desempate_visita !== null && r.goles_desempate_visita !== undefined) ? r.goles_desempate_visita : "-";
+                    // MOSTRAR EXACTAMENTE LO QUE TIENEN LAS COLUMNAS
+                    // Usamos Number.isInteger para que el 0 se muestre y no se ignore.
+                    const valL = (Number.isInteger(r.goles_desempate_local)) ? r.goles_desempate_local : "-";
+                    const valV = (Number.isInteger(r.goles_desempate_visita)) ? r.goles_desempate_visita : "-";
                     
                     html += `<tr>
                         <td>${r.partido_id}</td>
@@ -694,8 +695,8 @@ async function generarReporteMaestro() {
                         <td>${r.goles_local}</td>
                         <td>${r.goles_visita}</td>
                         <td class="col-equipo">${nV}</td>
-                        <td class="col-des">${dL}</td>
-                        <td class="col-des">${dV}</td>
+                        <td class="col-des">${valL}</td>
+                        <td class="col-des">${valV}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
