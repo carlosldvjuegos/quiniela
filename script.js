@@ -615,7 +615,7 @@ async function generarReporteMaestro() {
     try {
         const res = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await res.json();
-        if (!datos || !datos.length) return alert("No hay datos para generar el reporte.");
+        if (!datos.length) return alert("No hay datos para generar el reporte.");
         
         const agrupado = datos.reduce((acc, r) => { 
             (acc[r.nombre_usuario] = acc[r.nombre_usuario] || []).push(r); 
@@ -623,33 +623,50 @@ async function generarReporteMaestro() {
         }, {});
 
         let html = `<html><head><title>Reporte Maestro</title><style>
-            @page { size: A4; margin: 10mm; }
-            body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
-            .report-container { 
-                background: white; width: 210mm; min-height: 297mm; margin: 0 auto;
-                padding: 10mm; box-sizing: border-box; page-break-after: always;
+            @page { size: A4; margin: 0; }
+            body { 
+                font-family: 'Segoe UI', Arial, sans-serif; 
+                margin: 0; padding: 0; 
             }
-            h2 { border-bottom: 3px solid #01215b; text-align: center; color: #01215b; margin-bottom: 10px; font-size: 18px; text-transform: uppercase; }
-            .grid-wrapper { display: flex; justify-content: space-between; gap: 4mm; }
-            table { border-collapse: collapse; table-layout: fixed; width: 49%; }
-            th, td { border: 1px solid #000; padding: 2px; text-align: center; font-size: 8px; height: 6mm; }
-            th { background: #01215b; color: white; }
-            .col-equipo { width: 30mm; text-align: left; font-weight: bold; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-left: 2px; }
+            .report-container { 
+                background: white; width: 210mm; height: 297mm; margin: 0 auto;
+                padding: 8mm; box-sizing: border-box; page-break-after: always;
+                display: flex; flex-direction: column;
+            }
+            h2 { 
+                border-bottom: 2px solid #01215b; text-align: center; color: #01215b; 
+                margin: 0 0 5px 0; font-size: 14px; text-transform: uppercase;
+            }
+            .grid-wrapper { 
+                display: flex; justify-content: center; gap: 5mm; flex-grow: 1;
+            }
+            table { 
+                border-collapse: collapse; table-layout: fixed; width: 95mm; 
+            }
+            th, td { 
+                border: 0.5px solid #333; padding: 1px 2px; text-align: center; 
+                font-size: 7.2px; height: 4.8mm; overflow: hidden;
+                white-space: nowrap; text-overflow: ellipsis;
+            }
+            th { background: #01215b; color: white; font-weight: bold; }
+            
             .col-id { width: 6mm; }
-            .col-gol { width: 6mm; background: #f2f2f2; font-weight: bold; }
-            .col-des { width: 14mm; font-weight: bold; color: #cc0000; }
+            .col-equipo { width: 30mm; text-align: left; font-weight: bold; }
+            .col-gol { width: 7mm; background-color: #f5f5f5; }
+            /* Columna de desempate ajustada */
+            .col-pals { width: 14mm; font-size: 7px; color: #cc0000; font-weight: bold; }
 
-            .no-print { text-align: center; padding: 15px; background: #333; }
-            .btn-print { padding: 10px 20px; cursor: pointer; background: #28a745; color: white; border: none; font-weight: bold; border-radius: 4px; }
-            @media print { .no-print { display: none; } }
+            .no-print { text-align: center; padding: 10px; background: #333; }
+            @media print { .no-print { display: none; } .report-container { margin: 0; } }
         </style></head><body>
-        <div class="no-print"><button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR REPORTE A4</button></div>`;
+        <div class="no-print"><button onclick="window.print()" style="padding:10px; cursor:pointer;">🖨️ IMPRIMIR REPORTE</button></div>`;
 
         for (const user in agrupado) {
-            html += `<div class="report-container"><h2>QUINIELA: ${user}</h2><div class="grid-wrapper">`;
-            const preds = agrupado[user].sort((a, b) => a.partido_id - b.partido_id);
+            html += `<div class="report-container"><h2>Quiniela: ${user}</h2><div class="grid-wrapper">`;
+            const preds = agrupado[user];
+            preds.sort((a, b) => a.partido_id - b.partido_id);
+            
             const mitad = Math.ceil(preds.length / 2);
-
             for (let i = 0; i < 2; i++) {
                 html += `<table><thead><tr>
                     <th class="col-id">#</th>
@@ -657,30 +674,30 @@ async function generarReporteMaestro() {
                     <th class="col-gol">L</th>
                     <th class="col-gol">V</th>
                     <th class="col-equipo">Visita</th>
-                    <th class="col-des">DESEMPATE</th>
+                    <th class="col-pals">Desempate</th>
                 </tr></thead><tbody>`;
-
+                
                 preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
-                    const nL = r.nombre_local || r.local || '---';
-                    const nV = r.nombre_visita || r.visita || '---';
-
-                    // LÓGICA DIRECTA: 
-                    // Si el valor no es null ni undefined, lo muestra.
-                    // Esto permite que el número 0 se muestre correctamente.
-                    let dL = r.goles_desempate_local;
-                    let dV = r.goles_desempate_visita;
+                    const p = (typeof partidosData !== 'undefined') ? partidosData.find(item => item.id === r.partido_id) : {};
                     
-                    let desempateVal = (dL !== null && dL !== undefined && dV !== null && dV !== undefined) 
-                                       ? `${dL} - ${dV}` 
-                                       : "-";
-
+                    const nL = r.nombre_local || r.local || p.local || '---';
+                    const nV = r.nombre_visita || r.visita || p.visita || '---';
+                    
+                    // VALIDACIÓN CORRECTA: Comprueba que los campos de la base de datos no sean NULL
+                    // Si hay un 0 o cualquier número, lo mostrará. Si no hay nada, pondrá "-"
+                    let des = "-";
+                    if (r.goles_desempate_local !== null && r.goles_desempate_local !== undefined &&
+                        r.goles_desempate_visita !== null && r.goles_desempate_visita !== undefined) {
+                        des = `${r.goles_desempate_local}-${r.goles_desempate_visita}`;
+                    }
+                    
                     html += `<tr>
                         <td>${r.partido_id}</td>
                         <td class="col-equipo">${nL}</td>
-                        <td class="col-gol">${r.goles_local}</td>
-                        <td class="col-gol">${r.goles_visita}</td>
+                        <td>${r.goles_local}</td>
+                        <td>${r.goles_visita}</td>
                         <td class="col-equipo">${nV}</td>
-                        <td class="col-des">${desempateVal}</td>
+                        <td class="col-pals">${des}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
@@ -689,10 +706,7 @@ async function generarReporteMaestro() {
         }
         html += `</body></html>`;
         const v = window.open('', '_blank'); v.document.write(html); v.document.close();
-    } catch(e) { 
-        console.error("Error detallado:", e); 
-        alert("Error al generar el reporte. Revisa la consola."); 
-    }
+    } catch(e) { console.error("Error detallado:", e); alert("Error al generar el reporte."); }
 }
 
 function cerrarMiModal() {
