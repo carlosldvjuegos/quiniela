@@ -407,6 +407,7 @@ async function cargarDesdeDB(nombre) {
         const btnSave = document.querySelector(".btn-save");
         if (btnSave) btnSave.style.display = "none";
 
+        // Limpiamos todo antes de cargar
         document.querySelectorAll('.marcador-col input').forEach(i => { i.value = ""; i.disabled = false; });
         document.querySelectorAll('.puntos-obtenidos').forEach(d => d.remove());
 
@@ -415,77 +416,82 @@ async function cargarDesdeDB(nombre) {
             fetch(`${API_URL}/cargar/${nombre}`).then(r => r.json())
         ]);
 
-        // 1. Cargar datos en los inputs (Tu lógica original)
+        // 1. Llenamos los marcadores de la quiniela
         resUser.forEach(p => {
             const iL = document.getElementById(`L-${p.id}`);
             const iV = document.getElementById(`V-${p.id}`);
-            const iDL = document.getElementById(`DL-${p.id}`);
-            const iDV = document.getElementById(`DV-${p.id}`);
             if (iL) iL.value = p.gl;
             if (iV) iV.value = p.gv;
+            
+            // Si tienes lógica de desempate, se mantiene aquí
+            const iDL = document.getElementById(`DL-${p.id}`);
+            const iDV = document.getElementById(`DV-${p.id}`);
             if (iDL && p.dl !== null) iDL.value = p.dl;
             if (iDV && p.dv !== null) iDV.value = p.dv;
-            gestionarDesempate(p.id);
+            if (typeof gestionarDesempate === "function") gestionarDesempate(p.id);
         });
 
-        actualizarTorneo();
+        if (typeof actualizarTorneo === "function") actualizarTorneo();
 
-        // 2. Mostrar puntos y validaciones
+        // 2. HACEMOS LA COMPARACIÓN DE NOMBRES Y MOSTRAMOS PUNTOS
         setTimeout(() => {
-            let totalPuntos = 0;
+            let totalPuntosAcumulados = 0;
+
             resUser.forEach(p => {
                 const iL = document.getElementById(`L-${p.id}`);
                 const ofi = resOficiales.find(o => parseInt(o.id) === parseInt(p.id));
                 const datosPart = partidosData.find(pd => pd.id === p.id);
 
                 if (ofi && iL) {
-                    const div = document.createElement('div');
-                    div.className = 'puntos-obtenidos';
-                    div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
+                    // OBTENEMOS LOS NOMBRES QUE ESTÁN EN LAS ETIQUETAS DE LA PÁGINA
+                    // Buscamos los elementos de texto que están al lado de los inputs
+                    const fila = iL.closest('.partido-fila') || iL.closest('.marcador-col').parentElement;
+                    const nombreLocalPantalla = fila.querySelector('.equipo-local')?.innerText || "";
+                    const nombreVisitaPantalla = fila.querySelector('.equipo-visita')?.innerText || "";
 
-                    let coincide = true;
+                    let coincideNombres = true;
+
+                    // Si no es fase de grupos, comparamos los nombres de la pantalla con la base de datos oficial
                     if (datosPart && datosPart.fase !== "Grupos") {
-                        // Normalización para que "México" y "mexico" coincidan
                         const norm = (t) => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
-                        const nL_user = norm(p.nombre_local);
-                        const nV_user = norm(p.nombre_visita);
-                        const nL_ofi = norm(ofi.nombreLocal);
-                        const nV_ofi = norm(ofi.nombreVisita);
                         
-                        if (nL_ofi !== "" && (nL_user !== nL_ofi || nV_user !== nV_ofi)) coincide = false;
+                        if (norm(nombreLocalPantalla) !== norm(ofi.nombreLocal) || norm(nombreVisitaPantalla) !== norm(ofi.nombreVisita)) {
+                            coincideNombres = false;
+                        }
                     }
 
-                    if (!coincide) {
-                        div.style.color = "#ff4444";
-                        div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
+                    const divPuntos = document.createElement('div');
+                    divPuntos.className = 'puntos-obtenidos';
+                    divPuntos.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
+
+                    if (!coincideNombres) {
+                        // CASO: Equipos no coinciden
+                        divPuntos.style.color = "#ff4444";
+                        divPuntos.innerHTML = `Juego mal pronosticado <br> <span style="color:#003366;">Puntos: </span><span style="color:red; font-size:16px;">0</span>`;
                     } else {
-                        const puntosFinales = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
-                        totalPuntos += puntosFinales;
-                        div.style.color = "#003366"; 
-                        div.innerHTML = `Puntos: <span style="color:red; font-size:16px;">${puntosFinales}</span>`;
+                        // CASO: Todo correcto, calculamos puntos
+                        const pts = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
+                        totalPuntosAcumulados += pts;
+                        divPuntos.style.color = "#003366"; // Azul para el texto
+                        divPuntos.innerHTML = `Puntos: <span style="color:red; font-size:16px;">${pts}</span>`;
                     }
-                    iL.closest('.marcador-col').appendChild(div);
+                    
+                    iL.closest('.marcador-col').appendChild(divPuntos);
                 }
             });
 
-            // 3. Restaurar el nombre de la quiniela arriba del botón (Como estaba antes)
+            // 3. ACTUALIZAR EL TÍTULO CON EL NOMBRE Y TOTAL (Opcional, si lo usas)
             const container = document.getElementById('links-container');
-            if (container) {
-                // Buscamos si ya existe el título para no duplicarlo
-                let titulo = document.getElementById('titulo-quiniela-activa');
-                if (!titulo) {
-                    titulo = document.createElement('div');
-                    titulo.id = 'titulo-quiniela-activa';
-                    titulo.style = "background: #003366; color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; text-align: center; font-weight: bold; display: flex; justify-content: space-between; align-items: center;";
-                    container.prepend(titulo);
-                }
-                titulo.innerHTML = `<span>🏆 ${nombre.toUpperCase()}</span> <span style="background: white; color: #003366; padding: 2px 8px; border-radius: 4px;">${totalPuntos} PTS</span>`;
+            const tituloExistente = document.getElementById('titulo-quiniela-activa');
+            if (tituloExistente) {
+                tituloExistente.innerHTML = `<span>🏆 ${nombre.toUpperCase()}</span> <span style="background: white; color: #003366; padding: 2px 8px; border-radius: 4px;">${totalPuntosAcumulados} PTS</span>`;
             }
 
+            // Bloqueamos los inputs para consulta
             document.querySelectorAll('.marcador-col input').forEach(i => i.disabled = true);
         }, 1200);
 
-        // 4. Lógica de navegación (Tu lógica original)
+        // --- Lógica de botones (se mantiene igual) ---
         const btns = document.querySelectorAll('.btn-link');
         btns.forEach(b => {
             if (b.getAttribute('data-nombre-real') === nombre.toLowerCase().trim()) {
@@ -496,18 +502,9 @@ async function cargarDesdeDB(nombre) {
             }
         });
 
-        if (!document.getElementById('btn-volver-lista')) {
-            const br = document.createElement('button');
-            br.id = 'btn-volver-lista'; 
-            br.innerText = "✕ Cambiar de Quiniela";
-            br.className = "btn-link"; 
-            br.style.backgroundColor = "#ff4444"; 
-            br.style.color = "white";
-            br.style.marginTop = "20px";
-            br.onclick = () => window.location.href = window.location.origin + window.location.pathname + "?nomodal=1";
-            document.getElementById('links-container').appendChild(br);
-        }
-    } catch(e) { console.error("Error al cargar:", e); }
+    } catch (e) {
+        console.error("Error al cargar quiniela:", e);
+    }
 }
 
 // 7. LÓGICA DE TORNEO (TERCER PUESTO ARREGLADO)
