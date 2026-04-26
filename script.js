@@ -624,38 +624,21 @@ async function generarReporteMaestro() {
 
         let html = `<html><head><title>Reporte Maestro</title><style>
             @page { size: A4; margin: 0; }
-            body { 
-                font-family: 'Segoe UI', Arial, sans-serif; 
-                margin: 0; padding: 0; 
-            }
+            body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; }
             .report-container { 
                 background: white; width: 210mm; height: 297mm; margin: 0 auto;
                 padding: 8mm; box-sizing: border-box; page-break-after: always;
                 display: flex; flex-direction: column;
             }
-            h2 { 
-                border-bottom: 2px solid #01215b; text-align: center; color: #01215b; 
-                margin: 0 0 5px 0; font-size: 14px; text-transform: uppercase;
-            }
-            .grid-wrapper { 
-                display: flex; justify-content: center; gap: 5mm; flex-grow: 1;
-            }
-            table { 
-                border-collapse: collapse; table-layout: fixed; width: 95mm; 
-            }
-            th, td { 
-                border: 0.5px solid #333; padding: 1px 2px; text-align: center; 
-                font-size: 7.2px; height: 4.8mm; overflow: hidden;
-                white-space: nowrap; text-overflow: ellipsis;
-            }
+            h2 { border-bottom: 2px solid #01215b; text-align: center; color: #01215b; margin: 0 0 5px 0; font-size: 14px; text-transform: uppercase; }
+            .grid-wrapper { display: flex; justify-content: center; gap: 5mm; flex-grow: 1; }
+            table { border-collapse: collapse; table-layout: fixed; width: 95mm; }
+            th, td { border: 0.5px solid #333; padding: 1px 2px; text-align: center; font-size: 7.2px; height: 4.8mm; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
             th { background: #01215b; color: white; font-weight: bold; }
-            
             .col-id { width: 6mm; }
             .col-equipo { width: 30mm; text-align: left; font-weight: bold; }
             .col-gol { width: 7mm; background-color: #f5f5f5; }
-            /* Columna de desempate ajustada */
-            .col-pals { width: 14mm; font-size: 7px; color: #cc0000; font-weight: bold; }
-
+            .col-desempate { width: 14mm; font-size: 7px; color: #cc0000; font-weight: bold; }
             .no-print { text-align: center; padding: 10px; background: #333; }
             @media print { .no-print { display: none; } .report-container { margin: 0; } }
         </style></head><body>
@@ -663,32 +646,31 @@ async function generarReporteMaestro() {
 
         for (const user in agrupado) {
             html += `<div class="report-container"><h2>Quiniela: ${user}</h2><div class="grid-wrapper">`;
-            const preds = agrupado[user];
-            preds.sort((a, b) => a.partido_id - b.partido_id);
-            
+            const preds = agrupado[user].sort((a, b) => a.partido_id - b.partido_id);
             const mitad = Math.ceil(preds.length / 2);
+
             for (let i = 0; i < 2; i++) {
                 html += `<table><thead><tr>
-                    <th class="col-id">#</th>
-                    <th class="col-equipo">Local</th>
-                    <th class="col-gol">L</th>
-                    <th class="col-gol">V</th>
-                    <th class="col-equipo">Visita</th>
-                    <th class="col-pals">Desempate</th>
+                    <th class="col-id">#</th><th class="col-equipo">Local</th>
+                    <th class="col-gol">L</th><th class="col-gol">V</th>
+                    <th class="col-equipo">Visita</th><th class="col-desempate">Desempate</th>
                 </tr></thead><tbody>`;
                 
                 preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
                     const p = (typeof partidosData !== 'undefined') ? partidosData.find(item => item.id === r.partido_id) : {};
-                    
                     const nL = r.nombre_local || r.local || p.local || '---';
                     const nV = r.nombre_visita || r.visita || p.visita || '---';
                     
-                    // VALIDACIÓN CORRECTA: Comprueba que los campos de la base de datos no sean NULL
-                    // Si hay un 0 o cualquier número, lo mostrará. Si no hay nada, pondrá "-"
+                    // --- EXTRACCIÓN ULTRA-SEGURA DE DATOS ---
+                    // Buscamos el valor en todas las variantes posibles de nombre de columna
+                    let gL = r.goles_desempate_local;
+                    let gV = r.goles_desempate_visita;
+
+                    // Si los valores son números (incluyendo el 0), los mostramos
                     let des = "-";
-                    if (r.goles_desempate_local !== null && r.goles_desempate_local !== undefined &&
-                        r.goles_desempate_visita !== null && r.goles_desempate_visita !== undefined) {
-                        des = `${r.goles_desempate_local}-${r.goles_desempate_visita}`;
+                    if ( (gL !== null && gL !== undefined && gL !== "") && 
+                         (gV !== null && gV !== undefined && gV !== "") ) {
+                        des = `${gL}-${gV}`;
                     }
                     
                     html += `<tr>
@@ -697,7 +679,7 @@ async function generarReporteMaestro() {
                         <td>${r.goles_local}</td>
                         <td>${r.goles_visita}</td>
                         <td class="col-equipo">${nV}</td>
-                        <td class="col-pals">${des}</td>
+                        <td class="col-desempate">${des}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
@@ -706,7 +688,7 @@ async function generarReporteMaestro() {
         }
         html += `</body></html>`;
         const v = window.open('', '_blank'); v.document.write(html); v.document.close();
-    } catch(e) { console.error("Error detallado:", e); alert("Error al generar el reporte."); }
+    } catch(e) { console.error("ERROR:", e); alert("Error al generar el reporte."); }
 }
 
 function cerrarMiModal() {
