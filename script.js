@@ -615,69 +615,76 @@ async function generarReporteMaestro() {
         const res = await fetch(`${API_URL}/obtener-todas-predicciones`);
         const datos = await res.json();
         
-        if (!datos.length) return alert("No hay datos para generar el reporte.");
-        
-        // REVISIÓN TÉCNICA: Verificamos en la consola cómo vienen los datos realmente
-        console.log("Ejemplo de datos recibidos:", datos[0]);
+        if (!datos.length) return alert("No hay datos.");
 
         const agrupado = datos.reduce((acc, r) => { 
             (acc[r.nombre_usuario] = acc[r.nombre_usuario] || []).push(r); 
             return acc; 
         }, {});
 
-        let html = `<html><head><title>Reporte Maestro</title><style>
-            @page { size: A4; margin: 0; }
-            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #555; }
-            
-            /* BOTÓN FIJO EN LA CABECERA */
-            .sticky-header {
-                position: fixed; top: 0; left: 0; width: 100%; height: 50px;
-                background: #222; display: flex; align-items: center; 
-                justify-content: center; z-index: 9999; box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            }
-            .sticky-header button {
-                padding: 10px 25px; cursor: pointer; font-weight: bold; 
-                background: #28a745; color: white; border: none; border-radius: 4px; font-size: 14px;
-            }
+        // IMPORTANTE: El html DEBE empezar con <!DOCTYPE html> para evitar el Quirks Mode
+        let html = `<!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <title>Reporte Maestro Quiniela</title>
+            <style>
+                /* Evitamos que el navegador use reglas antiguas */
+                * { box-sizing: border-box; }
+                @page { size: A4; margin: 0; }
+                body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #444; }
+                
+                /* Botón de impresión SIEMPRE arriba */
+                .print-header {
+                    position: fixed; top: 0; left: 0; width: 100%; 
+                    background: #222; padding: 10px; text-align: center; z-index: 9999;
+                }
+                .print-header button {
+                    padding: 12px 25px; cursor: pointer; font-weight: bold; 
+                    background: #28a745; color: white; border: none; border-radius: 5px;
+                }
 
-            .report-container { 
-                background: white; width: 210mm; min-height: 297mm; 
-                margin: 70px auto 20px auto; padding: 8mm; 
-                box-sizing: border-box; page-break-after: always;
-            }
-            
-            h2 { text-align: center; color: #000; margin: 0 0 10px 0; font-size: 16px; border-bottom: 2px solid #333; padding-bottom: 5px; }
-            
-            .quiniela-grid { display: flex; justify-content: space-between; gap: 2mm; }
-            
-            table { border-collapse: collapse; width: 49.5%; table-layout: fixed; }
-            th, td { 
-                border: 1px solid #000; text-align: center; 
-                font-size: 7.5px; height: 5.2mm; padding: 0; color: #000 !important;
-            }
-            th { background: #f0f0f0; font-weight: bold; }
-            
-            .col-id { width: 5mm; }
-            .col-team { width: 26mm; text-align: left; padding-left: 2px; font-weight: bold; }
-            .col-score { width: 6mm; background: #fafafa; }
-            /* COLUMNAS DE DESEMPATE CON COLOR PARA ASEGURAR VISIBILIDAD */
-            .col-des { width: 7mm; font-weight: bold; color: blue !important; background: #fffde7; }
+                .page-container { 
+                    background: white; width: 210mm; min-height: 297mm; 
+                    margin: 60px auto 20px auto; padding: 10mm; 
+                    box-sizing: border-box; page-break-after: always;
+                    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+                }
+                
+                .user-title { text-align: center; font-size: 18px; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
+                
+                /* Dos columnas para los 104 juegos */
+                .tables-flex { display: flex; justify-content: space-between; gap: 4mm; }
+                
+                table { border-collapse: collapse; width: 49%; table-layout: fixed; border: 1px solid #000; }
+                th, td { 
+                    border: 1px solid #000; text-align: center; 
+                    font-size: 8px; height: 5.2mm; padding: 0; color: #000;
+                }
+                th { background: #eee; font-weight: bold; }
+                
+                .col-id { width: 6mm; }
+                .col-name { width: 25mm; text-align: left; padding-left: 2px; font-weight: bold; }
+                .col-score { width: 7mm; background: #f0f0f0; }
+                /* Desempate en Azul fuerte para que se vea sí o sí */
+                .col-des { width: 7mm; font-weight: bold; color: blue !important; background: #fffde7; }
 
-            @media print {
-                .sticky-header { display: none; }
-                body { background: none; }
-                .report-container { margin: 0; padding: 5mm; }
-            }
-        </style></head><body>
-        
-        <div class="sticky-header">
-            <button onclick="window.print()">🖨️ IMPRIMIR AHORA</button>
-        </div>`;
+                @media print {
+                    .print-header { display: none; }
+                    body { background: none; }
+                    .page-container { margin: 0; box-shadow: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="print-header">
+                <button onclick="window.print()">🖨️ IMPRIMIR QUINIELAS</button>
+            </div>`;
 
         for (const user in agrupado) {
-            html += `<div class="report-container">
-                <h2>Quiniela: ${user}</h2>
-                <div class="quiniela-grid">`;
+            html += `<div class="page-container">
+                <div class="user-title">Quiniela: <strong>${user}</strong></div>
+                <div class="tables-flex">`;
             
             const preds = agrupado[user].sort((a, b) => a.partido_id - b.partido_id);
             const mitad = Math.ceil(preds.length / 2);
@@ -687,10 +694,10 @@ async function generarReporteMaestro() {
                     <thead>
                         <tr>
                             <th class="col-id">#</th>
-                            <th class="col-team">Local</th>
+                            <th class="col-name">Local</th>
                             <th class="col-score">L</th>
                             <th class="col-score">V</th>
-                            <th class="col-team">Visita</th>
+                            <th class="col-name">Visita</th>
                             <th class="col-des">DL</th>
                             <th class="col-des">DV</th>
                         </tr>
@@ -699,19 +706,18 @@ async function generarReporteMaestro() {
                 
                 const bloque = preds.slice(i * mitad, (i + 1) * mitad);
                 bloque.forEach(r => {
-                    // BUSQUEDA MULTIPLE: Si el nombre largo falla, intenta con otros posibles nombres
-                    // Esto evita que si la base de datos manda el dato con otro nombre, se pierda.
-                    const dl = r.goles_desempate_local ?? r.desempate_local ?? r.dl ?? (r.goles_local_desempate !== undefined ? r.goles_local_desempate : "");
-                    const dv = r.goles_desempate_visita ?? r.desempate_visita ?? r.dv ?? (r.goles_visita_desempate !== undefined ? r.goles_visita_desempate : "");
+                    // Si el valor es 0, lo muestra. Si es nulo, queda vacío.
+                    const dL = (r.goles_desempate_local !== null && r.goles_desempate_local !== undefined) ? r.goles_desempate_local : "";
+                    const dV = (r.goles_desempate_visita !== null && r.goles_desempate_visita !== undefined) ? r.goles_desempate_visita : "";
                     
                     html += `<tr>
                         <td>${r.partido_id}</td>
-                        <td class="col-team">${r.nombre_local || r.local || '---'}</td>
+                        <td class="col-name">${r.nombre_local || r.local || '---'}</td>
                         <td>${r.goles_local}</td>
                         <td>${r.goles_visita}</td>
-                        <td class="col-team">${r.nombre_visita || r.visita || '---'}</td>
-                        <td class="col-des">${dl}</td>
-                        <td class="col-des">${dv}</td>
+                        <td class="col-name">${r.nombre_visita || r.visita || '---'}</td>
+                        <td class="col-des">${dL}</td>
+                        <td class="col-des">${dV}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
@@ -726,7 +732,7 @@ async function generarReporteMaestro() {
         
     } catch(e) {
         console.error(e);
-        alert("Error al generar el reporte. Revisa la consola (F12).");
+        alert("Error técnico al generar el reporte.");
     }
 }
 
