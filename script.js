@@ -662,21 +662,22 @@ async function generarReporteMaestro() {
                 
                 preds.slice(i * mitad, (i + 1) * mitad).forEach(r => {
                     const p = (typeof partidosData !== 'undefined') ? partidosData.find(item => item.id === r.partido_id) : {};
-                    const nL = r.nombre_local || r.local || p.local || '---';
-                    const nV = r.nombre_visita || r.visita || p.visita || '---';
                     
-                    // LAS DOS LÍNEAS CAMBIADAS:
-                    const dL = (r.goles_desempate_local ?? "");
-                    const dV = (r.goles_desempate_visita ?? "");
+                    // 1. Esto nos dirá en la consola del navegador (F12) cómo se llaman los datos reales
+                    console.log("Datos de la fila:", r);
+                
+                    // 2. Intentamos capturar el dato de tres formas distintas por si la API cambió el nombre
+                    const dL = r.goles_desempate_local ?? r.desempate_local ?? r.dl ?? "";
+                    const dV = r.goles_desempate_visita ?? r.desempate_visita ?? r.dv ?? "";
                     
                     html += `<tr>
                         <td>${r.partido_id}</td>
-                        <td class="col-equipo">${nL}</td>
+                        <td class="col-equipo">${r.nombre_local || r.local || p.local || '---'}</td>
                         <td class="col-gol">${r.goles_local}</td>
                         <td class="col-gol">${r.goles_visita}</td>
-                        <td class="col-equipo">${nV}</td>
-                        <td class="col-des" style="color:black; font-weight:bold;">${dL}</td>
-                        <td class="col-des" style="color:black; font-weight:bold;">${dV}</td>
+                        <td class="col-equipo">${r.nombre_visita || r.visita || p.visita || '---'}</td>
+                        <td style="color: blue !important; font-weight: bold; background-color: #f0f0f0;">${dL}</td>
+                        <td style="color: blue !important; font-weight: bold; background-color: #f0f0f0;">${dV}</td>
                     </tr>`;
                 });
                 html += `</tbody></table>`;
