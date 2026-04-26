@@ -609,7 +609,6 @@ function ponerNombreEnCard(id, lado, nombre) {
     if (el) { el.closest('.partido-card').querySelector(lado === 'L' ? '.local' : '.visita').innerText = nombre; }
 }
 
-// 8. REPORTE MAESTRO (FORMATO A4 + IMPRESIÓN) - CON DESEMPATE/PENALES
 // 8. REPORTE MAESTRO (FORMATO A4 + IMPRESIÓN)
 async function generarReporteMaestro() {
     try {
@@ -639,7 +638,7 @@ async function generarReporteMaestro() {
             .col-id { width: 5mm; }
             .col-equipo { width: 24mm; text-align: left; font-weight: bold; }
             .col-gol { width: 6mm; background-color: #f5f5f5; }
-            /* Columnas de desempate idénticas a las de goles visita */
+            /* Columnas de desempate idénticas a las de goles normales */
             .col-des { width: 6mm; font-weight: bold; color: #cc0000; }
 
             .no-print { text-align: center; padding: 10px; background: #333; }
@@ -668,16 +667,16 @@ async function generarReporteMaestro() {
                     const nL = r.nombre_local || r.local || p.local || '---';
                     const nV = r.nombre_visita || r.visita || p.visita || '---';
                     
-                    // PASO DIRECTO: Sin condiciones, sin guiones, igual que los goles normales.
-                    // Si la DB tiene un 0, pone 0. Si tiene NULL, la celda queda limpia.
-                    const dl = (r.goles_desempate_local !== null) ? r.goles_desempate_local : "";
-                    const dv = (r.goles_desempate_visita !== null) ? r.goles_desempate_visita : "";
+                    // PASO DIRECTO: Sin validaciones, solo mostramos el valor.
+                    // Si es NULL o undefined en la DB, se mostrará vacío para no ensuciar.
+                    const dl = (r.goles_desempate_local !== null && r.goles_desempate_local !== undefined) ? r.goles_desempate_local : "";
+                    const dv = (r.goles_desempate_visita !== null && r.goles_desempate_visita !== undefined) ? r.goles_desempate_visita : "";
                     
                     html += `<tr>
                         <td>${r.partido_id}</td>
                         <td class="col-equipo">${nL}</td>
-                        <td>${r.goles_local}</td>
-                        <td>${r.goles_visita}</td>
+                        <td class="col-gol">${r.goles_local}</td>
+                        <td class="col-gol">${r.goles_visita}</td>
                         <td class="col-equipo">${nV}</td>
                         <td class="col-des">${dl}</td>
                         <td class="col-des">${dv}</td>
