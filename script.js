@@ -259,7 +259,6 @@ async function actualizarListaLinks() {
             return acc;
         }, {});
 
-        // --- CORRECCIÓN AQUÍ: Cerramos bien el map y retornamos el objeto ---
         let ranking = usuarios.map(user => {
             let pts = 0;
             const susPreds = predPorUser[user.nombre_usuario] || [];
@@ -270,26 +269,28 @@ async function actualizarListaLinks() {
 
                 if (ofi) {
                     let coincide = true;
+                    // Validación estricta para Eliminatorias
                     if (datosP && datosP.fase !== "Grupos") {
-                        const nL_user = (pred.nombre_local || "").trim().toLowerCase();
-                        const nV_user = (pred.nombre_visita || "").trim().toLowerCase();
-                        const nL_ofi = (ofi.nombreLocal || "").trim().toLowerCase();
-                        const nV_ofi = (ofi.nombreVisita || "").trim().toLowerCase();
+                        const norm = (t) => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+                        const nL_user = norm(pred.nombre_local);
+                        const nV_user = norm(pred.nombre_visita);
+                        const nL_ofi = norm(ofi.nombreLocal);
+                        const nV_ofi = norm(ofi.nombreVisita);
 
-                        if (nL_ofi !== "" && nV_ofi !== "") {
-                            if (nL_user !== nL_ofi || nV_user !== nV_ofi) {
-                                coincide = false;
-                            }
+                        // Si los nombres de los equipos no coinciden con los oficiales, no suma puntos
+                        if (nL_ofi !== "" && (nL_user !== nL_ofi || nV_user !== nV_ofi)) {
+                            coincide = false;
                         }
                     }
+
                     if (coincide) {
                         pts += calcularLogicaPuntos(pred.goles_local, pred.goles_visita, ofi.gl, ofi.gv);
                     }
                 }
-            }); // Cierre del forEach interno
+            });
             
-            return { nombre: user.nombre_usuario, puntos: pts }; // <--- IMPORTANTE: Retornar los datos
-        }); // <--- AQUÍ: Cierre correcto del .map()
+            return { nombre: user.nombre_usuario, puntos: pts };
+        });
 
         ranking.sort((a, b) => b.puntos - a.puntos);
         
@@ -415,7 +416,6 @@ async function cargarDesdeDB(nombre) {
             fetch(`${API_URL}/cargar/${nombre}`).then(r => r.json())
         ]);
 
-        // 1. Cargar datos en los inputs (Tu lógica original)
         resUser.forEach(p => {
             const iL = document.getElementById(`L-${p.id}`);
             const iV = document.getElementById(`V-${p.id}`);
@@ -430,7 +430,6 @@ async function cargarDesdeDB(nombre) {
 
         actualizarTorneo();
 
-        // 2. Mostrar puntos y validaciones
         setTimeout(() => {
             let totalPuntos = 0;
             resUser.forEach(p => {
@@ -439,38 +438,41 @@ async function cargarDesdeDB(nombre) {
                 const datosPart = partidosData.find(pd => pd.id === p.id);
 
                 if (ofi && iL) {
-    const div = document.createElement('div');
-    div.className = 'puntos-obtenidos';
-    div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
+                    const div = document.createElement('div');
+                    div.className = 'puntos-obtenidos';
+                    div.style = "font-weight: bold; font-size: 13px; margin-top: 5px; text-align: center;";
 
-    let coincide = true;
-    if (datosPart && datosPart.fase !== "Grupos") {
-        const norm = (t) => (t || "").normalize("NFD").replace(/ /g, "").trim().toLowerCase();
-        const nL_user = norm(p.nombre_local);
-        const nV_user = norm(p.nombre_visita);
-        const nL_ofi = norm(ofi.nombreLocal);
-        const nV_ofi = norm(ofi.nombreVisita);
-        
-        if (nL_ofi !== "" && (nL_user !== nL_ofi || nV_user !== nV_ofi)) coincide = false;
-    }
+                    let coincide = true;
+                    if (datosPart && datosPart.fase !== "Grupos") {
+                        const norm = (t) => (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+                        const nL_user = norm(p.nombre_local);
+                        const nV_user = norm(p.nombre_visita);
+                        const nL_ofi = norm(ofi.nombreLocal);
+                        const nV_ofi = norm(ofi.nombreVisita);
+                        
+                        // Si hay equipos oficiales cargados y no coinciden con la predicción
+                        if (nL_ofi !== "" && (nL_user !== nL_ofi || nV_user !== nV_ofi)) {
+                            coincide = false;
+                        }
+                    }
 
-    if (!coincide) {
-        div.style.color = "#ff4444";
-        div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
-    } else {
-        const puntosFinales = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
-        totalPuntos += puntosFinales;
-        div.style.color = "#003366"; 
-        div.innerHTML = `Puntos: <span style="color:red; font-size:16px;">${puntosFinales}</span>`;
-    }
-    iL.closest('.marcador-col').appendChild(div);
-}
+                    if (!coincide) {
+                        div.style.color = "#ff4444";
+                        div.innerHTML = `Juego mal pronosticado <br> <span style="font-size:10px;">0 Puntos</span>`;
+                        // No sumamos puntos al totalPuntos
+                    } else {
+                        const puntosFinales = calcularLogicaPuntos(p.gl, p.gv, ofi.gl, ofi.gv);
+                        totalPuntos += puntosFinales;
+                        div.style.color = "#003366"; 
+                        div.innerHTML = `Puntos: <span style="color:red; font-size:16px;">${puntosFinales}</span>`;
+                    }
+                    iL.closest('.marcador-col').appendChild(div);
+                }
             });
 
-            // 3. Restaurar el nombre de la quiniela arriba del botón (Como estaba antes)
+            // Título de quiniela activa y puntos totales
             const container = document.getElementById('links-container');
             if (container) {
-                // Buscamos si ya existe el título para no duplicarlo
                 let titulo = document.getElementById('titulo-quiniela-activa');
                 if (!titulo) {
                     titulo = document.createElement('div');
