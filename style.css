@@ -23,6 +23,15 @@ header {
     border-bottom: 5px solid var(--gold);
 }
 
+
+.table-header span {
+    pointer-events: none;
+    user-select: none;
+}
+
+
+
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
