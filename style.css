@@ -25,14 +25,10 @@ header {
 
 
 
-.table-header {
-    pointer-events: none;
-    user-select: none;
-}
-
-.table-header span {
-    pointer-events: none;
-    user-select: none;
+.content-fixture,
+.content-fixture * {
+    pointer-events: none !important;
+    user-select: none !important;
 }
 
 
