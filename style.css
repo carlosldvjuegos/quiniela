@@ -25,16 +25,15 @@ header {
 
 
 
-.table-header,
-.table-header span {
-    pointer-events: none !important;
-    user-select: none !important;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    cursor: default;
+.table-header {
+    pointer-events: none;
+    user-select: none;
 }
 
+.table-header span {
+    pointer-events: none;
+    user-select: none;
+}
 
 
 
