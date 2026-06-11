@@ -25,11 +25,11 @@ header {
 
 
 
-.content-fixture,
+/*.content-fixture,
 .content-fixture * {
     pointer-events: none !important;
     user-select: none !important;
-}
+}*/
 
 
 
