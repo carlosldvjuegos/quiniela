@@ -192,6 +192,39 @@ function renderizarPartidosAdmin() {
                 RESULTADO OFICIAL
             </div>
         `;
+
+
+        
+
+// --- CÓDIGO DE RESALTE PARA PARTIDOS DE HOY Y MAÑANA ---
+        try {
+            // 1. Obtener las fechas de Hoy y Mañana formateadas como "DD/MM/2026"
+            const hoyObj = new Date();
+            const mananaObj = new Date();
+            mananaObj.setDate(hoyObj.getDate() + 1);
+
+            const pad = (n) => n.toString().padStart(2, '0');
+            
+            const textoHoy = `${pad(hoyObj.getDate())}/${pad(hoyObj.getMonth() + 1)}/2026`;
+            const textoManana = `${pad(mananaObj.getDate())}/${pad(mananaObj.getMonth() + 1)}/2026`;
+
+            // 2. Comprobar si la fecha del partido contiene "hoy" o "mañana"
+            if (p.fecha && (p.fecha.includes(textoHoy) || p.fecha.includes(textoManana))) {
+                // Color rosado claro estético que mantiene la legibilidad del texto
+                card.style.backgroundColor = "#ffe4e1"; 
+                card.style.border = "1px solid #ffb6c1";
+            }
+        } catch (e) {
+            console.error("Error al resaltar fecha:", e);
+        }
+        // --- FIN DEL CÓDIGO DE RESALTE ---
+
+
+
+
+
+
+        
         container.appendChild(card);
     });
 }
