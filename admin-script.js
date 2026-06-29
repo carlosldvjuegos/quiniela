@@ -252,8 +252,9 @@ function actualizarLogicaAdmin() {
         const partidosGrupo = partidosData.filter(p => p.fase === "Grupos" && p.grupo === g);
         
         partidosGrupo.forEach(p => {
-            if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0, ranking: rankingFIFA[p.local] || 200 };
-            if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0, ranking: rankingFIFA[p.visita] || 200 };
+            // Se añade 'vic' para contar las victorias totales
+            if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0, vic: 0, ranking: rankingFIFA[p.local] || 200 };
+            if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0, vic: 0, ranking: rankingFIFA[p.visita] || 200 };
             
             const res = resultados[p.id];
             if (res && res.gl !== null && res.gv !== null) {
@@ -261,26 +262,47 @@ function actualizarLogicaAdmin() {
                 tabla[p.visita].gf += res.gv;
                 tabla[p.local].dg += (res.gl - res.gv);
                 tabla[p.visita].dg += (res.gv - res.gl);
-                if (res.gl > res.gv) tabla[p.local].pts += 3;
-                else if (res.gl < res.gv) tabla[p.visita].pts += 3;
-                else { tabla[p.local].pts += 1; tabla[p.visita].pts += 1; }
+                
+                if (res.gl > res.gv) {
+                    tabla[p.local].pts += 3;
+                    tabla[p.local].vic += 1; // Registra victoria local
+                } else if (res.gl < res.gv) {
+                    tabla[p.visita].pts += 3;
+                    tabla[p.visita].vic += 1; // Registra victoria visitante
+                } else { 
+                    tabla[p.local].pts += 1; 
+                    tabla[p.visita].pts += 1; 
+                }
             }
         });
 
+        // Criterio FIFA exacto para fase de grupos: Puntos -> Diff Goles -> Goles Favor
+        // Nota: Como no manejamos Fair Play ni Sorteo en código, usamos el Ranking FIFA invertido (menor número es mejor ranking) como último recurso definitivo.
         let ordenados = Object.values(tabla).sort((a, b) => 
-            b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
+            b.pts - a.pts || 
+            b.dg - a.dg || 
+            b.gf - a.gf || 
+            a.ranking - b.ranking
         );
 
         clasificados[`1${g}`] = ordenados[0]?.nombre || `1${g}`;
         clasificados[`2${g}`] = ordenados[1]?.nombre || `2${g}`;
         
         if (ordenados[2]) {
+            // Guardamos el grupo de origen para auditorías visuales si lo requieres
+            ordenados[2].grupoOrigen = g; 
             todosLosTerceros.push(ordenados[2]);
         }
     });
 
+    // 2. ORDENAR LOS MEJORES TERCEROS SEGÚN REGLAMENTO FIFA
+    // Criterios: 1. Puntos, 2. Diferencia de goles, 3. Goles a favor, 4. Mayor número de victorias.
     let mejoresTerceros = todosLosTerceros.sort((a, b) => 
-        b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
+        b.pts - a.pts || 
+        b.dg - a.dg || 
+        b.gf - a.gf || 
+        b.vic - a.vic || 
+        a.ranking - b.ranking
     ).slice(0, 8);
 
     mejoresTerceros.forEach((t, index) => {
