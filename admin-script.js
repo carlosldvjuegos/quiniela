@@ -373,7 +373,7 @@ async function guardarResultadosOficiales() {
 
 
 
-function fijarCrucesOficiales16vos() {
+/*function fijarCrucesOficiales16vos() {
     // 1. Define aquí EXACTAMENTE qué equipo quedó en cada posición según tus cálculos de la FIFA
     const oficiales = {
         // Líderes de Grupo (1)
@@ -427,7 +427,7 @@ function fijarCrucesOficiales16vos() {
     });
 
     console.log("Llaves de 16vos forzadas con la clasificación correcta.");
-}
+}*/
 
 
 
