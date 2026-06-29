@@ -234,11 +234,14 @@ function actualizarLogicaAdmin() {
     partidosData.forEach(p => {
         const inputL = document.getElementById(`R-L-${p.id}`);
         const inputV = document.getElementById(`R-V-${p.id}`);
-        const gl = inputL ? inputL.value : "";
-        const gv = inputV ? inputV.value : "";
+        
+        // Forzamos la obtención limpia del valor del input
+        const gl = inputL && inputL.value !== "" ? inputL.value.trim() : "";
+        const gv = inputV && inputV.value !== "" ? inputV.value.trim() : "";
+        
         resultados[p.id] = {
-            gl: gl !== "" ? parseInt(gl) : null,
-            gv: gv !== "" ? parseInt(gv) : null
+            gl: gl !== "" ? parseInt(gl, 10) : null,
+            gv: gv !== "" ? parseInt(gv, 10) : null
         };
     });
 
@@ -287,45 +290,39 @@ function actualizarLogicaAdmin() {
         }
     });
 
-    // 2. OBTENER LOS 8 MEJORES TERCEROS
+    // 2. ORDENAR Y FILTRAR LOS 8 MEJORES TERCEROS (Criterio FIFA)
     let mejoresTerceros = todosLosTerceros.sort((a, b) => 
         b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || b.vic - a.vic || a.ranking - b.ranking
     ).slice(0, 8);
 
-    // 3. ASIGNACIÓN ASISTIDA EN LAS LLAVES DE 16VOS
-    // Definimos los partidos que reciben un "Mejor Tercero" y contra qué grupo juegan
+    // 3. ASIGNACIÓN DINÁMICA DE TERCEROS EVITANDO REPETIR GRUPO DE ORIGEN
     const partidosConTerceros = [
-        { id: 75, contraGrupo: 'E' }, // Juega contra 1E
-        { id: 78, contraGrupo: 'I' }, // Juega contra 1I
-        { id: 79, contraGrupo: 'A' }, // Juega contra 1A
-        { id: 80, contraGrupo: 'L' }, // Juega contra 1L
-        { id: 81, contraGrupo: 'G' }, // Juega contra 1G
-        { id: 82, contraGrupo: 'D' }, // Juega contra 1D
-        { id: 85, contraGrupo: 'B' }, // Juega contra 1B
-        { id: 88, contraGrupo: 'K' }  // Juega contra 1K
+        { id: 75, contraGrupo: 'E' },
+        { id: 78, contraGrupo: 'I' },
+        { id: 79, contraGrupo: 'A' },
+        { id: 80, contraGrupo: 'L' },
+        { id: 81, contraGrupo: 'G' },
+        { id: 82, contraGrupo: 'D' },
+        { id: 85, contraGrupo: 'B' },
+        { id: 88, contraGrupo: 'K' }
     ];
 
-    // Clonamos la lista de mejores terceros disponibles para ir asignándolos
     let tercerosDisponibles = [...mejoresTerceros];
 
     partidosConTerceros.forEach(partido => {
-        // Buscamos un tercero disponible que NO sea del mismo grupo que el rival del partido
         let indexTercero = tercerosDisponibles.findIndex(t => t.grupo !== partido.contraGrupo);
-        
-        // Si por cuestiones extremas matemáticos no encuentra (muy raro), toma el primero disponible
         if (indexTercero === -1) indexTercero = 0;
 
         const seleccionado = tercerosDisponibles[indexTercero];
-
         if (seleccionado) {
             clasificados[`3T_PARTIDO_${partido.id}`] = seleccionado.nombre;
-            tercerosDisponibles.splice(indexTercero, 1); // Lo removemos para que no se repita
+            tercerosDisponibles.splice(indexTercero, 1);
         } else {
-            clasificados[`3T_PARTIDO_${partido.id}`] = `3T de Grupo`;
+            clasificados[`3T_PARTIDO_${partido.id}`] = `3T ${partido.contraGrupo}`;
         }
     });
 
-    // 4. MAPEO CORREGIDO CON LAS CLAVES ASIGNADAS POR PARTIDO
+    // 4. MAPEO DE 16VOS DE FINAL
     const mapeo16vos = [
         { id: 73, l: clasificados['2A'], v: clasificados['2B'] },
         { id: 74, l: clasificados['1C'], v: clasificados['2F'] },
@@ -344,14 +341,15 @@ function actualizarLogicaAdmin() {
         { id: 87, l: clasificados['1J'], v: clasificados['2H'] },
         { id: 88, l: clasificados['1K'], v: clasificados['3T_PARTIDO_88'] }
     ];
+
     mapeo16vos.forEach(m => {
         const lbL = document.getElementById(`N-L-${m.id}`);
         const lbV = document.getElementById(`N-V-${m.id}`);
-        if (lbL) lbL.innerText = m.l;
-        if (lbV) lbV.innerText = m.v;
+        if (lbL) lbL.innerText = m.l || `Local ${m.id}`;
+        if (lbV) lbV.innerText = m.v || `Visita ${m.id}`;
     });
 
-    // --- LÓGICA DE GANADORES Y PERDEDORES ---
+    // 5. SEGUIMIENTO DE LLAVES DE ELIMINATORIA (8vos, 4tos, Semis, Final)
     const getGanador = (id) => {
         const res = resultados[id];
         const txtL = document.getElementById(`N-L-${id}`)?.innerText || `Local ${id}`;
@@ -360,7 +358,6 @@ function actualizarLogicaAdmin() {
         return (res.gl > res.gv) ? txtL : txtV;
     };
 
-    // ESTA ES LA FUNCIÓN NUEVA AGREGADA
     const getPerdedor = (id) => {
         const res = resultados[id];
         const txtL = document.getElementById(`N-L-${id}`)?.innerText || `Local ${id}`;
@@ -405,11 +402,9 @@ function actualizarLogicaAdmin() {
         if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
     });
 
-    // LÓGICA PARA EL TERCER PUESTO (ID 103) - AGREGADA
     if (document.getElementById(`N-L-103`)) document.getElementById(`N-L-103`).innerText = getPerdedor(101);
     if (document.getElementById(`N-V-103`)) document.getElementById(`N-V-103`).innerText = getPerdedor(102);
 
-    // FINAL (ID 104)
     if (document.getElementById(`N-L-104`)) document.getElementById(`N-L-104`).innerText = getGanador(101);
     if (document.getElementById(`N-V-104`)) document.getElementById(`N-V-104`).innerText = getGanador(102);
 } // <--- AQUÍ CERRÉ LA FUNCIÓN actualizarLogicaAdmin
