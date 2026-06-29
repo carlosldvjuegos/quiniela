@@ -252,9 +252,8 @@ function actualizarLogicaAdmin() {
         const partidosGrupo = partidosData.filter(p => p.fase === "Grupos" && p.grupo === g);
         
         partidosGrupo.forEach(p => {
-            // Se añade 'vic' para contar las victorias totales
-            if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0, vic: 0, ranking: rankingFIFA[p.local] || 200 };
-            if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0, vic: 0, ranking: rankingFIFA[p.visita] || 200 };
+            if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0, vic: 0, ranking: rankingFIFA[p.local] || 200, grupo: g };
+            if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0, vic: 0, ranking: rankingFIFA[p.visita] || 200, grupo: g };
             
             const res = resultados[p.id];
             if (res && res.gl !== null && res.gv !== null) {
@@ -265,10 +264,10 @@ function actualizarLogicaAdmin() {
                 
                 if (res.gl > res.gv) {
                     tabla[p.local].pts += 3;
-                    tabla[p.local].vic += 1; // Registra victoria local
+                    tabla[p.local].vic += 1;
                 } else if (res.gl < res.gv) {
                     tabla[p.visita].pts += 3;
-                    tabla[p.visita].vic += 1; // Registra victoria visitante
+                    tabla[p.visita].vic += 1;
                 } else { 
                     tabla[p.local].pts += 1; 
                     tabla[p.visita].pts += 1; 
@@ -276,58 +275,75 @@ function actualizarLogicaAdmin() {
             }
         });
 
-        // Criterio FIFA exacto para fase de grupos: Puntos -> Diff Goles -> Goles Favor
-        // Nota: Como no manejamos Fair Play ni Sorteo en código, usamos el Ranking FIFA invertido (menor número es mejor ranking) como último recurso definitivo.
         let ordenados = Object.values(tabla).sort((a, b) => 
-            b.pts - a.pts || 
-            b.dg - a.dg || 
-            b.gf - a.gf || 
-            a.ranking - b.ranking
+            b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
         );
 
         clasificados[`1${g}`] = ordenados[0]?.nombre || `1${g}`;
         clasificados[`2${g}`] = ordenados[1]?.nombre || `2${g}`;
         
         if (ordenados[2]) {
-            // Guardamos el grupo de origen para auditorías visuales si lo requieres
-            ordenados[2].grupoOrigen = g; 
             todosLosTerceros.push(ordenados[2]);
         }
     });
 
-    // 2. ORDENAR LOS MEJORES TERCEROS SEGÚN REGLAMENTO FIFA
-    // Criterios: 1. Puntos, 2. Diferencia de goles, 3. Goles a favor, 4. Mayor número de victorias.
+    // 2. OBTENER LOS 8 MEJORES TERCEROS
     let mejoresTerceros = todosLosTerceros.sort((a, b) => 
-        b.pts - a.pts || 
-        b.dg - a.dg || 
-        b.gf - a.gf || 
-        b.vic - a.vic || 
-        a.ranking - b.ranking
+        b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || b.vic - a.vic || a.ranking - b.ranking
     ).slice(0, 8);
 
-    mejoresTerceros.forEach((t, index) => {
-        clasificados[`3T${index + 1}`] = t.nombre;
+    // 3. ASIGNACIÓN ASISTIDA EN LAS LLAVES DE 16VOS
+    // Definimos los partidos que reciben un "Mejor Tercero" y contra qué grupo juegan
+    const partidosConTerceros = [
+        { id: 75, contraGrupo: 'E' }, // Juega contra 1E
+        { id: 78, contraGrupo: 'I' }, // Juega contra 1I
+        { id: 79, contraGrupo: 'A' }, // Juega contra 1A
+        { id: 80, contraGrupo: 'L' }, // Juega contra 1L
+        { id: 81, contraGrupo: 'G' }, // Juega contra 1G
+        { id: 82, contraGrupo: 'D' }, // Juega contra 1D
+        { id: 85, contraGrupo: 'B' }, // Juega contra 1B
+        { id: 88, contraGrupo: 'K' }  // Juega contra 1K
+    ];
+
+    // Clonamos la lista de mejores terceros disponibles para ir asignándolos
+    let tercerosDisponibles = [...mejoresTerceros];
+
+    partidosConTerceros.forEach(partido => {
+        // Buscamos un tercero disponible que NO sea del mismo grupo que el rival del partido
+        let indexTercero = tercerosDisponibles.findIndex(t => t.grupo !== partido.contraGrupo);
+        
+        // Si por cuestiones extremas matemáticos no encuentra (muy raro), toma el primero disponible
+        if (indexTercero === -1) indexTercero = 0;
+
+        const seleccionado = tercerosDisponibles[indexTercero];
+
+        if (seleccionado) {
+            clasificados[`3T_PARTIDO_${partido.id}`] = seleccionado.nombre;
+            tercerosDisponibles.splice(indexTercero, 1); // Lo removemos para que no se repita
+        } else {
+            clasificados[`3T_PARTIDO_${partido.id}`] = `3T de Grupo`;
+        }
     });
 
+    // 4. MAPEO CORREGIDO CON LAS CLAVES ASIGNADAS POR PARTIDO
     const mapeo16vos = [
         { id: 73, l: clasificados['2A'], v: clasificados['2B'] },
         { id: 74, l: clasificados['1C'], v: clasificados['2F'] },
-        { id: 75, l: clasificados['1E'], v: clasificados['3T1'] || "3T1" },
+        { id: 75, l: clasificados['1E'], v: clasificados['3T_PARTIDO_75'] },
         { id: 76, l: clasificados['1F'], v: clasificados['2C'] },
         { id: 77, l: clasificados['2E'], v: clasificados['2I'] },
-        { id: 78, l: clasificados['1I'], v: clasificados['3T2'] || "3T2" },
-        { id: 79, l: clasificados['1A'], v: clasificados['3T3'] || "3T3" },
-        { id: 80, l: clasificados['1L'], v: clasificados['3T4'] || "3T4" },
-        { id: 81, l: clasificados['1G'], v: clasificados['3T5'] || "3T5" },
-        { id: 82, l: clasificados['1D'], v: clasificados['3T6'] || "3T6" },
+        { id: 78, l: clasificados['1I'], v: clasificados['3T_PARTIDO_78'] },
+        { id: 79, l: clasificados['1A'], v: clasificados['3T_PARTIDO_79'] },
+        { id: 80, l: clasificados['1L'], v: clasificados['3T_PARTIDO_80'] },
+        { id: 81, l: clasificados['1G'], v: clasificados['3T_PARTIDO_81'] },
+        { id: 82, l: clasificados['1D'], v: clasificados['3T_PARTIDO_82'] },
         { id: 83, l: clasificados['1H'], v: clasificados['2J'] },
         { id: 84, l: clasificados['2K'], v: clasificados['2L'] },
-        { id: 85, l: clasificados['1B'], v: clasificados['3T7'] || "3T7" },
+        { id: 85, l: clasificados['1B'], v: clasificados['3T_PARTIDO_85'] },
         { id: 86, l: clasificados['2D'], v: clasificados['2G'] },
         { id: 87, l: clasificados['1J'], v: clasificados['2H'] },
-        { id: 88, l: clasificados['1K'], v: clasificados['3T8'] || "3T8" }
+        { id: 88, l: clasificados['1K'], v: clasificados['3T_PARTIDO_88'] }
     ];
-
     mapeo16vos.forEach(m => {
         const lbL = document.getElementById(`N-L-${m.id}`);
         const lbV = document.getElementById(`N-V-${m.id}`);
