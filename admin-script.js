@@ -252,8 +252,8 @@ function actualizarLogicaAdmin() {
         const partidosGrupo = partidosData.filter(p => p.fase === "Grupos" && p.grupo === g);
         
         partidosGrupo.forEach(p => {
-            if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0, ranking: rankingFIFA[p.local] || 200, grupoOrigen: g };
-            if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0, ranking: rankingFIFA[p.visita] || 200, grupoOrigen: g };
+            if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0, ranking: rankingFIFA[p.local] || 200 };
+            if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0, ranking: rankingFIFA[p.visita] || 200 };
             
             const res = resultados[p.id];
             if (res && res.gl !== null && res.gv !== null) {
@@ -279,12 +279,10 @@ function actualizarLogicaAdmin() {
         }
     });
 
-    // CORRECCIÓN: Clasificación y ordenamiento estricto de los mejores terceros globales
     let mejoresTerceros = todosLosTerceros.sort((a, b) => 
         b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
     ).slice(0, 8);
 
-    // Asignamos las etiquetas provisionales 3T1 a 3T8 según el orden de mérito real obtenido
     mejoresTerceros.forEach((t, index) => {
         clasificados[`3T${index + 1}`] = t.nombre;
     });
@@ -324,6 +322,7 @@ function actualizarLogicaAdmin() {
         return (res.gl > res.gv) ? txtL : txtV;
     };
 
+    // ESTA ES LA FUNCIÓN NUEVA AGREGADA
     const getPerdedor = (id) => {
         const res = resultados[id];
         const txtL = document.getElementById(`N-L-${id}`)?.innerText || `Local ${id}`;
@@ -368,9 +367,11 @@ function actualizarLogicaAdmin() {
         if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
     });
 
+    // LÓGICA PARA EL TERCER PUESTO (ID 103) - AGREGADA
     if (document.getElementById(`N-L-103`)) document.getElementById(`N-L-103`).innerText = getPerdedor(101);
     if (document.getElementById(`N-V-103`)) document.getElementById(`N-V-103`).innerText = getPerdedor(102);
 
+    // FINAL (ID 104)
     if (document.getElementById(`N-L-104`)) document.getElementById(`N-L-104`).innerText = getGanador(101);
     if (document.getElementById(`N-V-104`)) document.getElementById(`N-V-104`).innerText = getGanador(102);
 } // <--- AQUÍ CERRÉ LA FUNCIÓN actualizarLogicaAdmin
