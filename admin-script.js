@@ -230,49 +230,150 @@ function renderizarPartidosAdmin() {
 }
 
 function actualizarLogicaAdmin() {
-    // 1. Datos manuales correctos de la FIFA que quieres mostrar
-    const oficiales = {
-        "1A": "México", "1B": "Canadá", "1C": "Brasil", "1D": "EE. UU.", 
-        "1E": "Alemania", "1F": "Países Bajos", "1G": "Bélgica", "1H": "España", 
-        "1I": "Francia", "1J": "Argentina", "1K": "Portugal", "1L": "Inglaterra",
-        "2A": "Rep. Corea", "2B": "Suiza", "2C": "Marruecos", "2D": "Australia", 
-        "2E": "Ecuador", "2F": "Japón", "2G": "RI de Irán", "2H": "Uruguay", 
-        "2I": "Noruega", "2J": "Austria", "2K": "Colombia", "2L": "Croacia",
-        "3T_P75": "Congo", "3T_P78": "Costa de Marfil", "3T_P79": "Sudáfrica", 
-        "3T_P80": "Ghana", "3T_P81": "Bosnia y Herzegovina", "3T_P82": "Rep. Checa", 
-        "3T_P85": "Suecia", "3T_P88": "Turquia"
-    };
-
-    // 2. Mapeo directo a los elementos de la interfaz para 16vos
-    const mapa16vos = [
-        { id: 73, l: oficiales['2A'], v: oficiales['2B'] },
-        { id: 74, l: oficiales['1C'], v: oficiales['2F'] },
-        { id: 75, l: oficiales['1E'], v: oficiales['3T_P75'] },
-        { id: 76, l: oficiales['1F'], v: oficiales['2C'] },
-        { id: 77, l: oficiales['2E'], v: oficiales['2I'] },
-        { id: 78, l: oficiales['1I'], v: oficiales['3T_P78'] },
-        { id: 79, l: oficiales['1A'], v: oficiales['3T_P79'] },
-        { id: 80, l: oficiales['1L'], v: oficiales['3T_P80'] },
-        { id: 81, l: oficiales['1G'], v: oficiales['3T_P81'] },
-        { id: 82, l: oficiales['1D'], v: oficiales['3T_P82'] },
-        { id: 83, l: oficiales['1H'], v: oficiales['2J'] },
-        { id: 84, l: oficiales['2K'], v: oficiales['2L'] },
-        { id: 85, l: oficiales['1B'], v: oficiales['3T_P85'] },
-        { id: 86, l: oficiales['2D'], v: oficiales['2G'] },
-        { id: 87, l: oficiales['1J'], v: oficiales['2H'] },
-        { id: 88, l: oficiales['1K'], v: oficiales['3T_P88'] }
-    ];
-
-    // 3. Imprimir los nombres en las etiquetas HTML correspondientes
-    mapa16vos.forEach(partido => {
-        const etiquetaLocal = document.getElementById(`N-L-${partido.id}`);
-        const etiquetaVisita = document.getElementById(`N-V-${partido.id}`);
-        
-        if (etiquetaLocal) etiquetaLocal.innerText = partido.l;
-        if (etiquetaVisita) etiquetaVisita.innerText = partido.v;
+    const resultados = {};
+    partidosData.forEach(p => {
+        const inputL = document.getElementById(`R-L-${p.id}`);
+        const inputV = document.getElementById(`R-V-${p.id}`);
+        const gl = inputL ? inputL.value : "";
+        const gv = inputV ? inputV.value : "";
+        resultados[p.id] = {
+            gl: gl !== "" ? parseInt(gl) : null,
+            gv: gv !== "" ? parseInt(gv) : null
+        };
     });
 
-    console.log("Lógica de administración actualizada con los cruces estáticos.");
+    const grupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
+    let clasificados = {};
+    let todosLosTerceros = [];
+
+    // 1. PROCESAR CADA GRUPO
+    grupos.forEach(g => {
+        let tabla = {};
+        const partidosGrupo = partidosData.filter(p => p.fase === "Grupos" && p.grupo === g);
+        
+        partidosGrupo.forEach(p => {
+            if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0, ranking: rankingFIFA[p.local] || 200 };
+            if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0, ranking: rankingFIFA[p.visita] || 200 };
+            
+            const res = resultados[p.id];
+            if (res && res.gl !== null && res.gv !== null) {
+                tabla[p.local].gf += res.gl;
+                tabla[p.visita].gf += res.gv;
+                tabla[p.local].dg += (res.gl - res.gv);
+                tabla[p.visita].dg += (res.gv - res.gl);
+                if (res.gl > res.gv) tabla[p.local].pts += 3;
+                else if (res.gl < res.gv) tabla[p.visita].pts += 3;
+                else { tabla[p.local].pts += 1; tabla[p.visita].pts += 1; }
+            }
+        });
+
+        let ordenados = Object.values(tabla).sort((a, b) => 
+            b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
+        );
+
+        clasificados[`1${g}`] = ordenados[0]?.nombre || `1${g}`;
+        clasificados[`2${g}`] = ordenados[1]?.nombre || `2${g}`;
+        
+        if (ordenados[2]) {
+            todosLosTerceros.push(ordenados[2]);
+        }
+    });
+
+    let mejoresTerceros = todosLosTerceros.sort((a, b) => 
+        b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || a.ranking - b.ranking
+    ).slice(0, 8);
+
+    mejoresTerceros.forEach((t, index) => {
+        clasificados[`3T${index + 1}`] = t.nombre;
+    });
+
+    const mapeo16vos = [
+        { id: 73, l: clasificados['2A'], v: clasificados['2B'] },
+        { id: 74, l: clasificados['1C'], v: clasificados['2F'] },
+        { id: 75, l: clasificados['1E'], v: clasificados['3T1'] || "3T1" },
+        { id: 76, l: clasificados['1F'], v: clasificados['2C'] },
+        { id: 77, l: clasificados['2E'], v: clasificados['2I'] },
+        { id: 78, l: clasificados['1I'], v: clasificados['3T2'] || "3T2" },
+        { id: 79, l: clasificados['1A'], v: clasificados['3T3'] || "3T3" },
+        { id: 80, l: clasificados['1L'], v: clasificados['3T4'] || "3T4" },
+        { id: 81, l: clasificados['1G'], v: clasificados['3T5'] || "3T5" },
+        { id: 82, l: clasificados['1D'], v: clasificados['3T6'] || "3T6" },
+        { id: 83, l: clasificados['1H'], v: clasificados['2J'] },
+        { id: 84, l: clasificados['2K'], v: clasificados['2L'] },
+        { id: 85, l: clasificados['1B'], v: clasificados['3T7'] || "3T7" },
+        { id: 86, l: clasificados['2D'], v: clasificados['2G'] },
+        { id: 87, l: clasificados['1J'], v: clasificados['2H'] },
+        { id: 88, l: clasificados['1K'], v: clasificados['3T8'] || "3T8" }
+    ];
+
+    mapeo16vos.forEach(m => {
+        const lbL = document.getElementById(`N-L-${m.id}`);
+        const lbV = document.getElementById(`N-V-${m.id}`);
+        if (lbL) lbL.innerText = m.l;
+        if (lbV) lbV.innerText = m.v;
+    });
+
+    // --- LÓGICA DE GANADORES Y PERDEDORES ---
+    const getGanador = (id) => {
+        const res = resultados[id];
+        const txtL = document.getElementById(`N-L-${id}`)?.innerText || `Local ${id}`;
+        const txtV = document.getElementById(`N-V-${id}`)?.innerText || `Visita ${id}`;
+        if (!res || res.gl === null || res.gv === null) return `W${id}`;
+        return (res.gl > res.gv) ? txtL : txtV;
+    };
+
+    // ESTA ES LA FUNCIÓN NUEVA AGREGADA
+    const getPerdedor = (id) => {
+        const res = resultados[id];
+        const txtL = document.getElementById(`N-L-${id}`)?.innerText || `Local ${id}`;
+        const txtV = document.getElementById(`N-V-${id}`)?.innerText || `Visita ${id}`;
+        if (!res || res.gl === null || res.gv === null) return `L${id}`;
+        return (res.gl > res.gv) ? txtV : txtL;
+    };
+
+    const mapeo8vos = [
+        { id: 89, l: getGanador(73), v: getGanador(75) },
+        { id: 90, l: getGanador(74), v: getGanador(77) },
+        { id: 91, l: getGanador(76), v: getGanador(78) },
+        { id: 92, l: getGanador(79), v: getGanador(80) },
+        { id: 93, l: getGanador(83), v: getGanador(84) },
+        { id: 94, l: getGanador(81), v: getGanador(82) },
+        { id: 95, l: getGanador(86), v: getGanador(88) },
+        { id: 96, l: getGanador(85), v: getGanador(87) }
+    ];
+
+    mapeo8vos.forEach(m => {
+        if (document.getElementById(`N-L-${m.id}`)) document.getElementById(`N-L-${m.id}`).innerText = m.l;
+        if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
+    });
+
+    const mapeo4tos = [
+        { id: 97, l: getGanador(89), v: getGanador(90) },
+        { id: 98, l: getGanador(93), v: getGanador(94) },
+        { id: 99, l: getGanador(91), v: getGanador(92) },
+        { id: 100, l: getGanador(95), v: getGanador(96) }
+    ];
+    mapeo4tos.forEach(m => {
+        if (document.getElementById(`N-L-${m.id}`)) document.getElementById(`N-L-${m.id}`).innerText = m.l;
+        if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
+    });
+
+    const mapeoSemis = [
+        { id: 101, l: getGanador(97), v: getGanador(98) },
+        { id: 102, l: getGanador(99), v: getGanador(100) }
+    ];
+    mapeoSemis.forEach(m => {
+        if (document.getElementById(`N-L-${m.id}`)) document.getElementById(`N-L-${m.id}`).innerText = m.l;
+        if (document.getElementById(`N-V-${m.id}`)) document.getElementById(`N-V-${m.id}`).innerText = m.v;
+    });
+
+    // LÓGICA PARA EL TERCER PUESTO (ID 103) - AGREGADA
+    if (document.getElementById(`N-L-103`)) document.getElementById(`N-L-103`).innerText = getPerdedor(101);
+    if (document.getElementById(`N-V-103`)) document.getElementById(`N-V-103`).innerText = getPerdedor(102);
+
+    // FINAL (ID 104)
+    if (document.getElementById(`N-L-104`)) document.getElementById(`N-L-104`).innerText = getGanador(101);
+    if (document.getElementById(`N-V-104`)) document.getElementById(`N-V-104`).innerText = getGanador(102);
 } // <--- AQUÍ CERRÉ LA FUNCIÓN actualizarLogicaAdmin
 
 // --- 5. CARGAR RESULTADOS DESDE LA DB ---
@@ -290,22 +391,20 @@ async function cargarResultadosExistentes() {
             // -----------------------------------
 
             resultadosDB.forEach(res => {
+                // IMPORTANTE: res.gl y res.gv son los nombres que vienen de tu servidor
                 const inputL = document.getElementById(`R-L-${res.id}`);
                 const inputV = document.getElementById(`R-V-${res.id}`);
                 
                 if (inputL && inputV) {
-                    // Soporta de forma segura tanto si la DB devuelve 'gl'/'gv' como si devuelve 'realL'/'realV'
-                    const golLocal = res.gl !== undefined && res.gl !== null ? res.gl : res.realL;
-                    const golVisita = res.gv !== undefined && res.gv !== null ? res.gv : res.realV;
-
-                    inputL.value = golLocal !== undefined && golLocal !== null ? golLocal : "";
-                    inputV.value = golVisita !== undefined && golVisita !== null ? golVisita : "";
+                    // Aplicamos la limpieza para asegurar que la comparación posterior sea perfecta
+                    inputL.value = res.gl; // Cambiado de realL a gl
+                    inputV.value = res.gv; // Cambiado de realV a gv
                 }
             });
             
-            // Forzamos el cálculo de la tabla de grupos y la distribución de las llaves
+            // Ejecutamos la lógica para que se muevan los equipos en las llaves
             actualizarLogicaAdmin();
-            console.log("Resultados cargados y llaves actualizadas con éxito.");
+            console.log("Resultados cargados y llaves actualizadas.");
         }
     } catch (error) {
         console.error("Error al cargar resultados:", error);
@@ -371,118 +470,8 @@ async function guardarResultadosOficiales() {
 }
 
 
-
-
-/*function fijarCrucesOficiales16vos() {
-    // 1. Define aquí EXACTAMENTE qué equipo quedó en cada posición según tus cálculos de la FIFA
-    const oficiales = {
-        // Líderes de Grupo (1)
-        "1A": "México", "1B": "Canadá", "1C": "Brasil", "1D": "EE. UU.", 
-        "1E": "Alemania", "1F": "Países Bajos", "1G": "Bélgica", "1H": "España", 
-        "1I": "Francia", "1J": "Argentina", "1K": "Portugal", "1L": "Inglaterra",
-
-        // Segundos de Grupo (2)
-        "2A": "Rep. Corea", "2B": "Suiza", "2C": "Marruecos", "2D": "Australia", 
-        "2E": "Ecuador", "2F": "Japón", "2G": "RI de Irán", "2H": "Uruguay", 
-        "2I": "Noruega", "2J": "Austria", "2K": "Colombia", "2L": "Croacia",
-
-        // Los 8 Mejores Terceros oficiales asignados a sus respectivos partidos
-        "3T_P75": "Congo",              // Va al partido 75 contra 1E
-        "3T_P78": "Costa de Marfil",    // Va al partido 78 contra 1I
-        "3T_P79": "Sudáfrica",          // Va al partido 79 contra 1A
-        "3T_P80": "Ghana",              // Va al partido 80 contra 1L
-        "3T_P81": "Bosnia y Herzegovina",// Va al partido 81 contra 1G
-        "3T_P82": "Rep. Checa",         // Va al partido 82 contra 1D
-        "3T_P85": "Suecia",             // Va al partido 85 contra 1B
-        "3T_P88": "Turquia"             // Va al partido 88 contra 1K
-    };
-
-    // 2. Mapeo estructural de los partidos de 16vos (IDs 73 al 88)
-    const mapa16vos = [
-        { id: 73, l: oficiales['2A'], v: oficiales['2B'] },
-        { id: 74, l: oficiales['1C'], v: oficiales['2F'] },
-        { id: 75, l: oficiales['1E'], v: oficiales['3T_P75'] },
-        { id: 76, l: oficiales['1F'], v: oficiales['2C'] },
-        { id: 77, l: oficiales['2E'], v: oficiales['2I'] },
-        { id: 78, l: oficiales['1I'], v: oficiales['3T_P78'] },
-        { id: 79, l: oficiales['1A'], v: oficiales['3T_P79'] },
-        { id: 80, l: oficiales['1L'], v: oficiales['3T_P80'] },
-        { id: 81, l: oficiales['1G'], v: oficiales['3T_P81'] },
-        { id: 82, l: oficiales['1D'], v: oficiales['3T_P82'] },
-        { id: 83, l: oficiales['1H'], v: oficiales['2J'] },
-        { id: 84, l: oficiales['2K'], v: oficiales['2L'] },
-        { id: 85, l: oficiales['1B'], v: oficiales['3T_P85'] },
-        { id: 86, l: oficiales['2D'], v: oficiales['2G'] },
-        { id: 87, l: oficiales['1J'], v: oficiales['2H'] },
-        { id: 88, l: oficiales['1K'], v: oficiales['3T_P88'] }
-    ];
-
-    // 3. Renderizar directamente en las etiquetas del HTML
-    mapa16vos.forEach(partido => {
-        const etiquetaLocal = document.getElementById(`N-L-${partido.id}`);
-        const etiquetaVisita = document.getElementById(`N-V-${partido.id}`);
-        
-        if (etiquetaLocal) etiquetaLocal.innerText = partido.l;
-        if (etiquetaVisita) etiquetaVisita.innerText = partido.v;
-    });
-
-    console.log("Llaves de 16vos forzadas con la clasificación correcta.");
-}*/
-
-
-
-
-
-// ARRANQUE COMPLETO Y CORREGIDO
+// ARRANQUE
 document.addEventListener("DOMContentLoaded", async () => {
-    // 1. Dibuja los partidos en blanco
-    renderizarPartidosAdmin(); 
-    
-    // 2. Trae los goles guardados de la base de datos
-    await cargarResultadosExistentes(); 
-    
-    // 3. RETRASO DE SEGURIDAD (Espera 500ms a que terminen otros scripts)
-    setTimeout(() => {
-        console.log("Forzando asignación definitiva de 16vos...");
-        
-        const oficiales = {
-            "1A": "México", "1B": "Canadá", "1C": "Brasil", "1D": "EE. UU.", 
-            "1E": "Alemania", "1F": "Países Bajos", "1G": "Bélgica", "1H": "España", 
-            "1I": "Francia", "1J": "Argentina", "1K": "Portugal", "1L": "Inglaterra",
-            "2A": "Rep. Corea", "2B": "Suiza", "2C": "Marruecos", "2D": "Australia", 
-            "2E": "Ecuador", "2F": "Japón", "2G": "RI de Irán", "2H": "Uruguay", 
-            "2I": "Noruega", "2J": "Austria", "2K": "Colombia", "2L": "Croacia",
-            "3T_P75": "Congo", "3T_P78": "Costa de Marfil", "3T_P79": "Sudáfrica", 
-            "3T_P80": "Ghana", "3T_P81": "Bosnia y Herzegovina", "3T_P82": "Rep. Checa", 
-            "3T_P85": "Suecia", "3T_P88": "Turquia"
-        };
-
-        const mapa16vos = [
-            { id: 73, l: oficiales['2A'], v: oficiales['2B'] },
-            { id: 74, l: oficiales['1C'], v: oficiales['2F'] },
-            { id: 75, l: oficiales['1E'], v: oficiales['3T_P75'] },
-            { id: 76, l: oficiales['1F'], v: oficiales['2C'] },
-            { id: 77, l: oficiales['2E'], v: oficiales['2I'] },
-            { id: 78, l: oficiales['1I'], v: oficiales['3T_P78'] },
-            { id: 79, l: oficiales['1A'], v: oficiales['3T_P79'] },
-            { id: 80, l: oficiales['1L'], v: oficiales['3T_P80'] },
-            { id: 81, l: oficiales['1G'], v: oficiales['3T_P81'] },
-            { id: 82, l: oficiales['1D'], v: oficiales['3T_P82'] },
-            { id: 83, l: oficiales['1H'], v: oficiales['2J'] },
-            { id: 84, l: oficiales['2K'], v: oficiales['2L'] },
-            { id: 85, l: oficiales['1B'], v: oficiales['3T_P85'] },
-            { id: 86, l: oficiales['2D'], v: oficiales['2G'] },
-            { id: 87, l: oficiales['1J'], v: oficiales['2H'] },
-            { id: 88, l: oficiales['1K'], v: oficiales['3T_P88'] }
-        ];
-
-        mapa16vos.forEach(partido => {
-            const etiquetaLocal = document.getElementById(`N-L-${partido.id}`);
-            const etiquetaVisita = document.getElementById(`N-V-${partido.id}`);
-            
-            if (etiquetaLocal) etiquetaLocal.innerText = partido.l;
-            if (etiquetaVisita) etiquetaVisita.innerText = partido.v;
-        });
-        
-    }, 500); // 500 milisegundos de espera
+    renderizarPartidosAdmin(); // Dibuja la estructura
+    await cargarResultadosExistentes(); // Trae los datos de Neon y llena los huecos
 });
