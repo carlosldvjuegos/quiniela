@@ -566,11 +566,56 @@ function fijarCrucesOficiales16vos() {
 
 
 
-// ARRANQUE
+// ARRANQUE COMPLETO Y CORREGIDO
 document.addEventListener("DOMContentLoaded", async () => {
-    renderizarPartidosAdmin(); // Dibuja la estructura
-    await cargarResultadosExistentes(); // Trae los datos de Neon y llena los huecos
+    // 1. Dibuja los partidos en blanco
+    renderizarPartidosAdmin(); 
+    
+    // 2. Trae los goles guardados de la base de datos
+    await cargarResultadosExistentes(); 
+    
+    // 3. RETRASO DE SEGURIDAD (Espera 500ms a que terminen otros scripts)
+    setTimeout(() => {
+        console.log("Forzando asignación definitiva de 16vos...");
+        
+        const oficiales = {
+            "1A": "México", "1B": "Canadá", "1C": "Brasil", "1D": "EE. UU.", 
+            "1E": "Alemania", "1F": "Países Bajos", "1G": "Bélgica", "1H": "España", 
+            "1I": "Francia", "1J": "Argentina", "1K": "Portugal", "1L": "Inglaterra",
+            "2A": "Rep. Corea", "2B": "Suiza", "2C": "Marruecos", "2D": "Australia", 
+            "2E": "Ecuador", "2F": "Japón", "2G": "RI de Irán", "2H": "Uruguay", 
+            "2I": "Noruega", "2J": "Austria", "2K": "Colombia", "2L": "Croacia",
+            "3T_P75": "Congo", "3T_P78": "Costa de Marfil", "3T_P79": "Sudáfrica", 
+            "3T_P80": "Ghana", "3T_P81": "Bosnia y Herzegovina", "3T_P82": "Rep. Checa", 
+            "3T_P85": "Suecia", "3T_P88": "Turquia"
+        };
 
-    // Forzamos los nombres correctos en la interfaz
-    fijarCrucesOficiales16vos();
+        const mapa16vos = [
+            { id: 73, l: oficiales['2A'], v: oficiales['2B'] },
+            { id: 74, l: oficiales['1C'], v: oficiales['2F'] },
+            { id: 75, l: oficiales['1E'], v: oficiales['3T_P75'] },
+            { id: 76, l: oficiales['1F'], v: oficiales['2C'] },
+            { id: 77, l: oficiales['2E'], v: oficiales['2I'] },
+            { id: 78, l: oficiales['1I'], v: oficiales['3T_P78'] },
+            { id: 79, l: oficiales['1A'], v: oficiales['3T_P79'] },
+            { id: 80, l: oficiales['1L'], v: oficiales['3T_P80'] },
+            { id: 81, l: oficiales['1G'], v: oficiales['3T_P81'] },
+            { id: 82, l: oficiales['1D'], v: oficiales['3T_P82'] },
+            { id: 83, l: oficiales['1H'], v: oficiales['2J'] },
+            { id: 84, l: oficiales['2K'], v: oficiales['2L'] },
+            { id: 85, l: oficiales['1B'], v: oficiales['3T_P85'] },
+            { id: 86, l: oficiales['2D'], v: oficiales['2G'] },
+            { id: 87, l: oficiales['1J'], v: oficiales['2H'] },
+            { id: 88, l: oficiales['1K'], v: oficiales['3T_P88'] }
+        ];
+
+        mapa16vos.forEach(partido => {
+            const etiquetaLocal = document.getElementById(`N-L-${partido.id}`);
+            const etiquetaVisita = document.getElementById(`N-V-${partido.id}`);
+            
+            if (etiquetaLocal) etiquetaLocal.innerText = partido.l;
+            if (etiquetaVisita) etiquetaVisita.innerText = partido.v;
+        });
+        
+    }, 500); // 500 milisegundos de espera
 });
