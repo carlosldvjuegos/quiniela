@@ -235,7 +235,6 @@ function actualizarLogicaAdmin() {
         const inputL = document.getElementById(`R-L-${p.id}`);
         const inputV = document.getElementById(`R-V-${p.id}`);
         
-        // Forzamos la obtención limpia del valor del input
         const gl = inputL && inputL.value !== "" ? inputL.value.trim() : "";
         const gv = inputV && inputV.value !== "" ? inputV.value.trim() : "";
         
@@ -249,14 +248,14 @@ function actualizarLogicaAdmin() {
     let clasificados = {};
     let todosLosTerceros = [];
 
-    // 1. PROCESAR CADA GRUPO
+    // 1. PROCESAR CADA GRUPO SEGÚN REGLAS DE LA FIFA
     grupos.forEach(g => {
         let tabla = {};
         const partidosGrupo = partidosData.filter(p => p.fase === "Grupos" && p.grupo === g);
         
         partidosGrupo.forEach(p => {
             if (!tabla[p.local]) tabla[p.local] = { nombre: p.local, pts: 0, dg: 0, gf: 0, vic: 0, ranking: rankingFIFA[p.local] || 200, grupo: g };
-            if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0, vic: 0, ranking: rankingFIFA[p.visita] || 200, grupo: g };
+            if (!tabla[p.visita]) tabla[p.visita] = { nombre: p.visita, pts: 0, dg: 0, gf: 0, vic: 0, ranking: rankingFIFA[p.visita] || 200, group: g };
             
             const res = resultados[p.id];
             if (res && res.gl !== null && res.gv !== null) {
@@ -290,12 +289,12 @@ function actualizarLogicaAdmin() {
         }
     });
 
-    // 2. ORDENAR Y FILTRAR LOS 8 MEJORES TERCEROS (Criterio FIFA)
+    // 2. FILTRAR LOS 8 MEJORES TERCEROS CON CRITERIO DE DESEMPATE FIFA (Incluye victorias)
     let mejoresTerceros = todosLosTerceros.sort((a, b) => 
         b.pts - a.pts || b.dg - a.dg || b.gf - a.gf || b.vic - a.vic || a.ranking - b.ranking
     ).slice(0, 8);
 
-    // 3. ASIGNACIÓN DINÁMICA DE TERCEROS EVITANDO REPETIR GRUPO DE ORIGEN
+    // 3. DISTRIBUCIÓN MATRICIAL DE TERCEROS EVITANDO REPETIR GRUPO DE ORIGEN
     const partidosConTerceros = [
         { id: 75, contraGrupo: 'E' },
         { id: 78, contraGrupo: 'I' },
@@ -322,7 +321,7 @@ function actualizarLogicaAdmin() {
         }
     });
 
-    // 4. MAPEO DE 16VOS DE FINAL
+    // 4. MAPEO Y RENDERIZADO DE LAS LLAVES DE 16VOS DE FINAL
     const mapeo16vos = [
         { id: 73, l: clasificados['2A'], v: clasificados['2B'] },
         { id: 74, l: clasificados['1C'], v: clasificados['2F'] },
@@ -349,7 +348,7 @@ function actualizarLogicaAdmin() {
         if (lbV) lbV.innerText = m.v || `Visita ${m.id}`;
     });
 
-    // 5. SEGUIMIENTO DE LLAVES DE ELIMINATORIA (8vos, 4tos, Semis, Final)
+    // 5. FLUJO DINÁMICO DE ELIMINATORIA (8vos, 4tos, Semis y Finales)
     const getGanador = (id) => {
         const res = resultados[id];
         const txtL = document.getElementById(`N-L-${id}`)?.innerText || `Local ${id}`;
@@ -424,20 +423,22 @@ async function cargarResultadosExistentes() {
             // -----------------------------------
 
             resultadosDB.forEach(res => {
-                // IMPORTANTE: res.gl y res.gv son los nombres que vienen de tu servidor
                 const inputL = document.getElementById(`R-L-${res.id}`);
                 const inputV = document.getElementById(`R-V-${res.id}`);
                 
                 if (inputL && inputV) {
-                    // Aplicamos la limpieza para asegurar que la comparación posterior sea perfecta
-                    inputL.value = res.gl; // Cambiado de realL a gl
-                    inputV.value = res.gv; // Cambiado de realV a gv
+                    // Soporta de forma segura tanto si la DB devuelve 'gl'/'gv' como si devuelve 'realL'/'realV'
+                    const golLocal = res.gl !== undefined && res.gl !== null ? res.gl : res.realL;
+                    const golVisita = res.gv !== undefined && res.gv !== null ? res.gv : res.realV;
+
+                    inputL.value = golLocal !== undefined && golLocal !== null ? golLocal : "";
+                    inputV.value = golVisita !== undefined && golVisita !== null ? golVisita : "";
                 }
             });
             
-            // Ejecutamos la lógica para que se muevan los equipos en las llaves
+            // Forzamos el cálculo de la tabla de grupos y la distribución de las llaves
             actualizarLogicaAdmin();
-            console.log("Resultados cargados y llaves actualizadas.");
+            console.log("Resultados cargados y llaves actualizadas con éxito.");
         }
     } catch (error) {
         console.error("Error al cargar resultados:", error);
