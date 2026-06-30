@@ -121,6 +121,7 @@ const partidosData = [
     { id: 73, fase: "16vos", grupo: "Eliminatoria", fecha: "Domingo 28/06/2026", local: "2A", visita: "2B" },
     { id: 74, fase: "16vos", grupo: "Eliminatoria", fecha: "Lunes 29/06/2026", local: "1C", visita: "2F" },
     { id: 75, fase: "16vos", grupo: "Eliminatoria", fecha: "Lunes 29/06/2026", local: "1E", visita: "3T7" },
+    { id: 755, fase: "16vos", grupo: "Eliminatoria", fecha: "Lunes 29/06/2026", local: "1E", visita: "3T7" },
     { id: 76, fase: "16vos", grupo: "Eliminatoria", fecha: "Martes 30/06/2026", local: "1F", visita: "2C" },
     { id: 77, fase: "16vos", grupo: "Eliminatoria", fecha: "Martes 30/06/2026", local: "2E", visita: "2I" },
     { id: 78, fase: "16vos", grupo: "Eliminatoria", fecha: "Martes 30/06/2026", local: "1I", visita: "3T2" },
@@ -291,6 +292,7 @@ function actualizarLogicaAdmin() {
         { id: 73, l: clasificados['2A'], v: clasificados['2B'] },
         { id: 74, l: clasificados['1C'], v: clasificados['2F'] },
         { id: 75, l: clasificados['1E'], v: clasificados['3T7'] || "3T7" },
+        { id: 755, l: clasificados['1E'], v: clasificados['3T7'] || "3T7" },
         { id: 76, l: clasificados['1F'], v: clasificados['2C'] },
         { id: 77, l: clasificados['2E'], v: clasificados['2I'] },
         { id: 78, l: clasificados['1I'], v: clasificados['3T2'] || "3T2" },
@@ -332,12 +334,12 @@ function actualizarLogicaAdmin() {
     };
 
     const mapeo8vos = [
-        { id: 89, l: getGanador(73), v: getGanador(82) },
+        { id: 89, l: getGanador(73), v: getGanador(755) },
         { id: 90, l: getGanador(74), v: getGanador(77) },
         { id: 91, l: getGanador(76), v: getGanador(78) },
         { id: 92, l: getGanador(79), v: getGanador(80) },
         { id: 93, l: getGanador(83), v: getGanador(84) },
-        { id: 94, l: getGanador(81), v: getGanador(75) },
+        { id: 94, l: getGanador(81), v: getGanador(82) },
         { id: 95, l: getGanador(86), v: getGanador(88) },
         { id: 96, l: getGanador(85), v: getGanador(87) }
     ];
