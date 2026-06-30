@@ -138,9 +138,9 @@ const partidosData = [
     { id: 88, fase: "16vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "1K", visita: "3T8" },
 
     // --- OCTAVOS (IDs 89-96) ---
-    { id: 89, fase: "8vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "W73", visita: "W76" },
+    { id: 89, fase: "8vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "W73", visita: "W75" },
     { id: 90, fase: "8vos", grupo: "Eliminatoria", fecha: "Sábado 04/07/2026", local: "W74", visita: "W77" },
-    { id: 91, fase: "8vos", grupo: "Eliminatoria", fecha: "Domingo 05/07/2026", local: "W75", visita: "W78" },
+    { id: 91, fase: "8vos", grupo: "Eliminatoria", fecha: "Domingo 05/07/2026", local: "W76", visita: "W78" },
     { id: 92, fase: "8vos", grupo: "Eliminatoria", fecha: "Lunes 06/07/2026", local: "W79", visita: "W80" },
     { id: 93, fase: "8vos", grupo: "Eliminatoria", fecha: "Lunes 06/07/2026", local: "W83", visita: "W84" },
     { id: 94, fase: "8vos", grupo: "Eliminatoria", fecha: "Martes 07/07/2026", local: "W81", visita: "W82" },
@@ -336,9 +336,9 @@ function actualizarLogicaAdmin() {
     };
 
     const mapeo8vos = [
-        { id: 89, l: getGanador(73), v: getGanador(755) },
+        { id: 89, l: getGanador(73), v: getGanador(76) },
         { id: 90, l: getGanador(74), v: getGanador(77) },
-        { id: 91, l: getGanador(76), v: getGanador(78) },
+        { id: 91, l: getGanador(75), v: getGanador(78) },
         { id: 92, l: getGanador(79), v: getGanador(80) },
         { id: 93, l: getGanador(83), v: getGanador(84) },
         { id: 94, l: getGanador(81), v: getGanador(82) },
