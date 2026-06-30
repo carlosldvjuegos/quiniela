@@ -290,7 +290,7 @@ function actualizarLogicaAdmin() {
     const mapeo16vos = [
         { id: 73, l: clasificados['2A'], v: clasificados['2B'] },
         { id: 74, l: clasificados['1C'], v: clasificados['2F'] },
-        { id: 75, l: clasificados['1E'], v: clasificados['3T1'] || "3T1" },
+        { id: 75, l: clasificados['1E'], v: clasificados['3T7'] || "3T7" },
         { id: 76, l: clasificados['1F'], v: clasificados['2C'] },
         { id: 77, l: clasificados['2E'], v: clasificados['2I'] },
         { id: 78, l: clasificados['1I'], v: clasificados['3T2'] || "3T2" },
@@ -300,7 +300,7 @@ function actualizarLogicaAdmin() {
         { id: 82, l: clasificados['1D'], v: clasificados['3T6'] || "3T6" },
         { id: 83, l: clasificados['1H'], v: clasificados['2J'] },
         { id: 84, l: clasificados['2K'], v: clasificados['2L'] },
-        { id: 85, l: clasificados['1B'], v: clasificados['3T7'] || "3T7" },
+        { id: 85, l: clasificados['1B'], v: clasificados['3T1'] || "3T1" },
         { id: 86, l: clasificados['2D'], v: clasificados['2G'] },
         { id: 87, l: clasificados['1J'], v: clasificados['2H'] },
         { id: 88, l: clasificados['1K'], v: clasificados['3T8'] || "3T8" }
