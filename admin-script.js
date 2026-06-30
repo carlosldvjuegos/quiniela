@@ -304,10 +304,10 @@ function actualizarLogicaAdmin() {
         { id: 82, l: clasificados['1D'], v: clasificados['3T5'] || "3T5" },
         { id: 83, l: clasificados['1H'], v: clasificados['2J'] },
         { id: 84, l: clasificados['2K'], v: clasificados['2L'] },
-        { id: 85, l: clasificados['1B'], v: clasificados['3T4'] || "3T4" },
+        { id: 85, l: clasificados['1B'], v: clasificados['3T6'] || "3T6" },
         { id: 86, l: clasificados['2D'], v: clasificados['2G'] },
         { id: 87, l: clasificados['1J'], v: clasificados['2H'] },
-        { id: 88, l: clasificados['1K'], v: clasificados['3T5'] || "3T5" }
+        { id: 88, l: clasificados['1K'], v: clasificados['3T4'] || "3T4" }
     ];
 
     mapeo16vos.forEach(m => {
