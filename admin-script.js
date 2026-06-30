@@ -301,7 +301,7 @@ function actualizarLogicaAdmin() {
         { id: 79, l: clasificados['1A'], v: clasificados['3T3'] || "3T3" },
         { id: 80, l: clasificados['1L'], v: clasificados['3T1'] || "3T1" },
         { id: 81, l: clasificados['1G'], v: clasificados['3T6'] || "3T6" },
-        { id: 82, l: clasificados['1D'], v: clasificados['2H']
+        { id: 82, l: clasificados['1D'], v: clasificados['2H'] },
         { id: 83, l: clasificados['1H'], v: clasificados['2J'] },
         { id: 84, l: clasificados['2K'], v: clasificados['2L'] },
         { id: 85, l: clasificados['1B'], v: clasificados['3T4'] || "3T4" },
