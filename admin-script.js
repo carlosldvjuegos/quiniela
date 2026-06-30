@@ -332,12 +332,12 @@ function actualizarLogicaAdmin() {
     };
 
     const mapeo8vos = [
-        { id: 89, l: getGanador(73), v: getGanador(75) },
+        { id: 89, l: getGanador(73), v: getGanador(82) },
         { id: 90, l: getGanador(74), v: getGanador(77) },
         { id: 91, l: getGanador(76), v: getGanador(78) },
         { id: 92, l: getGanador(79), v: getGanador(80) },
         { id: 93, l: getGanador(83), v: getGanador(84) },
-        { id: 94, l: getGanador(81), v: getGanador(82) },
+        { id: 94, l: getGanador(81), v: getGanador(75) },
         { id: 95, l: getGanador(86), v: getGanador(88) },
         { id: 96, l: getGanador(85), v: getGanador(87) }
     ];
